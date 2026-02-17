@@ -1,0 +1,466 @@
+{% extends 'office/base.html' %}
+{% block title %}Application #{{ application.app_id }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-file-earmark-text"></i> Application #{{ application.app_id }}</h3>
+            <a href="{% url 'office:application_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+
+        <!-- Rejection Banner -->
+        {% if application.status == 'rejected' and application.rejection_reason %}
+        <div class="alert alert-danger mb-4">
+            <h6 class="alert-heading"><i class="bi bi-x-circle"></i> Application Rejected</h6>
+            <p class="mb-0">{{ application.rejection_reason }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Info + Status + Actions -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-7">
+                <div class="card stat-card h-100">
+                    <div class="card-body">
+                        <h5 class="mb-3">{{ application.user.get_full_name|default:application.user.username }}</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Email</small>
+                                <p>{{ application.user.email|default:"—" }}</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Phone</small>
+                                <p>{{ application.user.phone|default:"—" }}</p>
+                            </div>
+                        </div>
+                        <small class="text-muted">Scholarship</small>
+                        <p class="fw-bold">{{ application.scholarship.name }}</p>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Applied On</small>
+                                <p>{{ application.applied_date|date:"M d, Y H:i" }}</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Fee</small>
+                                <p>${{ application.scholarship.price }}</p>
+                            </div>
+                        </div>
+                        {% if application.assigned_agent %}
+                        <small class="text-muted">Agent</small>
+                        <p>{{ application.assigned_agent.get_full_name|default:application.assigned_agent.username }}</p>
+                        {% endif %}
+                        {% if application.assigned_hq %}
+                        <small class="text-muted">HQ</small>
+                        <p>{{ application.assigned_hq.get_full_name|default:application.assigned_hq.username }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card stat-card h-100">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Current Status</h6>
+                        <span class="badge fs-5 mb-3
+                            {% if application.status == 'draft' %}bg-secondary
+                            {% elif application.status == 'submitted' %}bg-warning text-dark
+                            {% elif application.status == 'under_review' %}bg-info
+                            {% elif application.status == 'documents_verified' %}bg-primary
+                            {% elif application.status == 'payment_verified' %}bg-primary
+                            {% elif application.status == 'approved' %}bg-success
+                            {% elif application.status == 'rejected' %}bg-danger
+                            {% elif application.status == 'in_progress' %}bg-info
+                            {% elif application.status == 'complete' %}bg-dark
+                            {% else %}bg-secondary{% endif %}">
+                            {{ application.get_status_display }}
+                        </span>
+
+                        <!-- Progress Steps -->
+                        <div class="text-start mt-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <small>Draft Created</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi {% if application.status != 'draft' %}bi-check-circle-fill text-success{% else %}bi-circle text-muted{% endif %} me-2"></i>
+                                <small>Submitted</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                {% if application.status == 'under_review' or application.status == 'documents_verified' or application.status == 'payment_verified' or application.status == 'approved' or application.status == 'in_progress' or application.status == 'admission_letter_uploaded' or application.status == 'admission_letter_approved' or application.status == 'jw02_uploaded' or application.status == 'jw02_approved' or application.status == 'complete' %}
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {% else %}
+                                <i class="bi bi-circle text-muted me-2"></i>
+                                {% endif %}
+                                <small>Under Review</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                {% if application.status == 'documents_verified' or application.status == 'payment_verified' or application.status == 'approved' or application.status == 'in_progress' or application.status == 'admission_letter_uploaded' or application.status == 'admission_letter_approved' or application.status == 'jw02_uploaded' or application.status == 'jw02_approved' or application.status == 'complete' %}
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {% else %}
+                                <i class="bi bi-circle text-muted me-2"></i>
+                                {% endif %}
+                                <small>Documents Verified</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                {% if application.status == 'payment_verified' or application.status == 'approved' or application.status == 'in_progress' or application.status == 'admission_letter_uploaded' or application.status == 'admission_letter_approved' or application.status == 'jw02_uploaded' or application.status == 'jw02_approved' or application.status == 'complete' %}
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {% else %}
+                                <i class="bi bi-circle text-muted me-2"></i>
+                                {% endif %}
+                                <small>Payment Verified</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                {% if application.assigned_agent %}
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {% else %}
+                                <i class="bi bi-circle text-muted me-2"></i>
+                                {% endif %}
+                                <small>Forwarded to Agent</small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                {% if application.status == 'approved' or application.status == 'in_progress' or application.status == 'admission_letter_uploaded' or application.status == 'admission_letter_approved' or application.status == 'jw02_uploaded' or application.status == 'jw02_approved' or application.status == 'complete' %}
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {% else %}
+                                <i class="bi bi-circle text-muted me-2"></i>
+                                {% endif %}
+                                <small>Agent Approved → HQ</small>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <!-- ACTION BUTTONS — trigger confirmation modals -->
+                        {% if can_submit %}
+                        <button type="button" class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#confirmSubmit">
+                            <i class="bi bi-send"></i> Submit Application
+                        </button>
+                        {% endif %}
+
+                        {% if can_start_review %}
+                        <button type="button" class="btn btn-info w-100 text-white mb-2" data-bs-toggle="modal" data-bs-target="#confirmStartReview">
+                            <i class="bi bi-search"></i> Start Review
+                        </button>
+                        {% endif %}
+
+                        {% if can_verify_docs %}
+                        <button type="button" class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#confirmVerifyDocs">
+                            <i class="bi bi-file-check"></i> Verify Documents
+                        </button>
+                        {% endif %}
+
+                        {% if can_verify_payment %}
+                        <button type="button" class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#confirmVerifyPayment">
+                            <i class="bi bi-credit-card-2-front"></i> Verify Payment
+                        </button>
+                        {% endif %}
+
+                        {% if can_forward_to_agent %}
+                        <button type="button" class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#confirmForwardAgent">
+                            <i class="bi bi-arrow-right-circle"></i> Forward to Agent
+                        </button>
+                        {% endif %}
+
+                        {% if application.assigned_agent and application.status == 'payment_verified' %}
+                        <div class="alert alert-success mt-2 mb-0 py-2 text-center">
+                            <small><i class="bi bi-person-check"></i> Assigned to <strong>{{ application.assigned_agent.get_full_name|default:application.assigned_agent.username }}</strong></small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admission Letter -->
+        {% if admission_letter %}
+        <div class="card stat-card mb-4">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-envelope-paper"></i> Admission Letter</h5></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1"><strong>Status:</strong>
+                            <span class="badge {% if admission_letter.status == 'approved' %}bg-success{% elif admission_letter.status == 'revision_requested' %}bg-warning text-dark{% else %}bg-info{% endif %}">{{ admission_letter.get_status_display }}</span>
+                        </p>
+                        <p class="mb-0"><strong>Uploaded:</strong> {{ admission_letter.uploaded_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <a href="{{ admission_letter.file.url }}" class="btn btn-outline-primary btn-sm" target="_blank"><i class="bi bi-download"></i> Download</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- JW02 Form -->
+        {% if jw02 %}
+        <div class="card stat-card mb-4">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-file-earmark-ruled"></i> JW02 Form</h5></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1"><strong>Status:</strong>
+                            <span class="badge {% if jw02.status == 'approved' %}bg-success{% else %}bg-info{% endif %}">{{ jw02.get_status_display }}</span>
+                        </p>
+                        <p class="mb-0"><strong>Uploaded:</strong> {{ jw02.uploaded_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <a href="{{ jw02.file.url }}" class="btn btn-outline-primary btn-sm" target="_blank"><i class="bi bi-download"></i> Download</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Documents -->
+        <div class="card stat-card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-folder2-open"></i> Application Documents</h5>
+                <a href="{% url 'office:upload_documents' application.app_id %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-upload"></i> Upload Documents
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Document</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for name, field in documents.items %}
+                            <tr>
+                                <td><i class="bi {% if 'Photo' in name %}bi-image{% else %}bi-file-earmark-pdf{% endif %} me-1"></i> {{ name }}</td>
+                                <td>
+                                    {% if field %}<span class="badge bg-success">Uploaded</span>
+                                    {% else %}<span class="badge bg-secondary">Missing</span>{% endif %}
+                                </td>
+                                <td>
+                                    {% if field %}
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ field.url }}', '{{ name }}')"><i class="bi bi-eye"></i> View</button>
+                                    {% else %}—{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments -->
+        <div class="card stat-card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payments</h5>
+                <a href="{% url 'office:make_payment' application.app_id %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Make Payment
+                </a>
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr><th>Transaction</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                            <tr>
+                                <td><code>{{ p.transaction_id|default:"—" }}</code></td>
+                                <td class="fw-bold">${{ p.amount }}</td>
+                                <td>{{ p.payment_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge {% if p.payment_status == 'completed' %}bg-success{% elif p.payment_status == 'pending' %}bg-warning text-dark{% elif p.payment_status == 'under_review' %}bg-info{% else %}bg-danger{% endif %}">
+                                        {{ p.get_payment_status_display }}
+                                    </span>
+                                </td>
+                                <td><a href="{% url 'office:payment_detail' p.application_payment_id %}" class="btn btn-sm btn-outline-secondary">Detail</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-3 text-muted">
+                    <p class="mb-0">No payments yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Status History -->
+        {% if status_history %}
+        <div class="card stat-card mb-4">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-clock-history"></i> Status History</h5></div>
+            <div class="card-body">
+                {% for entry in status_history %}
+                <div class="d-flex mb-3">
+                    <div class="me-3 text-center" style="min-width:80px;">
+                        <small class="text-muted">{{ entry.changed_at|date:"M d" }}<br>{{ entry.changed_at|date:"H:i" }}</small>
+                    </div>
+                    <div class="border-start border-3 border-primary ps-3">
+                        <strong>{{ entry.get_new_status_display }}</strong>
+                        {% if entry.changed_by %}<small class="text-muted"> by {{ entry.changed_by.username }}</small>{% endif %}
+                        {% if entry.note %}<p class="text-muted mb-0 mt-1"><small>{{ entry.note }}</small></p>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Confirmation Modals -->
+{% if can_submit %}
+<div class="modal fade" id="confirmSubmit" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-send"></i> Submit Application</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to submit application <strong>#{{ application.app_id }}</strong>?</p>
+                <p class="text-muted mb-0">This will move the application from <span class="badge bg-secondary">Draft</span> to <span class="badge bg-warning text-dark">Submitted</span> and notify the applicant.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'office:submit_application' application.app_id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success"><i class="bi bi-send"></i> Yes, Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if can_start_review %}
+<div class="modal fade" id="confirmStartReview" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-search"></i> Start Review</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to start reviewing application <strong>#{{ application.app_id }}</strong>?</p>
+                <p class="text-muted mb-0">This will move the application from <span class="badge bg-warning text-dark">Submitted</span> to <span class="badge bg-info">Under Review</span>.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'office:start_review' application.app_id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-info text-white"><i class="bi bi-search"></i> Yes, Start Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if can_verify_docs %}
+<div class="modal fade" id="confirmVerifyDocs" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-file-check"></i> Verify Documents</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure all documents for application <strong>#{{ application.app_id }}</strong> have been verified?</p>
+                <p class="text-muted mb-0">This will move the application from <span class="badge bg-info">Under Review</span> to <span class="badge bg-primary">Documents Verified</span>.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'office:verify_documents' application.app_id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-file-check"></i> Yes, Verify Documents</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if can_verify_payment %}
+<div class="modal fade" id="confirmVerifyPayment" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-credit-card-2-front"></i> Verify Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure the payment for application <strong>#{{ application.app_id }}</strong> has been verified?</p>
+                <p class="text-muted mb-0">This will move the application from <span class="badge bg-primary">Documents Verified</span> to <span class="badge bg-primary">Payment Verified</span>.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'office:verify_payment' application.app_id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success"><i class="bi bi-credit-card-2-front"></i> Yes, Verify Payment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if can_forward_to_agent %}
+<div class="modal fade" id="confirmForwardAgent" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="bi bi-arrow-right-circle"></i> Forward to Agent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'office:forward_to_agent' application.app_id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Forward application <strong>#{{ application.app_id }}</strong> to an agent for approval.</p>
+                    <div class="mb-3">
+                        <label for="agent_id" class="form-label fw-bold">Select Agent</label>
+                        <select name="agent_id" id="agent_id" class="form-select" required>
+                            <option value="">Choose an agent...</option>
+                            {% for agent in agents %}
+                            <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }} ({{ agent.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="text-muted mb-0">The selected agent will be notified and can review, approve, or reject this application. Once approved, it will be forwarded to HQ.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-right-circle"></i> Forward</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Document Viewer Modal -->
+<div class="modal fade" id="documentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentName">Document Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="max-height:70vh;overflow-y:auto;"><div id="documentContainer"></div></div>
+            <div class="modal-footer">
+                <a id="downloadLink" href="#" class="btn btn-primary" download><i class="bi bi-download"></i> Download</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function openDocument(url, docName) {
+    document.getElementById('documentName').textContent = docName;
+    document.getElementById('downloadLink').href = url;
+    const c = document.getElementById('documentContainer');
+    const ext = url.split('.').pop().toLowerCase();
+    if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+        c.innerHTML = `<img src="${url}" class="img-fluid" alt="${docName}">`;
+    } else if (ext === 'pdf') {
+        c.innerHTML = `<embed src="${url}" type="application/pdf" style="width:100%;height:600px;border:none;"><p class="mt-3 text-muted small"><i class="bi bi-info-circle"></i> Can't see the PDF? <a href="${url}" target="_blank">Open in new tab</a>.</p>`;
+    } else {
+        c.innerHTML = `<p class="text-warning"><i class="bi bi-exclamation-triangle"></i> Preview not available. Please download.</p>`;
+    }
+}
+</script>
+{% endblock %}

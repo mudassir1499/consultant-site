@@ -1,0 +1,99 @@
+{% extends 'office/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Create Application</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="createAppForm" data-loading="Creating application...">
+                    {% csrf_token %}
+
+                    <!-- Student Mode Tabs -->
+                    <ul class="nav nav-tabs mb-4" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="existing-tab" data-bs-toggle="tab" data-bs-target="#existingStudent" type="button" role="tab" onclick="document.getElementById('student_mode').value='existing'">
+                                <i class="bi bi-person-check"></i> Existing Student
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#newStudent" type="button" role="tab" onclick="document.getElementById('student_mode').value='new'">
+                                <i class="bi bi-person-plus"></i> New Student
+                            </button>
+                        </li>
+                    </ul>
+                    <input type="hidden" name="student_mode" id="student_mode" value="existing">
+
+                    <div class="tab-content">
+                        <!-- Existing Student Tab -->
+                        <div class="tab-pane fade show active" id="existingStudent" role="tabpanel">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">Select Student</label>
+                                <select name="student_id" id="student_id" class="form-select">
+                                    <option value="">Choose a student...</option>
+                                    {% for student in students %}
+                                        <option value="{{ student.id }}">{{ student.get_full_name|default:student.username }} ({{ student.email }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- New Student Tab -->
+                        <div class="tab-pane fade" id="newStudent" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="new_username" class="form-label">Username <span class="text-danger">*</span></label>
+                                    <input type="text" name="new_username" id="new_username" class="form-control" placeholder="e.g. john_doe">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="new_email" class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="new_email" id="new_email" class="form-control" placeholder="student@example.com">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="new_first_name" class="form-label">First Name</label>
+                                    <input type="text" name="new_first_name" id="new_first_name" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="new_last_name" class="form-label">Last Name</label>
+                                    <input type="text" name="new_last_name" id="new_last_name" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="new_phone" class="form-label">Phone</label>
+                                    <input type="text" name="new_phone" id="new_phone" class="form-control" placeholder="+1234567890">
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="bi bi-info-circle"></i> A temporary password will be generated. It will be shown once after creation — share it with the student so they can log in and reset it.
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Scholarship (common to both modes) -->
+                    <div class="mb-3">
+                        <label for="scholarship_id" class="form-label">Select Scholarship <span class="text-danger">*</span></label>
+                        <select name="scholarship_id" id="scholarship_id" class="form-select" required>
+                            <option value="">Choose a scholarship...</option>
+                            {% for scholarship in scholarships %}
+                                <option value="{{ scholarship.id }}">{{ scholarship.name }} - ${{ scholarship.price }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="alert alert-secondary">
+                        <strong>Note:</strong> This will create a <span class="badge bg-secondary">Draft</span> application. You can then upload documents and manage it from the application detail page.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create Application</button>
+                        <a href="{% url 'office:office_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,398 @@
+{% extends 'headquarters/base.html' %}
+
+{% block title %}Application #{{ application.app_id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-file-earmark-text"></i> Application #{{ application.app_id }}</h3>
+    <a href="{% url 'headquarters:application_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<!-- Application Info Card -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card stat-card">
+            <div class="card-body">
+                <h5 class="card-title">Student Information</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="200">Student</th>
+                        <td>{{ application.user.get_full_name|default:application.user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ application.user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Scholarship</th>
+                        <td>{{ application.scholarship.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>HQ Commission</th>
+                        <td class="text-success fw-bold">${{ application.scholarship.hq_commission }}</td>
+                    </tr>
+                    <tr>
+                        <th>Deadline</th>
+                        <td>
+                            {% if application.deadline %}
+                            {{ application.deadline|date:"M d, Y H:i" }}
+                            {% else %}
+                            <span class="text-muted">Not set</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Status</h5>
+                <span class="badge fs-6 mt-2
+                    {% if application.status == 'approved' %}bg-success
+                    {% elif application.status == 'in_progress' %}bg-info
+                    {% elif application.status == 'admission_letter_uploaded' %}bg-primary
+                    {% elif application.status == 'admission_letter_approved' %}bg-success
+                    {% elif application.status == 'jw02_uploaded' %}bg-primary
+                    {% elif application.status == 'jw02_approved' %}bg-success
+                    {% elif application.status == 'letter_pending' %}bg-warning text-dark
+                    {% elif application.status == 'complete' %}bg-dark
+                    {% else %}bg-secondary{% endif %}">
+                    {{ application.get_status_display }}
+                </span>
+                {% if application.approved_date %}
+                <p class="text-muted mt-3 mb-0"><small>Approved: {{ application.approved_date|date:"M d, Y" }}</small></p>
+                {% endif %}
+                {% if application.completed_date %}
+                <p class="text-muted mt-1 mb-0"><small>Completed: {{ application.completed_date|date:"M d, Y" }}</small></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Section -->
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-zip"></i> Application Documents</h5>
+        <a href="{% url 'headquarters:download_documents' application.app_id %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-download"></i> Download All (ZIP)
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Document</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><i class="bi bi-file-earmark-person"></i> Passport</td>
+                        <td>
+                            {% if application.passport %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-file-earmark-image"></i> Photo</td>
+                        <td>
+                            {% if application.photo %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-file-earmark-medical"></i> Medical Examination</td>
+                        <td>
+                            {% if application.medical_examination %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-file-earmark-check"></i> English Certificate</td>
+                        <td>
+                            {% if application.english_certificate %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-mortarboard"></i> Graduation Certificate</td>
+                        <td>
+                            {% if application.graduation_certificate %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-shield-check"></i> Criminal Record</td>
+                        <td>
+                            {% if application.criminal_record %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-file-earmark-text"></i> Study Plan</td>
+                        <td>
+                            {% if application.study_plan %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-envelope-paper"></i> Recommendations</td>
+                        <td>
+                            {% if application.recommendations %}
+                            <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not uploaded</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- HQ Action Buttons -->
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <!-- Mark Applied to University -->
+            {% if application.status == 'approved' %}
+            <div class="col-md-4">
+                <form method="post" action="{% url 'headquarters:mark_applied' application.app_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="bi bi-check2-circle"></i> Mark Applied to University
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Upload Admission Letter -->
+            {% if application.status == 'in_progress' or application.status == 'letter_pending' %}
+            <div class="col-md-4">
+                <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#uploadLetterModal">
+                    <i class="bi bi-upload"></i> Upload Admission Letter
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Upload JW02 -->
+            {% if application.status == 'admission_letter_approved' %}
+            <div class="col-md-4">
+                <a href="{% url 'headquarters:upload_jw02' application.app_id %}" class="btn btn-primary w-100">
+                    <i class="bi bi-file-earmark-arrow-up"></i> Upload JW02 Form
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if application.status not in 'approved,in_progress,letter_pending,admission_letter_approved' %}
+        <p class="text-muted mt-3 mb-0">No actions available for the current status.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Admission Letter Info -->
+{% if admission_letter %}
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-envelope-paper"></i> Admission Letter</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <p class="mb-1"><strong>Status:</strong>
+                    <span class="badge
+                        {% if admission_letter.status == 'approved' %}bg-success
+                        {% elif admission_letter.status == 'revision_requested' %}bg-warning text-dark
+                        {% else %}bg-info{% endif %}">
+                        {{ admission_letter.get_status_display }}
+                    </span>
+                </p>
+                <p class="mb-1"><strong>Uploaded:</strong> {{ admission_letter.uploaded_at|date:"M d, Y H:i" }}</p>
+                {% if admission_letter.revision_note %}
+                <p class="mb-0 text-danger"><strong>Revision Note:</strong> {{ admission_letter.revision_note }}</p>
+                {% endif %}
+            </div>
+            <a href="{{ admission_letter.file.url }}" class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-download"></i> Download
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- JW02 Form Info -->
+{% if jw02 %}
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-ruled"></i> JW02 Form</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <p class="mb-1"><strong>Status:</strong>
+                    <span class="badge
+                        {% if jw02.status == 'approved' %}bg-success
+                        {% else %}bg-info{% endif %}">
+                        {{ jw02.get_status_display }}
+                    </span>
+                </p>
+                <p class="mb-0"><strong>Uploaded:</strong> {{ jw02.uploaded_at|date:"M d, Y H:i" }}</p>
+            </div>
+            <a href="{{ jw02.file.url }}" class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-download"></i> Download
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Status History -->
+{% if status_history %}
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Status History</h5>
+    </div>
+    <div class="card-body">
+        <div class="timeline">
+            {% for entry in status_history %}
+            <div class="d-flex mb-3">
+                <div class="me-3 text-center" style="min-width: 80px;">
+                    <small class="text-muted">{{ entry.changed_at|date:"M d" }}<br>{{ entry.changed_at|date:"H:i" }}</small>
+                </div>
+                <div class="border-start border-3 border-primary ps-3">
+                    <strong>{{ entry.get_new_status_display }}</strong>
+                    {% if entry.changed_by %}
+                    <small class="text-muted">by {{ entry.changed_by.username }}</small>
+                    {% endif %}
+                    {% if entry.note %}
+                    <p class="text-muted mb-0 mt-1"><small>{{ entry.note }}</small></p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Upload Admission Letter Modal -->
+<div class="modal fade" id="uploadLetterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'headquarters:upload_admission_letter' application.app_id %}" enctype="multipart/form-data" id="letterUploadForm">
+                {% csrf_token %}
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-upload"></i> Upload Admission Letter</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Admission Letter File</label>
+                        <input type="file" name="admission_letter" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.png">
+                        <div class="form-text">Accepted formats: PDF, DOC, DOCX, JPG, PNG</div>
+                    </div>
+                    <!-- Upload Progress -->
+                    <div id="letterUploadProgress" class="mb-3" style="display: none;">
+                        <label class="form-label fw-bold">Uploading...</label>
+                        <div class="progress" style="height: 20px;">
+                            <div id="letterProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;">0%</div>
+                        </div>
+                        <small id="letterUploadStatus" class="text-muted mt-1 d-block">Preparing upload...</small>
+                    </div>
+                </div>
+                <div class="modal-footer" id="letterFormButtons">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="letterSubmitBtn">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('letterUploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var formData = new FormData(form);
+    var progressDiv = document.getElementById('letterUploadProgress');
+    var progressBar = document.getElementById('letterProgressBar');
+    var uploadStatus = document.getElementById('letterUploadStatus');
+    var submitBtn = document.getElementById('letterSubmitBtn');
+
+    progressDiv.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Uploading...';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', form.action, true);
+
+    xhr.upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+            var pct = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = pct + '%';
+            progressBar.textContent = pct + '%';
+            if (pct < 100) {
+                uploadStatus.textContent = 'Uploading... ' + (e.loaded / 1024 / 1024).toFixed(1) + ' MB of ' + (e.total / 1024 / 1024).toFixed(1) + ' MB';
+            } else {
+                uploadStatus.textContent = 'Processing... Please wait.';
+                progressBar.classList.remove('bg-success');
+                progressBar.classList.add('bg-primary');
+            }
+        }
+    });
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            uploadStatus.textContent = 'Upload complete! Redirecting...';
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%';
+            window.location.href = xhr.responseURL || form.action;
+        } else {
+            window.location.href = form.action;
+        }
+    };
+
+    xhr.onerror = function() {
+        uploadStatus.textContent = 'Upload failed. Please try again.';
+        progressBar.classList.remove('bg-success');
+        progressBar.classList.add('bg-danger');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Upload';
+    };
+
+    xhr.send(formData);
+});
+</script>
+{% endblock %}

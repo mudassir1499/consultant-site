@@ -1,0 +1,130 @@
+{% extends 'headquarters/base.html' %}
+
+{% block title %}Re-upload Admission Letter{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-arrow-repeat"></i> Re-upload Admission Letter</h3>
+    <a href="{% url 'headquarters:revision_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Revisions
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Revision Note Alert -->
+        {% if letter.revision_note %}
+        <div class="alert alert-warning mb-4">
+            <h6><i class="bi bi-chat-left-text"></i> Agent's Revision Note:</h6>
+            <p class="mb-0">{{ letter.revision_note }}</p>
+        </div>
+        {% endif %}
+
+        <div class="card stat-card">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h5>Application #{{ letter.application.app_id }}</h5>
+                    <p class="text-muted mb-1">Student: {{ letter.application.user.get_full_name|default:letter.application.user.username }}</p>
+                    <p class="text-muted mb-0">Scholarship: {{ letter.application.scholarship.name }}</p>
+                </div>
+
+                <!-- Current File -->
+                <div class="mb-4 p-3 bg-light rounded">
+                    <p class="mb-1"><strong>Current File:</strong></p>
+                    <a href="{{ letter.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="bi bi-download"></i> Download Current Letter
+                    </a>
+                </div>
+
+                <hr>
+
+                <form method="post" enctype="multipart/form-data" id="reuploadForm" data-no-xhr>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="file" class="form-label fw-bold">New Admission Letter</label>
+                        <input type="file" name="admission_letter" id="file" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.png">
+                        <div class="form-text">Upload the corrected admission letter addressing the revision notes above.</div>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div id="reuploadProgress" class="mb-3" style="display: none;">
+                        <label class="form-label fw-bold">Uploading...</label>
+                        <div class="progress" style="height: 20px;">
+                            <div id="reuploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: 0%;">0%</div>
+                        </div>
+                        <small id="reuploadStatus" class="text-muted mt-1 d-block">Preparing upload...</small>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> The corrected letter will be re-submitted to the Main Agent for review.
+                    </div>
+
+                    <div class="text-end">
+                        <a href="{% url 'headquarters:revision_list' %}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-warning" id="reuploadSubmitBtn">
+                            <i class="bi bi-upload"></i> Re-upload Letter
+                        </button>
+                    </div>
+                </form>
+
+                <script>
+                document.getElementById('reuploadForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var form = this;
+                    var formData = new FormData(form);
+                    var progressDiv = document.getElementById('reuploadProgress');
+                    var progressBar = document.getElementById('reuploadProgressBar');
+                    var uploadStatus = document.getElementById('reuploadStatus');
+                    var submitBtn = document.getElementById('reuploadSubmitBtn');
+
+                    progressDiv.style.display = 'block';
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Uploading...';
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', form.action, true);
+
+                    xhr.upload.addEventListener('progress', function(e) {
+                        if (e.lengthComputable) {
+                            var pct = Math.round((e.loaded / e.total) * 100);
+                            progressBar.style.width = pct + '%';
+                            progressBar.textContent = pct + '%';
+                            if (pct < 100) {
+                                uploadStatus.textContent = 'Uploading... ' + (e.loaded / 1024 / 1024).toFixed(1) + ' MB of ' + (e.total / 1024 / 1024).toFixed(1) + ' MB';
+                            } else {
+                                uploadStatus.textContent = 'Processing... Please wait.';
+                                progressBar.classList.remove('bg-warning');
+                                progressBar.classList.add('bg-success');
+                            }
+                        }
+                    });
+
+                    xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 400) {
+                            uploadStatus.textContent = 'Upload complete! Redirecting...';
+                            progressBar.style.width = '100%';
+                            progressBar.textContent = '100%';
+                            progressBar.classList.remove('bg-warning');
+                            progressBar.classList.add('bg-success');
+                            window.location.href = xhr.responseURL || form.action;
+                        } else {
+                            window.location.href = form.action;
+                        }
+                    };
+
+                    xhr.onerror = function() {
+                        uploadStatus.textContent = 'Upload failed. Please try again.';
+                        progressBar.classList.remove('bg-warning');
+                        progressBar.classList.add('bg-danger');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="bi bi-upload"></i> Re-upload Letter';
+                    };
+
+                    xhr.send(formData);
+                });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

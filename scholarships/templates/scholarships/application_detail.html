@@ -1,0 +1,662 @@
+{% extends 'scholarships/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Progress Stepper */
+    .stepper {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+    .stepper::before {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: 5%;
+        right: 5%;
+        height: 3px;
+        background: #dee2e6;
+        z-index: 0;
+    }
+    .stepper .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        text-align: center;
+    }
+    .stepper .step-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+        border: 2px solid #dee2e6;
+        background: #fff;
+        color: #adb5bd;
+        transition: all 0.3s;
+    }
+    .stepper .step.completed .step-icon {
+        background: #198754;
+        border-color: #198754;
+        color: #fff;
+    }
+    .stepper .step.current .step-icon {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+    }
+    .stepper .step.action .step-icon {
+        background: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+        animation: step-pulse 2s infinite;
+    }
+    .stepper .step.rejected .step-icon {
+        background: #dee2e6;
+        border-color: #dee2e6;
+        color: #adb5bd;
+    }
+    .stepper .step-label {
+        font-size: 0.65rem;
+        color: #6c757d;
+        max-width: 70px;
+        line-height: 1.2;
+    }
+    .stepper .step.completed .step-label { color: #198754; font-weight: 600; }
+    .stepper .step.current .step-label { color: #0d6efd; font-weight: 600; }
+    .stepper .step.action .step-label { color: #dc3545; font-weight: 600; }
+
+    @keyframes step-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.5); }
+        70% { box-shadow: 0 0 0 8px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .whats-next-card {
+        border-left: 4px solid;
+        border-radius: 8px;
+    }
+
+    /* Responsive stepper */
+    @media (max-width: 768px) {
+        .stepper {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .stepper::before {
+            display: none;
+        }
+        .stepper .step {
+            flex: 0 0 18%;
+        }
+        .stepper .step-icon {
+            width: 30px;
+            height: 30px;
+            font-size: 0.75rem;
+        }
+        .stepper .step-label {
+            font-size: 0.55rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 offset-lg-1">
+            <!-- Header -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0"><i class="bi bi-file-earmark-text"></i> Application #{{ application.app_id }}</h3>
+                        <a href="{% url 'users:dashboard' %}" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Application & Scholarship Summary -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5 class="mb-1">{{ application.scholarship.name }}</h5>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-mortarboard"></i> {{ application.scholarship.get_degree_display }} &middot; {{ application.scholarship.major }}
+                            </p>
+                        </div>
+                        <div class="col-md-3 text-md-center">
+                            <small class="text-muted d-block">Applied</small>
+                            <strong>{{ application.applied_date|date:"M d, Y" }}</strong>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <small class="text-muted d-block">Status</small>
+                            {% if application.status == 'draft' %}
+                                <span class="badge bg-secondary fs-6">Draft</span>
+                            {% elif application.status == 'submitted' %}
+                                <span class="badge bg-primary fs-6">Submitted</span>
+                            {% elif application.status == 'under_review' %}
+                                <span class="badge bg-info fs-6">Under Review</span>
+                            {% elif application.status == 'documents_verified' %}
+                                <span class="badge bg-success fs-6">Documents Verified</span>
+                            {% elif application.status == 'payment_verified' %}
+                                <span class="badge bg-info fs-6">Payment Verified</span>
+                            {% elif application.status == 'approved' %}
+                                <span class="badge bg-success fs-6">Approved</span>
+                            {% elif application.status == 'rejected' %}
+                                <span class="badge bg-danger fs-6">Rejected</span>
+                            {% elif application.status == 'in_progress' %}
+                                <span class="badge bg-warning text-dark fs-6">In Progress</span>
+                            {% elif application.status == 'admission_letter_uploaded' %}
+                                <span class="badge bg-primary fs-6">Admission Letter Uploaded</span>
+                            {% elif application.status == 'admission_letter_approved' %}
+                                <span class="badge bg-success fs-6">Admission Letter Approved</span>
+                            {% elif application.status == 'jw02_uploaded' %}
+                                <span class="badge bg-primary fs-6">JW02 Uploaded</span>
+                            {% elif application.status == 'jw02_approved' %}
+                                <span class="badge bg-success fs-6">JW02 Approved</span>
+                            {% elif application.status == 'letter_pending' %}
+                                <span class="badge bg-warning text-dark fs-6">Letter Pending Revision</span>
+                            {% elif application.status == 'complete' %}
+                                <span class="badge bg-dark fs-6">Complete</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">{{ application.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Stepper -->
+            {% if application.status != 'draft' %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Application Progress</h5>
+                        <span class="badge bg-primary fs-6">{{ progress_percent }}%</span>
+                    </div>
+                </div>
+                <div class="card-body pb-2">
+                    <!-- Overall progress bar -->
+                    <div class="progress mb-4" style="height: 8px; border-radius: 4px;">
+                        <div class="progress-bar {% if application.status == 'complete' %}bg-dark{% elif application.status == 'rejected' %}bg-danger{% elif progress_percent >= 50 %}bg-success{% else %}bg-primary{% endif %}"
+                             role="progressbar" style="width: {{ progress_percent }}%"></div>
+                    </div>
+
+                    <!-- Step Icons -->
+                    <ul class="stepper mb-3">
+                        {% for step in progress_steps %}
+                        <li class="step {{ step.state }}">
+                            <div class="step-icon">
+                                {% if step.state == 'completed' %}
+                                    <i class="bi bi-check-lg"></i>
+                                {% elif step.state == 'action' %}
+                                    <i class="bi bi-exclamation-lg"></i>
+                                {% else %}
+                                    <i class="bi {{ step.icon }}"></i>
+                                {% endif %}
+                            </div>
+                            <span class="step-label">{{ step.label }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- What's Next Card -->
+            <div class="card shadow-sm mb-4 whats-next-card border-{{ whats_next.color }}">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="me-3">
+                            <span class="text-{{ whats_next.color }}" style="font-size: 2rem;"><i class="bi {{ whats_next.icon }}"></i></span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1 text-{{ whats_next.color }}">{{ whats_next.title }}</h5>
+                            <p class="mb-0 text-muted">{{ whats_next.message }}</p>
+                        </div>
+                        {% if application.status == 'documents_verified' and not payment_made %}
+                        <div class="ms-3">
+                            <a href="{% url 'finance:payment' application.app_id %}" class="btn btn-success btn-lg">
+                                <i class="bi bi-credit-card"></i> Make Payment
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if application.status == 'rejected' and application.rejection_reason %}
+            <div class="alert alert-danger shadow-sm">
+                <h6 class="alert-heading"><i class="bi bi-x-circle"></i> Rejection Reason</h6>
+                <p class="mb-0">{{ application.rejection_reason }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Scholarship Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-briefcase"></i> Scholarship Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Program</h6>
+                            <p><strong>{{ application.scholarship.name }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Degree</h6>
+                            <p><strong>{{ application.scholarship.get_degree_display }}</strong></p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Major</h6>
+                            <p><strong>{{ application.scholarship.major }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Type</h6>
+                            <p><strong>{{ application.scholarship.get_scholarship_type_display }}</strong></p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">City</h6>
+                            <p><strong>{{ application.scholarship.city }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Semester</h6>
+                            <p><strong>{{ application.scholarship.get_semester_display }}</strong></p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Language</h6>
+                            <p><strong>{{ application.scholarship.language }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Application Deadline</h6>
+                            <p><strong>{{ application.scholarship.deadline|date:"M d, Y" }}</strong></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Amount</h6>
+                            <p><strong class="fs-5">${{ application.scholarship.price }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uploaded Documents -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> Uploaded Documents</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> Passport</td>
+                                    <td>
+                                        {% if application.passport %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.passport %}
+                                            <a href="{{ application.passport.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-image"></i> Photo</td>
+                                    <td>
+                                        {% if application.photo %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.photo %}
+                                            <a href="{{ application.photo.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> Graduation Certificate</td>
+                                    <td>
+                                        {% if application.graduation_certificate %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.graduation_certificate %}
+                                            <a href="{{ application.graduation_certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> Criminal Record</td>
+                                    <td>
+                                        {% if application.criminal_record %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.criminal_record %}
+                                            <a href="{{ application.criminal_record.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> Medical Examination</td>
+                                    <td>
+                                        {% if application.medical_examination %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.medical_examination %}
+                                            <a href="{{ application.medical_examination.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> Letter of Recommendation 1</td>
+                                    <td>
+                                        {% if application.letter_of_recommendation_1 %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.letter_of_recommendation_1 %}
+                                            <a href="{{ application.letter_of_recommendation_1.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> Letter of Recommendation 2</td>
+                                    <td>
+                                        {% if application.letter_of_recommendation_2 %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.letter_of_recommendation_2 %}
+                                            <a href="{{ application.letter_of_recommendation_2.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> Study Plan</td>
+                                    <td>
+                                        {% if application.study_plan %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.study_plan %}
+                                            <a href="{{ application.study_plan.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-file-pdf"></i> English Certificate</td>
+                                    <td>
+                                        {% if application.english_certificate %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.english_certificate %}
+                                            <a href="{{ application.english_certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>N/A</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            {% if application.status != 'draft' and application.status != 'submitted' and application.status != 'under_review' and application.status != 'rejected' %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if payment %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Payment Status</h6>
+                                <p>
+                                    {% if payment.payment_status == 'pending' %}
+                                        <span class="badge bg-warning fs-6">Pending</span>
+                                    {% elif payment.payment_status == 'processing' %}
+                                        <span class="badge bg-info fs-6">Processing</span>
+                                    {% elif payment.payment_status == 'completed' %}
+                                        <span class="badge bg-success fs-6">Completed</span>
+                                    {% elif payment.payment_status == 'failed' %}
+                                        <span class="badge bg-danger fs-6">Failed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary fs-6">{{ payment.get_payment_status_display }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Amount</h6>
+                                <p class="fs-5"><strong>${{ payment.amount }}</strong></p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Payment Date</h6>
+                                <p><strong>{{ payment.payment_date|date:"M d, Y - h:i A" }}</strong></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Transaction ID</h6>
+                                <p><strong>{{ payment.transaction_id|default:"N/A" }}</strong></p>
+                            </div>
+                        </div>
+                        {% if payment.receipt_pdf %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6 class="text-muted">Receipt</h6>
+                                <a href="{{ payment.receipt_pdf.url }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-file-earmark-pdf"></i> Download Receipt
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info mb-0 d-flex align-items-center" role="alert">
+                            <i class="bi bi-info-circle fs-4 me-3"></i>
+                            <div class="flex-grow-1">
+                                <p class="mb-0">No payment has been made yet.</p>
+                            </div>
+                            <a href="{% url 'finance:payment' application.app_id %}" class="btn btn-success ms-3">
+                                <i class="bi bi-credit-card"></i> Proceed to Payment
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Admission Letter -->
+            {% if admission_letter %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-envelope-paper"></i> Admission Letter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1"><strong>Status:</strong>
+                                <span class="badge {% if admission_letter.status == 'approved' %}bg-success{% elif admission_letter.status == 'revision_requested' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                    {{ admission_letter.get_status_display }}
+                                </span>
+                            </p>
+                            <p class="mb-0"><strong>Uploaded:</strong> {{ admission_letter.uploaded_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        {% if admission_letter.status == 'approved' %}
+                        <a href="{{ admission_letter.file.url }}" class="btn btn-outline-success" target="_blank">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- JW02 Form -->
+            {% if jw02 %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-ruled"></i> JW02 Form</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1"><strong>Status:</strong>
+                                <span class="badge {% if jw02.status == 'approved' %}bg-success{% else %}bg-info{% endif %}">
+                                    {{ jw02.get_status_display }}
+                                </span>
+                            </p>
+                            <p class="mb-0"><strong>Uploaded:</strong> {{ jw02.uploaded_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        {% if jw02.status == 'approved' %}
+                        <a href="{{ jw02.file.url }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Status History -->
+            {% if status_history %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Status History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for entry in status_history %}
+                        <div class="d-flex mb-3">
+                            <div class="me-3 text-center" style="min-width: 90px;">
+                                <small class="text-muted d-block">{{ entry.changed_at|date:"M d, Y" }}</small>
+                                <small class="text-muted">{{ entry.changed_at|date:"h:i A" }}</small>
+                            </div>
+                            <div class="border-start border-3 border-primary ps-3 flex-grow-1">
+                                <div class="d-flex align-items-center">
+                                    {% if entry.old_status %}
+                                    <span class="badge bg-secondary me-1">{{ entry.old_status }}</span>
+                                    <i class="bi bi-arrow-right text-muted me-1"></i>
+                                    {% endif %}
+                                    <span class="badge bg-primary">{{ entry.get_new_status_display }}</span>
+                                </div>
+                                {% if entry.note %}
+                                <p class="text-muted mb-0 mt-1"><small>{{ entry.note }}</small></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="row">
+                <div class="col-md-12 d-flex justify-content-between">
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                    {% if application.status == 'documents_verified' or application.status == 'approved' %}
+                        {% if not payment or not payment.receipt_pdf %}
+                            <a href="{% url 'finance:payment' application.app_id %}" class="btn btn-success">
+                                <i class="bi bi-credit-card"></i> Proceed to Payment
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

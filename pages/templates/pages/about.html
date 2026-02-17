@@ -1,0 +1,205 @@
+{% extends "pages/base.html" %}
+
+{% block title %}About Us — {{ site_settings.site_name|default:'Yaamaan Education' }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-hero {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%);
+        color: #fff;
+        padding: 4rem 0;
+    }
+    .value-card {
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .value-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+    .process-step {
+        position: relative;
+        padding-left: 3.5rem;
+    }
+    .process-step::before {
+        content: '';
+        position: absolute;
+        left: 18px;
+        top: 40px;
+        bottom: -20px;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .process-step:last-child::before { display: none; }
+    .step-number {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="about-hero">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold mb-3">About {{ site_settings.site_name|default:'Yaamaan Education Consultants' }}</h1>
+        <p class="lead opacity-75 col-lg-8 mx-auto">
+            We are dedicated to helping students around the world achieve their dreams of studying abroad 
+            through expert guidance, scholarship matching, and end-to-end application support.
+        </p>
+    </div>
+</section>
+
+<!-- Mission & Vision -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">Our Mission</span>
+                <h2 class="fw-bold mb-3">Empowering Students to Reach Their Full Potential</h2>
+                <p class="text-muted">
+                    With years of experience in the education sector, our team of consultants is committed to helping students 
+                    navigate the complexities of the admissions process. We work closely with students to understand their unique 
+                    needs and aspirations, ensuring that they receive tailored advice and support throughout their educational journey.
+                </p>
+                <p class="text-muted">
+                    Whether you're looking for assistance with scholarship applications, university selection, or visa processing, 
+                    our consultants are here to help you succeed every step of the way.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card value-card shadow-sm text-center p-4">
+                            <div class="text-primary mb-2"><i class="bi bi-globe2 fs-1"></i></div>
+                            <h3 class="fw-bold text-primary mb-0">50+</h3>
+                            <small class="text-muted">Universities</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mt-4">
+                        <div class="card value-card shadow-sm text-center p-4">
+                            <div class="text-success mb-2"><i class="bi bi-people-fill fs-1"></i></div>
+                            <h3 class="fw-bold text-success mb-0">1000+</h3>
+                            <small class="text-muted">Students Helped</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card value-card shadow-sm text-center p-4">
+                            <div class="text-warning mb-2"><i class="bi bi-trophy-fill fs-1"></i></div>
+                            <h3 class="fw-bold text-warning mb-0">95%</h3>
+                            <small class="text-muted">Success Rate</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mt-4">
+                        <div class="card value-card shadow-sm text-center p-4">
+                            <div class="text-info mb-2"><i class="bi bi-award-fill fs-1"></i></div>
+                            <h3 class="fw-bold text-info mb-0">10+</h3>
+                            <small class="text-muted">Years Experience</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How It Works</h2>
+            <p class="text-muted">Simple steps to your international education journey</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="process-step mb-4">
+                    <div class="step-number bg-primary text-white">1</div>
+                    <h5 class="fw-bold">Create Your Account</h5>
+                    <p class="text-muted mb-0">Sign up for free and complete your profile with your academic information.</p>
+                </div>
+                <div class="process-step mb-4">
+                    <div class="step-number bg-success text-white">2</div>
+                    <h5 class="fw-bold">Browse & Apply for Scholarships</h5>
+                    <p class="text-muted mb-0">Explore available scholarships and submit your application with required documents.</p>
+                </div>
+                <div class="process-step mb-4">
+                    <div class="step-number bg-warning text-dark">3</div>
+                    <h5 class="fw-bold">Document Review & Verification</h5>
+                    <p class="text-muted mb-0">Our office team reviews and verifies your documents, ensuring everything is in order.</p>
+                </div>
+                <div class="process-step mb-4">
+                    <div class="step-number bg-info text-white">4</div>
+                    <h5 class="fw-bold">Application Processing</h5>
+                    <p class="text-muted mb-0">Your application is forwarded to our agents who liaise with universities on your behalf.</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number bg-dark text-white">5</div>
+                    <h5 class="fw-bold">Admission & Enrollment</h5>
+                    <p class="text-muted mb-0">Receive your admission letter, JW02 form, and complete your enrollment — we handle it all.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Values -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Why Choose Us</h2>
+            <p class="text-muted">What sets us apart from the rest</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card value-card shadow-sm h-100 p-4">
+                    <div class="text-primary mb-3"><i class="bi bi-shield-check fs-2"></i></div>
+                    <h5 class="fw-bold">Trusted & Transparent</h5>
+                    <p class="text-muted small mb-0">Every step of your application is tracked and visible. No hidden fees, no surprises.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card value-card shadow-sm h-100 p-4">
+                    <div class="text-success mb-3"><i class="bi bi-headset fs-2"></i></div>
+                    <h5 class="fw-bold">Dedicated Support</h5>
+                    <p class="text-muted small mb-0">Get real-time notifications and personalized guidance from our experienced team.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card value-card shadow-sm h-100 p-4">
+                    <div class="text-warning mb-3"><i class="bi bi-lightning-charge fs-2"></i></div>
+                    <h5 class="fw-bold">Fast Processing</h5>
+                    <p class="text-muted small mb-0">Our streamlined digital workflow ensures your application moves quickly through every stage.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+{% if not request.user.is_authenticated %}
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h3 class="fw-bold mb-3">Ready to Begin?</h3>
+        <p class="text-muted mb-4">Join thousands of students who have achieved their dreams with our help.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'users:register' %}" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-person-plus me-2"></i>Get Started
+            </a>
+            <a href="/" class="btn btn-outline-primary btn-lg px-5">
+                <i class="bi bi-search me-2"></i>View Scholarships
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'headquarters/base.html' %}
+
+{% block title %}Revision Requests{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-pencil-square"></i> Revision Requests</h3>
+</div>
+
+<!-- Admission Letter Revisions -->
+<h5 class="mb-3"><i class="bi bi-envelope-paper"></i> Admission Letter Revisions</h5>
+{% if revisions %}
+<div class="row mb-4">
+    {% for letter in revisions %}
+    <div class="col-md-6 mb-4">
+        <div class="card stat-card border-warning">
+            <div class="card-header bg-warning bg-opacity-10">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">App #{{ letter.application.app_id }}</h6>
+                    <span class="badge bg-warning text-dark">Revision Requested</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Student:</strong> {{ letter.application.user.get_full_name|default:letter.application.user.username }}</p>
+                <p class="mb-1"><strong>Scholarship:</strong> {{ letter.application.scholarship.name }}</p>
+                <p class="mb-1"><strong>Requested:</strong> {{ letter.uploaded_at|date:"M d, Y H:i" }}</p>
+
+                {% if letter.revision_note %}
+                <div class="alert alert-warning mt-3 mb-3">
+                    <i class="bi bi-chat-left-text"></i> <strong>Revision Note:</strong>
+                    <p class="mb-0 mt-1">{{ letter.revision_note }}</p>
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2">
+                    <a href="{{ letter.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="bi bi-download"></i> Download Current
+                    </a>
+                    <a href="{% url 'headquarters:reupload_letter' letter.id %}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-upload"></i> Re-upload Letter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card stat-card mb-4">
+    <div class="card-body text-center py-4">
+        <i class="bi bi-check-circle text-success fs-3"></i>
+        <p class="mt-2 mb-0 text-muted">No pending admission letter revisions.</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- JW02 Form Revisions -->
+<h5 class="mb-3"><i class="bi bi-file-earmark-check"></i> JW02 Form Revisions</h5>
+{% if jw02_revisions %}
+<div class="row mb-4">
+    {% for jw02 in jw02_revisions %}
+    <div class="col-md-6 mb-4">
+        <div class="card stat-card border-danger">
+            <div class="card-header bg-danger bg-opacity-10">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">App #{{ jw02.application.app_id }}</h6>
+                    <span class="badge bg-danger">JW02 Revision Requested</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Student:</strong> {{ jw02.application.user.get_full_name|default:jw02.application.user.username }}</p>
+                <p class="mb-1"><strong>Scholarship:</strong> {{ jw02.application.scholarship.name }}</p>
+                <p class="mb-1"><strong>Requested:</strong> {{ jw02.uploaded_at|date:"M d, Y H:i" }}</p>
+
+                {% if jw02.revision_note %}
+                <div class="alert alert-danger mt-3 mb-3">
+                    <i class="bi bi-chat-left-text"></i> <strong>Revision Note:</strong>
+                    <p class="mb-0 mt-1">{{ jw02.revision_note }}</p>
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2">
+                    <a href="{{ jw02.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="bi bi-download"></i> Download Current
+                    </a>
+                    <a href="{% url 'headquarters:reupload_jw02' jw02.id %}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-upload"></i> Re-upload JW02
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card stat-card mb-4">
+    <div class="card-body text-center py-4">
+        <i class="bi bi-check-circle text-success fs-3"></i>
+        <p class="mt-2 mb-0 text-muted">No pending JW02 form revisions.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

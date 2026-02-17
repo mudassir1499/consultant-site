@@ -1,0 +1,224 @@
+{% extends "office/base.html" %}
+{% block title %}Office Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard</h3>
+    <span class="text-muted">Welcome, <strong>{{ user.get_full_name|default:user.username }}</strong></span>
+</div>
+
+<!-- Pipeline Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Total</small>
+                        <h2 class="mb-0">{{ total_applications }}</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 rounded-3 p-2"><i class="bi bi-folder2-open text-primary fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Submitted</small>
+                        <h2 class="mb-0">{{ submitted_count }}</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 rounded-3 p-2"><i class="bi bi-send text-warning fs-4"></i></div>
+                </div>
+                <a href="{% url 'office:application_list' %}?status=submitted" class="text-decoration-none small">Review &rarr;</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Under Review</small>
+                        <h2 class="mb-0">{{ under_review_count }}</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 rounded-3 p-2"><i class="bi bi-search text-info fs-4"></i></div>
+                </div>
+                <a href="{% url 'office:application_list' %}?status=under_review" class="text-decoration-none small">View &rarr;</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Docs Verified</small>
+                        <h2 class="mb-0">{{ documents_verified_count }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 rounded-3 p-2"><i class="bi bi-file-check text-success fs-4"></i></div>
+                </div>
+                <a href="{% url 'office:application_list' %}?status=documents_verified" class="text-decoration-none small">View &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Payment Verified</small>
+                        <h2 class="mb-0">{{ payment_verified_count }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 rounded-3 p-2"><i class="bi bi-credit-card-2-front text-success fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Approved</small>
+                        <h2 class="mb-0">{{ approved_count }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 rounded-3 p-2"><i class="bi bi-check-circle text-success fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Rejected</small>
+                        <h2 class="mb-0">{{ rejected_count }}</h2>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 rounded-3 p-2"><i class="bi bi-x-circle text-danger fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">Complete</small>
+                        <h2 class="mb-0">{{ complete_count }}</h2>
+                    </div>
+                    <div class="bg-dark bg-opacity-10 rounded-3 p-2"><i class="bi bi-trophy text-dark fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial + Action Needed -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-wallet2 text-success fs-1 mb-2"></i>
+                <h6 class="text-muted">Total Payments Received</h6>
+                <h2 class="text-success">${{ total_payments }}</h2>
+                {% if pending_payments %}
+                <span class="badge bg-warning text-dark">{{ pending_payments }} pending review</span>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{% url 'office:payment_list' %}" class="btn btn-sm btn-outline-success">View Payments</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card stat-card h-100">
+            <div class="card-header bg-white border-0 pt-3">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle text-warning"></i> Needs Your Action</h5>
+            </div>
+            <div class="card-body pt-0">
+                {% if needs_action %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>#</th><th>Student</th><th>Scholarship</th><th>Status</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {% for app in needs_action %}
+                            <tr>
+                                <td>{{ app.app_id }}</td>
+                                <td>{{ app.user.get_full_name|default:app.user.username }}</td>
+                                <td class="text-truncate" style="max-width:200px">{{ app.scholarship.name }}</td>
+                                <td>
+                                    {% if app.status == 'submitted' %}<span class="badge bg-warning text-dark">Submitted</span>
+                                    {% elif app.status == 'under_review' %}<span class="badge bg-info">Under Review</span>
+                                    {% elif app.status == 'documents_verified' %}<span class="badge bg-primary">Docs Verified</span>
+                                    {% endif %}
+                                </td>
+                                <td><a href="{% url 'office:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">Review</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3 mb-0">All caught up! No applications need immediate action.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Applications -->
+<div class="card stat-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Applications</h5>
+        <a href="{% url 'office:application_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body">
+        {% if recent_applications %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>App #</th><th>Student</th><th>Scholarship</th><th>Date</th><th>Status</th><th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in recent_applications %}
+                    <tr>
+                        <td><strong>#{{ app.app_id }}</strong></td>
+                        <td>{{ app.user.get_full_name|default:app.user.username }}</td>
+                        <td>{{ app.scholarship.name }}</td>
+                        <td>{{ app.applied_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if app.status == 'draft' %}<span class="badge bg-secondary">Draft</span>
+                            {% elif app.status == 'submitted' %}<span class="badge bg-warning text-dark">Submitted</span>
+                            {% elif app.status == 'under_review' %}<span class="badge bg-info">Under Review</span>
+                            {% elif app.status == 'documents_verified' %}<span class="badge bg-primary">Docs Verified</span>
+                            {% elif app.status == 'payment_verified' %}<span class="badge bg-primary">Payment Verified</span>
+                            {% elif app.status == 'approved' %}<span class="badge bg-success">Approved</span>
+                            {% elif app.status == 'rejected' %}<span class="badge bg-danger">Rejected</span>
+                            {% elif app.status == 'complete' %}<span class="badge bg-dark">Complete</span>
+                            {% else %}<span class="badge bg-secondary">{{ app.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td><a href="{% url 'office:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-4">No applications yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

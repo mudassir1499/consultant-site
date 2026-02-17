@@ -1,0 +1,48 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow text-center">
+            <div class="card-body p-5">
+                
+                <!-- Success Icon -->
+                <div class="mb-4">
+                    <div class="display-1 text-success mb-3">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <h2 class="card-title text-success mb-2">Payment Submitted Successfully!</h2>
+                <p class="card-text text-muted mb-4">
+                    Your payment receipt has been uploaded and is under review.
+                </p>
+
+                <!-- Details -->
+                <div class="alert alert-info" role="alert">
+                    <p class="mb-2"><strong>What happens next?</strong></p>
+                    <ul class="list-unstyled text-start">
+                        <li class="mb-2">✓ Your payment receipt will be verified within 24-48 hours</li>
+                        <li class="mb-2">✓ You will receive a confirmation email once verified</li>
+                        <li class="mb-2">✓ Your application status will be updated automatically</li>
+                    </ul>
+                </div>
+
+                <!-- Tracking Info -->
+                <div class="bg-light p-3 rounded mb-4">
+                    <p class="text-muted small mb-2">You can track your payment status in your dashboard</p>
+                    <p class="mb-0"><small>Check your email for confirmation updates</small></p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+                    <a href="/" class="btn btn-outline-primary btn-lg">Back to Home</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'headquarters/base.html' %}
+
+{% block title %}Applications{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-folder2-open"></i> Assigned Applications</h3>
+</div>
+
+<div class="card stat-card">
+    <div class="card-header bg-white">
+        <ul class="nav nav-tabs card-header-tabs" id="hqListTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="hqlist-all-tab" data-bs-toggle="tab" data-bs-target="#hqlist-tab-all" type="button" role="tab">
+                    All <span class="badge bg-primary ms-1">{{ total_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hqlist-approved-tab" data-bs-toggle="tab" data-bs-target="#hqlist-tab-approved" type="button" role="tab">
+                    Approved <span class="badge bg-warning text-dark ms-1">{{ approved_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hqlist-progress-tab" data-bs-toggle="tab" data-bs-target="#hqlist-tab-progress" type="button" role="tab">
+                    In Progress <span class="badge bg-info ms-1">{{ progress_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hqlist-letters-tab" data-bs-toggle="tab" data-bs-target="#hqlist-tab-letters" type="button" role="tab">
+                    Letters <span class="badge bg-secondary ms-1">{{ letter_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hqlist-jw02-tab" data-bs-toggle="tab" data-bs-target="#hqlist-tab-jw02" type="button" role="tab">
+                    JW02 <span class="badge bg-secondary ms-1">{{ jw02_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hqlist-revisions-tab" data-bs-toggle="tab" data-bs-target="#hqlist-tab-revisions" type="button" role="tab">
+                    Revisions <span class="badge bg-danger ms-1">{{ revision_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hqlist-completed-tab" data-bs-toggle="tab" data-bs-target="#hqlist-tab-completed" type="button" role="tab">
+                    Completed <span class="badge bg-dark ms-1">{{ completed_count }}</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="hqListTabsContent">
+            <div class="tab-pane fade show active" id="hqlist-tab-all" role="tabpanel">
+                {% include 'headquarters/_app_table_full.html' with applications=all_applications empty_msg="No applications assigned yet." %}
+            </div>
+            <div class="tab-pane fade" id="hqlist-tab-approved" role="tabpanel">
+                {% include 'headquarters/_app_table_full.html' with applications=approved_apps empty_msg="No approved applications pending." %}
+            </div>
+            <div class="tab-pane fade" id="hqlist-tab-progress" role="tabpanel">
+                {% include 'headquarters/_app_table_full.html' with applications=in_progress_apps empty_msg="No applications in progress." %}
+            </div>
+            <div class="tab-pane fade" id="hqlist-tab-letters" role="tabpanel">
+                {% include 'headquarters/_app_table_full.html' with applications=letter_apps empty_msg="No applications in letter stage." %}
+            </div>
+            <div class="tab-pane fade" id="hqlist-tab-jw02" role="tabpanel">
+                {% include 'headquarters/_app_table_full.html' with applications=jw02_apps empty_msg="No applications in JW02 stage." %}
+            </div>
+            <div class="tab-pane fade" id="hqlist-tab-revisions" role="tabpanel">
+                {% include 'headquarters/_app_table_full.html' with applications=revision_apps empty_msg="No pending revisions." %}
+            </div>
+            <div class="tab-pane fade" id="hqlist-tab-completed" role="tabpanel">
+                {% include 'headquarters/_app_table_full.html' with applications=completed_apps empty_msg="No completed applications." %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

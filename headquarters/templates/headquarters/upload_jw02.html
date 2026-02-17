@@ -1,0 +1,115 @@
+{% extends 'headquarters/base.html' %}
+
+{% block title %}Upload JW02 Form{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-file-earmark-arrow-up"></i> Upload JW02 Form</h3>
+    <a href="{% url 'headquarters:application_detail' application.app_id %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Application
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card stat-card">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h5>Application #{{ application.app_id }}</h5>
+                    <p class="text-muted mb-1">Student: {{ application.user.get_full_name|default:application.user.username }}</p>
+                    <p class="text-muted mb-1">Scholarship: {{ application.scholarship.name }}</p>
+                    <p class="text-muted mb-0">Current Status: <span class="badge bg-success">{{ application.get_status_display }}</span></p>
+                </div>
+
+                <hr>
+
+                <form method="post" enctype="multipart/form-data" id="jw02UploadForm" data-no-xhr>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="jw02_file" class="form-label fw-bold">JW02 Form File</label>
+                        <input type="file" name="jw02_form" id="jw02_file" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.png">
+                        <div class="form-text">Upload the JW02 form document (PDF, DOC, DOCX, JPG, or PNG).</div>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div id="uploadProgress" class="mb-3" style="display: none;">
+                        <label class="form-label fw-bold">Uploading...</label>
+                        <div class="progress" style="height: 20px;">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;">0%</div>
+                        </div>
+                        <small id="uploadStatus" class="text-muted mt-1 d-block">Preparing upload...</small>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> After uploading, the JW02 form will be sent to the Main Agent for review and approval.
+                    </div>
+
+                    <div class="text-end" id="formButtons">
+                        <a href="{% url 'headquarters:application_detail' application.app_id %}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-upload"></i> Upload JW02
+                        </button>
+                    </div>
+                </form>
+
+                <script>
+                document.getElementById('jw02UploadForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var form = this;
+                    var formData = new FormData(form);
+                    var progressDiv = document.getElementById('uploadProgress');
+                    var progressBar = document.getElementById('progressBar');
+                    var uploadStatus = document.getElementById('uploadStatus');
+                    var submitBtn = document.getElementById('submitBtn');
+
+                    progressDiv.style.display = 'block';
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Uploading...';
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', form.action, true);
+
+                    xhr.upload.addEventListener('progress', function(e) {
+                        if (e.lengthComputable) {
+                            var pct = Math.round((e.loaded / e.total) * 100);
+                            progressBar.style.width = pct + '%';
+                            progressBar.textContent = pct + '%';
+                            if (pct < 100) {
+                                uploadStatus.textContent = 'Uploading... ' + (e.loaded / 1024 / 1024).toFixed(1) + ' MB of ' + (e.total / 1024 / 1024).toFixed(1) + ' MB';
+                            } else {
+                                uploadStatus.textContent = 'Processing... Please wait.';
+                                progressBar.classList.remove('bg-primary');
+                                progressBar.classList.add('bg-success');
+                            }
+                        }
+                    });
+
+                    xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 400) {
+                            uploadStatus.textContent = 'Upload complete! Redirecting...';
+                            progressBar.style.width = '100%';
+                            progressBar.textContent = '100%';
+                            progressBar.classList.remove('bg-primary');
+                            progressBar.classList.add('bg-success');
+                            window.location.href = xhr.responseURL || form.action;
+                        } else {
+                            window.location.href = form.action;
+                        }
+                    };
+
+                    xhr.onerror = function() {
+                        uploadStatus.textContent = 'Upload failed. Please try again.';
+                        progressBar.classList.remove('bg-primary');
+                        progressBar.classList.add('bg-danger');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="bi bi-upload"></i> Upload JW02';
+                    };
+
+                    xhr.send(formData);
+                });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

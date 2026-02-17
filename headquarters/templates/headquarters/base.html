@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Headquarters Dashboard{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root { --sidebar-width: 260px; }
+        body { min-height: 100vh; background: #f0f2f5; }
+        .sidebar {
+            width: var(--sidebar-width); min-height: 100vh;
+            background: linear-gradient(135deg, #f0ad4e 0%, #d4850f 100%);
+            position: fixed; top: 0; left: 0; z-index: 1030; transition: transform .3s;
+        }
+        .sidebar .brand { padding: 1.25rem; border-bottom: 1px solid rgba(255,255,255,.2); }
+        .sidebar .brand h5 { color: #fff; margin: 0; }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,.85); padding: .65rem 1.25rem; border-radius: 0;
+            transition: all .2s; font-size: .9rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #fff; background: rgba(255,255,255,.2);
+        }
+        .sidebar .nav-link i { width: 24px; text-align: center; margin-right: .5rem; }
+        .sidebar .nav-section { color: rgba(255,255,255,.5); font-size: .7rem; text-transform: uppercase;
+            letter-spacing: 1px; padding: .75rem 1.25rem .25rem; }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
+        .top-bar {
+            background: #fff; border-bottom: 1px solid #dee2e6; padding: .75rem 1.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 1020;
+        }
+        .stat-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); transition: transform .2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        .wallet-card {
+            background: linear-gradient(135deg, #f0ad4e 0%, #d4850f 100%);
+            color: white; border-radius: 15px;
+        }
+        .deadline-timer { font-size: 1.1rem; font-weight: bold; }
+        .badge-status { font-size: .8rem; }
+        /* Page Loader */
+        #pageLoader {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.85);
+            z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column;
+            transition: opacity 0.3s;
+        }
+        #pageLoader.fade-out { opacity: 0; pointer-events: none; }
+        .loader-spinner {
+            width: 48px; height: 48px; border: 4px solid #e9ecef; border-top-color: #f0ad4e;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .upload-progress-wrapper { display: none; margin-top: 0.5rem; }
+        .upload-progress-wrapper.active { display: block; }
+        @media (max-width: 991px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Page Loading Overlay -->
+    <div id="pageLoader">
+        <div class="loader-spinner mb-3"></div>
+        <span class="text-muted small">Loading...</span>
+    </div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <h5><i class="bi bi-building"></i> HQ Panel</h5>
+            <small class="text-white-50">{{ user.username }}</small>
+        </div>
+        <div class="py-3">
+            <div class="nav-section">Main</div>
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'headquarters:dashboard' %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            <div class="nav-section mt-3">Management</div>
+            <a class="nav-link {% if 'application' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'headquarters:application_list' %}">
+                <i class="bi bi-file-earmark-text"></i> Applications
+            </a>
+            <a class="nav-link {% if 'revision' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'headquarters:revision_list' %}">
+                <i class="bi bi-pencil-square"></i> Revisions
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'wallet' %}active{% endif %}" href="{% url 'headquarters:wallet' %}">
+                <i class="bi bi-wallet2"></i> Wallet
+            </a>
+
+            <div class="nav-section mt-3">Account</div>
+            <a class="nav-link position-relative {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'users:notifications' %}">
+                <i class="bi bi-bell"></i> Notifications
+                {% if unread_notifications_count %}<span class="badge rounded-pill bg-danger ms-1" style="font-size:.6rem">{{ unread_notifications_count }}</span>{% endif %}
+            </a>
+            <a class="nav-link text-danger" href="{% url 'headquarters:logout' %}">
+                <i class="bi bi-box-arrow-left"></i> Logout
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <button class="btn btn-sm btn-outline-secondary d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
+                <i class="bi bi-list"></i>
+            </button>
+            <div></div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'users:notifications' %}" class="position-relative text-dark">
+                    <i class="bi bi-bell fs-5"></i>
+                    {% if unread_notifications_count %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.55rem">{{ unread_notifications_count }}</span>{% endif %}
+                </a>
+                <div class="dropdown">
+                    <a class="d-flex align-items-center text-decoration-none text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;font-size:.8rem;">
+                            {{ user.first_name|default:user.username|make_list|first|upper }}
+                        </div>
+                        <span class="d-none d-md-inline">{{ user.get_full_name|default:user.username }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'users:notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'headquarters:logout' %}"><i class="bi bi-box-arrow-left me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
+                {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-warning mb-3" role="status" style="width:3rem;height:3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mb-0 fw-semibold" id="loadingModalMessage">Processing...</p>
+                    <div class="progress mt-3" style="height:6px;" id="loadingModalProgress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="actionSuccessModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body text-center py-5">
+                    <div class="mb-3"><i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i></div>
+                    <h4 class="mb-2" id="successModalTitle">Action Completed!</h4>
+                    <p class="text-muted" id="successModalMessage">Your request has been processed successfully.</p>
+                    <button type="button" class="btn btn-warning px-4 mt-2" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Page loader
+    window.addEventListener('load', function() {
+        var loader = document.getElementById('pageLoader');
+        if (loader) { loader.classList.add('fade-out'); setTimeout(function() { loader.remove(); }, 300); }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        // data-loading forms
+        document.querySelectorAll('form[data-loading]').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                showLoadingModal(form.getAttribute('data-loading') || 'Processing...');
+            });
+        });
+        // File input progress wrappers
+        document.querySelectorAll('input[type="file"]').forEach(function(input) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'upload-progress-wrapper';
+            wrapper.innerHTML = '<div class="progress" style="height:6px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:0%"></div></div><small class="text-muted upload-status"></small>';
+            input.parentNode.appendChild(wrapper);
+            input.addEventListener('change', function() {
+                if (input.files.length > 0) {
+                    var f = input.files[0], sz = (f.size / (1024*1024)).toFixed(2);
+                    wrapper.classList.add('active');
+                    wrapper.querySelector('.progress-bar').style.width = '100%';
+                    wrapper.querySelector('.upload-status').textContent = f.name + ' (' + sz + ' MB) \u2014 Ready';
+                } else { wrapper.classList.remove('active'); }
+            });
+        });
+        // XHR upload with real progress
+        document.querySelectorAll('form[enctype="multipart/form-data"]:not([data-no-xhr])').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                var hasFiles = false;
+                form.querySelectorAll('input[type="file"]').forEach(function(inp) { if (inp.files.length) hasFiles = true; });
+                if (!hasFiles) return;
+                e.preventDefault();
+                showLoadingModal('Uploading files...');
+                var bar = document.querySelector('#loadingModalProgress .progress-bar');
+                var xhr = new XMLHttpRequest();
+                xhr.open(form.method || 'POST', form.action || window.location.href, true);
+                xhr.upload.addEventListener('progress', function(ev) {
+                    if (ev.lengthComputable) {
+                        var p = Math.round((ev.loaded/ev.total)*100);
+                        bar.style.width = p+'%';
+                        document.getElementById('loadingModalMessage').textContent = 'Uploading... '+p+'%';
+                    }
+                });
+                xhr.addEventListener('load', function() { if (xhr.responseURL) window.location.href = xhr.responseURL; else window.location.reload(); });
+                xhr.addEventListener('error', function() { hideLoadingModal(); alert('Upload failed. Please try again.'); });
+                xhr.send(new FormData(form));
+            });
+        });
+    });
+    function showLoadingModal(msg) {
+        document.getElementById('loadingModalMessage').textContent = msg || 'Processing...';
+        document.querySelector('#loadingModalProgress .progress-bar').style.width = '0%';
+        new bootstrap.Modal(document.getElementById('loadingModal')).show();
+    }
+    function hideLoadingModal() {
+        var m = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
+        if (m) m.hide();
+    }
+    function showSuccessModal(title, message) {
+        document.getElementById('successModalTitle').textContent = title || 'Success!';
+        document.getElementById('successModalMessage').textContent = message || 'Action completed successfully.';
+        new bootstrap.Modal(document.getElementById('actionSuccessModal')).show();
+    }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

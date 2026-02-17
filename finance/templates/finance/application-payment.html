@@ -1,0 +1,192 @@
+{% extends "pages/base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Scholarship Payment</h3>
+            </div>
+            <div class="card-body p-4">
+                
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <!-- Scholarship & Application Details -->
+                <div class="mb-4 p-3 bg-light rounded">
+                    <h5 class="mb-3">Application Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Scholarship:</strong> {{ application.scholarship.name }}</p>
+                            <p class="mb-2"><strong>Degree:</strong> {{ application.scholarship.get_degree_display }}</p>
+                            <p class="mb-2"><strong>Major:</strong> {{ application.scholarship.major }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Applied Date:</strong> {{ application.applied_date|date:"M d, Y" }}</p>
+                            <p class="mb-2"><strong>Status:</strong> 
+                                {% if application.status == 'approved' %}
+                                    <span class="badge bg-success">{{ application.get_status_display }}</span>
+                                {% elif application.status == 'pending' %}
+                                    <span class="badge bg-warning">{{ application.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ application.get_status_display }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Payment Amount -->
+                <div class="mb-4 p-3 bg-info bg-opacity-10 rounded border border-info">
+                    <h5 class="text-primary mb-2">Amount Due</h5>
+                    <h3 class="text-success fw-bold">${{ scholarship_amount }}</h3>
+                    <small class="text-muted">Scholarship amount for {{ application.scholarship.get_scholarship_type_display }}</small>
+                </div>
+
+                <hr>
+
+                <!-- Bank Account Details -->
+                <div class="mb-4">
+                    <h5 class="mb-3">Bank Account Details</h5>
+                    <div class="row">
+                        {% for bank in bank_accounts %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">{{ bank.bank_name }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <strong>Account Holder:</strong>
+                                            <div class="bg-light p-2 rounded mt-1">{{ bank.account_holder_name }}</div>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Account Number:</strong>
+                                            <div class="bg-light p-2 rounded mt-1">{{ bank.account_number }}</div>
+                                        </li>
+                                        {% if bank.iban %}
+                                        <li class="mb-2">
+                                            <strong>IBAN:</strong>
+                                            <div class="bg-light p-2 rounded mt-1">{{ bank.iban }}</div>
+                                        </li>
+                                        {% endif %}
+                                        <li class="mb-2">
+                                            <strong>SWIFT Code:</strong>
+                                            <div class="bg-light p-2 rounded mt-1">{{ bank.swift_code }}</div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Payment Receipt Upload -->
+                <div class="mb-4">
+                    <h5 class="mb-3">Upload Payment Receipt</h5>
+                    <form method="post" action="{% url 'finance:process_payment' application.app_id %}" enctype="multipart/form-data" id="paymentForm" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="receipt" class="form-label fw-bold">
+                                Receipt File <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="receipt" name="receipt" 
+                                       accept=".pdf,.jpg,.jpeg,.png" required>
+                                <span class="input-group-text">
+                                    <i class="bi bi-cloud-upload"></i>
+                                </span>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                <strong>Accepted formats:</strong> PDF, JPG, PNG (Max 5MB)
+                            </small>
+                        </div>
+
+                        <!-- File Info Preview -->
+                        <div id="fileInfo" class="alert alert-info d-none" role="alert">
+                            <div id="fileName"></div>
+                            <div id="fileSize" class="mt-2"></div>
+                            <div class="progress mt-3">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     id="uploadProgress" role="progressbar" 
+                                     style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'users:dashboard' %}" class="btn btn-secondary btn-lg">Cancel</a>
+                            <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                                <i class="bi bi-check-circle"></i> Submit Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Info Alert -->
+                <div class="alert alert-warning" role="alert">
+                    <strong>Important:</strong> After submitting your payment receipt, our team will verify the payment within 24-48 hours. You will receive a confirmation email once verified.
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('receipt').addEventListener('change', function(e) {
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const uploadProgress = document.getElementById('uploadProgress');
+    
+    if (this.files.length > 0) {
+        const file = this.files[0];
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        
+        fileName.textContent = '📄 File: ' + file.name;
+        fileSize.textContent = '📊 Size: ' + fileSizeMB + ' MB';
+        fileInfo.classList.remove('d-none');
+        
+        // Simulate upload progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            if (progress < 100) {
+                progress += Math.random() * 30;
+                if (progress > 100) progress = 100;
+                uploadProgress.style.width = progress + '%';
+                uploadProgress.setAttribute('aria-valuenow', progress);
+            } else {
+                clearInterval(interval);
+            }
+        }, 200);
+    } else {
+        fileInfo.classList.add('d-none');
+        uploadProgress.style.width = '0%';
+    }
+});
+
+// Show progress on form submit
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+});
+</script>
+{% endblock %}

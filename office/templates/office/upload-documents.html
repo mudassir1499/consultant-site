@@ -1,0 +1,83 @@
+{% extends 'office/base.html' %}
+{% block title %}Upload Documents - App #{{ application.app_id }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-upload"></i> Upload Documents</h3>
+    <a href="{% url 'office:application_detail' application.app_id %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Application
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <!-- Application Info -->
+        <div class="card stat-card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <small class="text-muted">Application</small>
+                        <p class="fw-bold mb-1">#{{ application.app_id }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">Student</small>
+                        <p class="fw-bold mb-1">{{ application.user.get_full_name|default:application.user.username }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">Scholarship</small>
+                        <p class="fw-bold mb-1">{{ application.scholarship.name }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-folder2-open"></i> Application Documents</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle"></i> Select files for the documents you want to upload. You can upload one or multiple documents at once. Uploading a file for a document that already exists will replace it.
+                </div>
+
+                <form method="post" enctype="multipart/form-data" data-loading="Uploading documents...">
+                    {% csrf_token %}
+
+                    {% for doc in doc_info %}
+                    <div class="row align-items-center mb-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="col-md-3">
+                            <label for="{{ doc.field_name }}" class="form-label fw-semibold mb-0">
+                                <i class="bi {% if doc.label == 'Photo' %}bi-image{% else %}bi-file-earmark-pdf{% endif %} me-1"></i>
+                                {{ doc.label }}
+                            </label>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            {% if doc.current_file %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Uploaded</span>
+                                <br>
+                                <a href="{{ doc.current_file.url }}" target="_blank" class="small text-primary">
+                                    <i class="bi bi-eye"></i> View current
+                                </a>
+                            {% else %}
+                                <span class="badge bg-secondary">Missing</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <input type="file" name="{{ doc.field_name }}" id="{{ doc.field_name }}" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload Selected Documents
+                        </button>
+                        <a href="{% url 'office:application_detail' application.app_id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

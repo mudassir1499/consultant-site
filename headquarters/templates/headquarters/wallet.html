@@ -1,0 +1,174 @@
+{% extends 'headquarters/base.html' %}
+
+{% block title %}HQ Wallet{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-wallet2"></i> Wallet</h3>
+
+<!-- Wallet Balance Card -->
+<div class="card wallet-card mb-4">
+    <div class="card-body p-4">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Current Balance</small>
+                    <h2>${{ wallet.current_balance }}</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Upcoming Payments</small>
+                    <h2>${{ wallet.upcoming_payments }}</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Total Earned</small>
+                    <h2>${{ wallet.total_earned }}</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Total Withdrawn</small>
+                    <h2>${{ wallet.total_withdrawn }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Withdrawal Request Form -->
+    <div class="col-md-5 mb-4">
+        <div class="card stat-card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Request Withdrawal</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'headquarters:request_withdrawal' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Amount (USD)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="amount" class="form-control" min="100" step="0.01" required
+                                   placeholder="Minimum $100">
+                        </div>
+                        <div class="form-text">Minimum withdrawal amount is $100.00</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Available Balance</label>
+                        <p class="fs-4 text-success fw-bold mb-0">${{ wallet.current_balance }}</p>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100"
+                            {% if wallet.current_balance < 100 %}disabled{% endif %}>
+                        <i class="bi bi-send"></i> Submit Withdrawal Request
+                    </button>
+                    {% if wallet.current_balance < 100 %}
+                    <small class="text-danger mt-2 d-block">Insufficient balance for withdrawal.</small>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Requests -->
+    <div class="col-md-7 mb-4">
+        <div class="card stat-card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Withdrawal Requests</h5>
+            </div>
+            <div class="card-body">
+                {% if withdrawal_requests %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in withdrawal_requests %}
+                            <tr>
+                                <td>{{ req.requested_at|date:"M d, Y" }}</td>
+                                <td class="fw-bold">${{ req.amount }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if req.status == 'approved' %}bg-success
+                                        {% elif req.status == 'rejected' %}bg-danger
+                                        {% else %}bg-warning text-dark{% endif %}">
+                                        {{ req.get_status_display }}
+                                    </span>
+                                    {% if req.status == 'rejected' and req.rejection_reason %}
+                                    <br><small class="text-danger">{{ req.rejection_reason }}</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No withdrawal requests yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction History -->
+<div class="card stat-card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Transaction History</h5>
+    </div>
+    <div class="card-body">
+        {% if transactions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in transactions %}
+                    <tr>
+                        <td>{{ tx.created_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ tx.description }}</td>
+                        <td>
+                            {% if tx.transaction_type == 'earning' %}
+                            <span class="badge bg-success">Earning</span>
+                            {% elif tx.transaction_type == 'withdrawal' %}
+                            <span class="badge bg-danger">Withdrawal</span>
+                            {% else %}
+                            <span class="badge bg-info">Transfer</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold {% if tx.transaction_type == 'withdrawal' %}text-danger{% else %}text-success{% endif %}">
+                            {% if tx.transaction_type == 'withdrawal' %}-{% else %}+{% endif %}${{ tx.amount }}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if tx.status == 'completed' %}bg-success
+                                {% elif tx.status == 'pending' %}bg-warning text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ tx.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-4">No transactions yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

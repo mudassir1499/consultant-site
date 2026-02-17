@@ -1,0 +1,187 @@
+{% extends 'agent/base.html' %}
+
+{% block title %}Agent Dashboard{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h3>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title opacity-75">Total Assigned</h6>
+                        <h2 class="mb-0">{{ total_assigned }}</h2>
+                    </div>
+                    <i class="bi bi-folder2-open fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title opacity-75">Pending Review</h6>
+                        <h2 class="mb-0">{{ pending_review }}</h2>
+                    </div>
+                    <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title opacity-75">Completed</h6>
+                        <h2 class="mb-0">{{ completed_count }}</h2>
+                    </div>
+                    <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title opacity-75">Rejected</h6>
+                        <h2 class="mb-0">{{ rejected_count }}</h2>
+                    </div>
+                    <i class="bi bi-x-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallet Summary -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card wallet-card">
+            <div class="card-body p-4">
+                <h5 class="mb-3"><i class="bi bi-wallet2"></i> Wallet Summary</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <small class="opacity-75">Current Balance</small>
+                            <h3>${{ wallet.current_balance }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <small class="opacity-75">Upcoming Payments</small>
+                            <h3>${{ wallet.upcoming_payments }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <small class="opacity-75">Total Earned</small>
+                            <h3>${{ wallet.total_earned }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <small class="opacity-75">Total Withdrawn</small>
+                            <h3>${{ wallet.total_withdrawn }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end mt-2">
+                    <a href="{% url 'agent:wallet' %}" class="btn btn-outline-light btn-sm">View Wallet Details &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Applications with Nav Tabs -->
+<div class="card stat-card">
+    <div class="card-header bg-white">
+        <ul class="nav nav-tabs card-header-tabs" id="agentAppTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#tab-all" type="button" role="tab">
+                    All <span class="badge bg-primary ms-1">{{ total_assigned }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#tab-pending" type="button" role="tab">
+                    Pending Review <span class="badge bg-warning text-dark ms-1">{{ pending_review }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#tab-review" type="button" role="tab">
+                    Under Review <span class="badge bg-info ms-1">{{ under_review }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#tab-approved" type="button" role="tab">
+                    Approved <span class="badge bg-success ms-1">{{ approved_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="letters-tab" data-bs-toggle="tab" data-bs-target="#tab-letters" type="button" role="tab">
+                    Letters <span class="badge bg-secondary ms-1">{{ letter_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="jw02-tab" data-bs-toggle="tab" data-bs-target="#tab-jw02" type="button" role="tab">
+                    JW02 <span class="badge bg-secondary ms-1">{{ jw02_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#tab-completed" type="button" role="tab">
+                    Completed <span class="badge bg-dark ms-1">{{ completed_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#tab-rejected" type="button" role="tab">
+                    Rejected <span class="badge bg-danger ms-1">{{ rejected_count }}</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="agentAppTabsContent">
+            <!-- All Applications -->
+            <div class="tab-pane fade show active" id="tab-all" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=all_applications empty_msg="No applications assigned yet." %}
+            </div>
+            <!-- Pending Review -->
+            <div class="tab-pane fade" id="tab-pending" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=pending_apps empty_msg="No pending applications." %}
+            </div>
+            <!-- Under Review -->
+            <div class="tab-pane fade" id="tab-review" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=in_review_apps empty_msg="No applications under review." %}
+            </div>
+            <!-- Approved -->
+            <div class="tab-pane fade" id="tab-approved" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=approved_apps empty_msg="No approved applications." %}
+            </div>
+            <!-- Letters -->
+            <div class="tab-pane fade" id="tab-letters" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=letter_apps empty_msg="No applications in letter stage." %}
+            </div>
+            <!-- JW02 -->
+            <div class="tab-pane fade" id="tab-jw02" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=jw02_apps empty_msg="No applications in JW02 stage." %}
+            </div>
+            <!-- Completed -->
+            <div class="tab-pane fade" id="tab-completed" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=completed_apps empty_msg="No completed applications." %}
+            </div>
+            <!-- Rejected -->
+            <div class="tab-pane fade" id="tab-rejected" role="tabpanel">
+                {% include 'agent/_app_table.html' with applications=rejected_apps empty_msg="No rejected applications." %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

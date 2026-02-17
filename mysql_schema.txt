@@ -1,0 +1,876 @@
+-- ============================================================================
+-- University Admission & Wallet Payment System - UPDATED Schema v2.0
+-- ============================================================================
+-- Updated: February 11, 2026
+-- Changes: Corrected payment flow, added security features, SLA tracking,
+--          messaging system, and enhanced analytics
+-- ============================================================================
+
+DROP DATABASE IF EXISTS university_admission_system;
+CREATE DATABASE university_admission_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE university_admission_system;
+
+-- ============================================================================
+-- USER MANAGEMENT WITH ENHANCED SECURITY
+-- ============================================================================
+
+CREATE TABLE roles (
+    role_id INT PRIMARY KEY AUTO_INCREMENT,
+    role_name VARCHAR(50) NOT NULL UNIQUE,
+    role_description TEXT,
+    permissions JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_role_name (role_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id INT NOT NULL,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    phone VARCHAR(20),
+    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+    -- Security enhancements
+    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    two_factor_secret VARCHAR(255),
+    failed_login_attempts INT DEFAULT 0,
+    account_locked_until TIMESTAMP NULL,
+    password_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL,
+    last_ip_address VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE RESTRICT,
+    INDEX idx_email (email),
+    INDEX idx_username (username),
+    INDEX idx_role_id (role_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Session management for security
+CREATE TABLE user_sessions (
+    session_id VARCHAR(255) PRIMARY KEY,
+    user_id INT NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- UNIVERSITY & PROGRAM MANAGEMENT
+-- ============================================================================
+
+CREATE TABLE universities (
+    university_id INT PRIMARY KEY AUTO_INCREMENT,
+    university_name VARCHAR(255) NOT NULL,
+    country VARCHAR(100),
+    city VARCHAR(100),
+    address TEXT,
+    website VARCHAR(255),
+    contact_email VARCHAR(255),
+    contact_phone VARCHAR(20),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_university_name (university_name),
+    INDEX idx_country (country)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE programs (
+    program_id INT PRIMARY KEY AUTO_INCREMENT,
+    university_id INT NOT NULL,
+    program_name VARCHAR(255) NOT NULL,
+    degree_level ENUM('bachelor', 'master', 'phd', 'diploma', 'certificate') NOT NULL,
+    department VARCHAR(255),
+    duration_years DECIMAL(3,1),
+    tuition_fee DECIMAL(12,2),
+    application_fee DECIMAL(10,2),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (university_id) REFERENCES universities(university_id) ON DELETE CASCADE,
+    INDEX idx_program_name (program_name),
+    INDEX idx_university_id (university_id),
+    INDEX idx_degree_level (degree_level)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- APPLICATION MANAGEMENT
+-- ============================================================================
+
+CREATE TABLE applications (
+    application_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_number VARCHAR(50) UNIQUE NOT NULL,
+    office_worker_id INT NOT NULL,
+    main_agent_id INT,
+    hq_user_id INT,
+    program_id INT NOT NULL,
+    student_first_name VARCHAR(100) NOT NULL,
+    student_last_name VARCHAR(100) NOT NULL,
+    student_email VARCHAR(255) NOT NULL,
+    student_phone VARCHAR(20),
+    student_dob DATE,
+    nationality VARCHAR(100),
+    status ENUM('draft', 'submitted', 'under_review', 'documents_verified', 
+                'payment_verified', 'approved', 'rejected', 'in_progress', 
+                'admission_letter_uploaded', 'admission_letter_approved',
+                'jw02_uploaded', 'jw02_approved', 'letter_pending', 'complete') DEFAULT 'draft',
+    submission_date TIMESTAMP NULL,
+    review_date TIMESTAMP NULL,
+    approval_date TIMESTAMP NULL,
+    admission_letter_approved_date TIMESTAMP NULL,
+    jw02_approved_date TIMESTAMP NULL,
+    completion_date TIMESTAMP NULL,
+    rejection_reason TEXT,
+    priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (office_worker_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (main_agent_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (hq_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE RESTRICT,
+    INDEX idx_application_number (application_number),
+    INDEX idx_status (status),
+    INDEX idx_office_worker_id (office_worker_id),
+    INDEX idx_main_agent_id (main_agent_id),
+    INDEX idx_hq_user_id (hq_user_id),
+    INDEX idx_submission_date (submission_date),
+    INDEX idx_student_email (student_email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE application_status_history (
+    history_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    from_status VARCHAR(50),
+    to_status VARCHAR(50) NOT NULL,
+    changed_by INT NOT NULL,
+    comments TEXT,
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+    INDEX idx_application_id (application_id),
+    INDEX idx_changed_at (changed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- SLA TRACKING SYSTEM
+-- ============================================================================
+
+CREATE TABLE sla_rules (
+    sla_id INT PRIMARY KEY AUTO_INCREMENT,
+    process_stage VARCHAR(100) NOT NULL UNIQUE,
+    target_hours INT NOT NULL,
+    warning_hours INT,
+    escalation_hours INT,
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_process_stage (process_stage)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE sla_tracking (
+    tracking_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    sla_id INT NOT NULL,
+    stage_started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    target_completion_at TIMESTAMP NOT NULL,
+    actual_completion_at TIMESTAMP NULL,
+    is_breached BOOLEAN DEFAULT FALSE,
+    breach_duration_hours INT,
+    escalation_sent BOOLEAN DEFAULT FALSE,
+    escalated_to INT,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (sla_id) REFERENCES sla_rules(sla_id) ON DELETE RESTRICT,
+    FOREIGN KEY (escalated_to) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_application_id (application_id),
+    INDEX idx_target_completion (target_completion_at),
+    INDEX idx_is_breached (is_breached)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- DOCUMENT MANAGEMENT
+-- ============================================================================
+
+CREATE TABLE document_types (
+    document_type_id INT PRIMARY KEY AUTO_INCREMENT,
+    type_name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    is_mandatory BOOLEAN DEFAULT FALSE,
+    max_file_size_mb INT DEFAULT 10,
+    allowed_formats VARCHAR(255) DEFAULT 'pdf,jpg,jpeg,png',
+    requires_verification BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_type_name (type_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE documents (
+    document_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    document_type_id INT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size_kb INT,
+    mime_type VARCHAR(100),
+    uploaded_by INT NOT NULL,
+    verification_status ENUM('pending', 'verified', 'rejected', 'needs_revision') DEFAULT 'pending',
+    verified_by INT,
+    verification_date TIMESTAMP NULL,
+    verification_notes TEXT,
+    version_number INT DEFAULT 1,
+    is_current_version BOOLEAN DEFAULT TRUE,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (document_type_id) REFERENCES document_types(document_type_id) ON DELETE RESTRICT,
+    FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (verified_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_application_id (application_id),
+    INDEX idx_document_type_id (document_type_id),
+    INDEX idx_verification_status (verification_status),
+    INDEX idx_is_current (is_current_version)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- ADMISSION LETTERS
+-- ============================================================================
+
+CREATE TABLE admission_letters (
+    letter_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL UNIQUE,
+    letter_number VARCHAR(100) UNIQUE,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    uploaded_by INT NOT NULL,
+    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approval_status ENUM('pending', 'approved', 'rejected', 'revision_requested') DEFAULT 'pending',
+    approved_by INT,
+    approval_date TIMESTAMP NULL,
+    revision_notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (approved_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_application_id (application_id),
+    INDEX idx_approval_status (approval_status),
+    INDEX idx_letter_number (letter_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- JW02 FORMS MANAGEMENT
+-- ============================================================================
+
+CREATE TABLE jw02_forms (
+    jw02_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    form_number VARCHAR(100) UNIQUE,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    uploaded_by INT NOT NULL,
+    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approval_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    approved_by INT,
+    approval_date TIMESTAMP NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (approved_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_application_id (application_id),
+    INDEX idx_approval_status (approval_status),
+    INDEX idx_form_number (form_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- REVISION REQUESTS
+-- ============================================================================
+
+CREATE TABLE revision_requests (
+    revision_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    requested_by INT NOT NULL,
+    request_type ENUM('admission_letter', 'jw02_form', 'document', 'general') NOT NULL,
+    related_document_id INT,
+    revision_notes TEXT NOT NULL,
+    status ENUM('pending', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
+    assigned_to INT,
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP NULL,
+    completion_notes TEXT,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (requested_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (assigned_to) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (related_document_id) REFERENCES documents(document_id) ON DELETE SET NULL,
+    INDEX idx_application_id (application_id),
+    INDEX idx_status (status),
+    INDEX idx_request_type (request_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- WALLET & PAYMENT SYSTEM (CORRECTED FLOW)
+-- ============================================================================
+
+CREATE TABLE wallets (
+    wallet_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL UNIQUE,
+    current_balance DECIMAL(12,2) DEFAULT 0.00,
+    upcoming_payments DECIMAL(12,2) DEFAULT 0.00,
+    pending_balance DECIMAL(12,2) DEFAULT 0.00, -- For partial completions
+    total_earned DECIMAL(12,2) DEFAULT 0.00,
+    total_withdrawn DECIMAL(12,2) DEFAULT 0.00,
+    currency VARCHAR(3) DEFAULT 'USD',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE payment_transactions (
+    transaction_id INT PRIMARY KEY AUTO_INCREMENT,
+    wallet_id INT NOT NULL,
+    application_id INT,
+    transaction_type ENUM('application_approval', 'admission_letter_fee', 'jw02_fee', 
+                          'commission', 'withdrawal', 'refund', 'adjustment', 'deposit') NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    status ENUM('pending', 'processing', 'completed', 'failed', 'cancelled') DEFAULT 'pending',
+    -- Payment flow tracking (CORRECTED LOGIC)
+    payment_stage ENUM('to_upcoming', 'to_balance', 'from_balance') NOT NULL,
+    milestone_type ENUM('application_approved', 'admission_letter_approved', 'jw02_approved', 'withdrawal', 'other'),
+    payment_method VARCHAR(50),
+    transaction_reference VARCHAR(100) UNIQUE,
+    description TEXT,
+    from_status VARCHAR(50),
+    to_status VARCHAR(50),
+    processed_by INT,
+    processed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE SET NULL,
+    FOREIGN KEY (processed_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_wallet_id (wallet_id),
+    INDEX idx_application_id (application_id),
+    INDEX idx_transaction_type (transaction_type),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at),
+    INDEX idx_transaction_reference (transaction_reference),
+    INDEX idx_payment_stage (payment_stage)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE payment_receipts (
+    receipt_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    transaction_id INT,
+    receipt_number VARCHAR(100) UNIQUE,
+    payment_amount DECIMAL(12,2) NOT NULL,
+    payment_date DATE NOT NULL,
+    payment_method VARCHAR(50),
+    file_name VARCHAR(255),
+    file_path VARCHAR(500),
+    uploaded_by INT NOT NULL,
+    verification_status ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
+    verified_by INT,
+    verification_date TIMESTAMP NULL,
+    verification_notes TEXT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (transaction_id) REFERENCES payment_transactions(transaction_id) ON DELETE SET NULL,
+    FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (verified_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_application_id (application_id),
+    INDEX idx_receipt_number (receipt_number),
+    INDEX idx_verification_status (verification_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE withdrawal_requests (
+    withdrawal_id INT PRIMARY KEY AUTO_INCREMENT,
+    wallet_id INT NOT NULL,
+    request_number VARCHAR(100) UNIQUE NOT NULL,
+    requested_amount DECIMAL(12,2) NOT NULL,
+    status ENUM('pending', 'approved', 'rejected', 'processed') DEFAULT 'pending',
+    withdrawal_method VARCHAR(50),
+    bank_account_info JSON,
+    requested_by INT NOT NULL,
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_by INT,
+    review_date TIMESTAMP NULL,
+    review_notes TEXT,
+    processed_at TIMESTAMP NULL,
+    transaction_id INT,
+    FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
+    FOREIGN KEY (requested_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (reviewed_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    FOREIGN KEY (transaction_id) REFERENCES payment_transactions(transaction_id) ON DELETE SET NULL,
+    INDEX idx_wallet_id (wallet_id),
+    INDEX idx_status (status),
+    INDEX idx_requested_at (requested_at),
+    INDEX idx_request_number (request_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- APPLICATION DEADLINES
+-- ============================================================================
+
+CREATE TABLE application_deadlines (
+    deadline_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL UNIQUE,
+    deadline_date TIMESTAMP NOT NULL,
+    days_remaining INT GENERATED ALWAYS AS (DATEDIFF(deadline_date, NOW())) STORED,
+    hours_remaining INT GENERATED ALWAYS AS (TIMESTAMPDIFF(HOUR, NOW(), deadline_date)) STORED,
+    minutes_remaining INT GENERATED ALWAYS AS (TIMESTAMPDIFF(MINUTE, NOW(), deadline_date)) STORED,
+    is_expired BOOLEAN GENERATED ALWAYS AS (deadline_date < NOW()) STORED,
+    reminder_1day_sent BOOLEAN DEFAULT FALSE,
+    reminder_12hours_sent BOOLEAN DEFAULT FALSE,
+    reminder_1hour_sent BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    INDEX idx_application_id (application_id),
+    INDEX idx_deadline_date (deadline_date),
+    INDEX idx_is_expired (is_expired)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- INTERNAL MESSAGING SYSTEM
+-- ============================================================================
+
+CREATE TABLE internal_messages (
+    message_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT,
+    sender_id INT NOT NULL,
+    recipient_id INT NOT NULL,
+    message_type ENUM('query', 'feedback', 'revision_request', 'status_update', 'general') DEFAULT 'general',
+    subject VARCHAR(255),
+    message_body TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP NULL,
+    parent_message_id INT,
+    priority ENUM('low', 'normal', 'high', 'urgent') DEFAULT 'normal',
+    attachments JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_message_id) REFERENCES internal_messages(message_id) ON DELETE SET NULL,
+    INDEX idx_application_id (application_id),
+    INDEX idx_sender_id (sender_id),
+    INDEX idx_recipient_id (recipient_id),
+    INDEX idx_is_read (is_read),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- NOTIFICATIONS & ACTIVITY LOG
+-- ============================================================================
+
+CREATE TABLE notifications (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    notification_type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    related_application_id INT,
+    related_transaction_id INT,
+    action_url VARCHAR(500),
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP NULL,
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (related_application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (related_transaction_id) REFERENCES payment_transactions(transaction_id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_is_read (is_read),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE activity_log (
+    log_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    activity_type VARCHAR(100) NOT NULL,
+    entity_type VARCHAR(50),
+    entity_id INT,
+    action VARCHAR(50) NOT NULL,
+    description TEXT,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_user_id (user_id),
+    INDEX idx_activity_type (activity_type),
+    INDEX idx_entity_type (entity_type),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- SYSTEM SETTINGS
+-- ============================================================================
+
+CREATE TABLE system_settings (
+    setting_id INT PRIMARY KEY AUTO_INCREMENT,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT,
+    setting_type ENUM('string', 'number', 'boolean', 'json') DEFAULT 'string',
+    description TEXT,
+    is_public BOOLEAN DEFAULT FALSE,
+    updated_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (updated_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_setting_key (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- INITIAL DATA POPULATION
+-- ============================================================================
+
+INSERT INTO roles (role_name, role_description, permissions) VALUES
+('Admin', 'System administrator with full access', '["all"]'),
+('Office Worker', 'Creates and manages applications', '["create_application", "upload_documents", "submit_application"]'),
+('Main Agent', 'Reviews and approves applications', '["review_application", "verify_documents", "approve_reject"]'),
+('Headquarters', 'Manages university submissions and letters', '["download_documents", "upload_admission_letter", "handle_revisions"]');
+
+INSERT INTO document_types (type_name, description, is_mandatory, max_file_size_mb) VALUES
+('Transcript', 'Academic transcripts', TRUE, 10),
+('Passport', 'Passport copy', TRUE, 5),
+('CV', 'Curriculum Vitae / Resume', TRUE, 5),
+('Letters', 'Recommendation letters', TRUE, 5),
+('Payment Receipt', 'Proof of payment', TRUE, 5),
+('Admission Letter', 'University admission letter', FALSE, 10),
+('JW02 Form', 'JW02 immigration form', FALSE, 10);
+
+INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES
+('application_fee', '50.00', 'number', 'Application processing fee', TRUE),
+('jw02_fee', '50.00', 'number', 'JW02 form processing fee', TRUE),
+('default_deadline_days', '10', 'number', 'Default application deadline in days', FALSE),
+('min_withdrawal_amount', '100.00', 'number', 'Minimum withdrawal amount', FALSE),
+('currency', 'USD', 'string', 'Default currency', TRUE);
+
+INSERT INTO sla_rules (process_stage, target_hours, warning_hours, escalation_hours, description) VALUES
+('document_review', 24, 20, 48, 'Document verification by main agent'),
+('application_review', 48, 36, 72, 'Application review and approval'),
+('admission_letter_review', 24, 20, 48, 'Admission letter verification'),
+('jw02_review', 24, 20, 48, 'JW02 form verification'),
+('revision_request', 48, 36, 72, 'Revision request handling');
+
+-- ============================================================================
+-- STORED PROCEDURES (CORRECTED PAYMENT FLOW)
+-- ============================================================================
+
+DELIMITER //
+
+-- Process payment on application approval (adds to upcoming payments)
+CREATE PROCEDURE sp_process_application_approval_payment(
+    IN p_application_id INT,
+    IN p_amount DECIMAL(12,2),
+    IN p_processed_by INT
+)
+BEGIN
+    DECLARE v_wallet_id INT;
+    DECLARE v_main_agent_id INT;
+    
+    SELECT main_agent_id INTO v_main_agent_id
+    FROM applications WHERE application_id = p_application_id;
+    
+    SELECT wallet_id INTO v_wallet_id
+    FROM wallets WHERE user_id = v_main_agent_id;
+    
+    START TRANSACTION;
+    
+    -- Add to upcoming payments
+    INSERT INTO payment_transactions (
+        wallet_id, application_id, transaction_type, amount, 
+        status, payment_stage, milestone_type, processed_by, processed_at, description
+    ) VALUES (
+        v_wallet_id, p_application_id, 'application_approval', p_amount,
+        'completed', 'to_upcoming', 'application_approved', p_processed_by, NOW(),
+        'Payment added to upcoming (pending admission letter and JW02 approval)'
+    );
+    
+    UPDATE wallets
+    SET upcoming_payments = upcoming_payments + p_amount
+    WHERE wallet_id = v_wallet_id;
+    
+    COMMIT;
+END //
+
+-- Move payment from upcoming to balance ONLY after JW02 approval
+CREATE PROCEDURE sp_process_jw02_approval_payment(
+    IN p_application_id INT,
+    IN p_processed_by INT
+)
+BEGIN
+    DECLARE v_wallet_id INT;
+    DECLARE v_main_agent_id INT;
+    DECLARE v_payment_amount DECIMAL(12,2);
+    
+    SELECT main_agent_id INTO v_main_agent_id
+    FROM applications WHERE application_id = p_application_id;
+    
+    SELECT wallet_id INTO v_wallet_id
+    FROM wallets WHERE user_id = v_main_agent_id;
+    
+    -- Get the original payment amount from upcoming
+    SELECT amount INTO v_payment_amount
+    FROM payment_transactions
+    WHERE application_id = p_application_id 
+      AND payment_stage = 'to_upcoming'
+      AND milestone_type = 'application_approved'
+    LIMIT 1;
+    
+    START TRANSACTION;
+    
+    -- Move from upcoming to balance
+    INSERT INTO payment_transactions (
+        wallet_id, application_id, transaction_type, amount, 
+        status, payment_stage, milestone_type, processed_by, processed_at, description
+    ) VALUES (
+        v_wallet_id, p_application_id, 'jw02_fee', v_payment_amount,
+        'completed', 'to_balance', 'jw02_approved', p_processed_by, NOW(),
+        'Payment moved to balance after JW02 approval'
+    );
+    
+    UPDATE wallets
+    SET upcoming_payments = upcoming_payments - v_payment_amount,
+        current_balance = current_balance + v_payment_amount,
+        total_earned = total_earned + v_payment_amount
+    WHERE wallet_id = v_wallet_id;
+    
+    COMMIT;
+END //
+
+-- Process withdrawal (deduct from balance)
+CREATE PROCEDURE sp_process_withdrawal(
+    IN p_withdrawal_id INT,
+    IN p_reviewed_by INT,
+    IN p_approve BOOLEAN,
+    IN p_review_notes TEXT
+)
+BEGIN
+    DECLARE v_wallet_id INT;
+    DECLARE v_amount DECIMAL(12,2);
+    DECLARE v_current_balance DECIMAL(12,2);
+    DECLARE v_transaction_id INT;
+    
+    SELECT wallet_id, requested_amount INTO v_wallet_id, v_amount
+    FROM withdrawal_requests WHERE withdrawal_id = p_withdrawal_id;
+    
+    SELECT current_balance INTO v_current_balance
+    FROM wallets WHERE wallet_id = v_wallet_id;
+    
+    START TRANSACTION;
+    
+    IF p_approve = TRUE AND v_current_balance >= v_amount THEN
+        -- Create withdrawal transaction
+        INSERT INTO payment_transactions (
+            wallet_id, transaction_type, amount, status, payment_stage,
+            description, processed_by, processed_at
+        ) VALUES (
+            v_wallet_id, 'withdrawal', v_amount, 'completed', 'from_balance',
+            p_review_notes, p_reviewed_by, NOW()
+        );
+        
+        SET v_transaction_id = LAST_INSERT_ID();
+        
+        -- Deduct from balance
+        UPDATE wallets
+        SET current_balance = current_balance - v_amount,
+            total_withdrawn = total_withdrawn + v_amount
+        WHERE wallet_id = v_wallet_id;
+        
+        -- Update withdrawal request
+        UPDATE withdrawal_requests
+        SET status = 'processed',
+            reviewed_by = p_reviewed_by,
+            review_date = NOW(),
+            review_notes = p_review_notes,
+            processed_at = NOW(),
+            transaction_id = v_transaction_id
+        WHERE withdrawal_id = p_withdrawal_id;
+    ELSE
+        -- Reject withdrawal
+        UPDATE withdrawal_requests
+        SET status = 'rejected',
+            reviewed_by = p_reviewed_by,
+            review_date = NOW(),
+            review_notes = COALESCE(p_review_notes, 'Insufficient balance or request denied')
+        WHERE withdrawal_id = p_withdrawal_id;
+    END IF;
+    
+    COMMIT;
+END //
+
+DELIMITER ;
+
+-- ============================================================================
+-- TRIGGERS
+-- ============================================================================
+
+DELIMITER //
+
+CREATE TRIGGER trg_create_wallet_on_user_insert
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    INSERT INTO wallets (user_id, current_balance, upcoming_payments, total_earned, total_withdrawn)
+    VALUES (NEW.user_id, 0.00, 0.00, 0.00, 0.00);
+END //
+
+CREATE TRIGGER trg_log_application_status_change
+AFTER UPDATE ON applications
+FOR EACH ROW
+BEGIN
+    IF OLD.status != NEW.status THEN
+        INSERT INTO application_status_history (
+            application_id, from_status, to_status, changed_by
+        ) VALUES (
+            NEW.application_id, OLD.status, NEW.status, NEW.office_worker_id
+        );
+    END IF;
+END //
+
+-- Notify main agent when application is submitted
+CREATE TRIGGER trg_notify_on_application_submit
+AFTER UPDATE ON applications
+FOR EACH ROW
+BEGIN
+    IF OLD.status = 'draft' AND NEW.status = 'submitted' THEN
+        INSERT INTO notifications (
+            user_id, notification_type, title, message, 
+            related_application_id, priority
+        ) VALUES (
+            NEW.main_agent_id, 'application_submitted',
+            'New Application Submitted',
+            CONCAT('Application ', NEW.application_number, ' has been submitted for review'),
+            NEW.application_id, 'high'
+        );
+    END IF;
+END //
+
+-- Automatically add payment to upcoming when application is approved
+CREATE TRIGGER trg_auto_payment_on_approval
+AFTER UPDATE ON applications
+FOR EACH ROW
+BEGIN
+    DECLARE v_fee DECIMAL(12,2);
+    
+    IF OLD.status != 'approved' AND NEW.status = 'approved' THEN
+        -- Get the fee from system settings
+        SELECT CAST(setting_value AS DECIMAL(12,2)) INTO v_fee
+        FROM system_settings WHERE setting_key = 'application_fee';
+        
+        -- Call the stored procedure to add payment to upcoming
+        CALL sp_process_application_approval_payment(NEW.application_id, v_fee, NEW.main_agent_id);
+    END IF;
+END //
+
+-- Automatically move payment to balance when JW02 is approved
+CREATE TRIGGER trg_auto_payment_jw02_approved
+AFTER UPDATE ON jw02_forms
+FOR EACH ROW
+BEGIN
+    IF OLD.approval_status != 'approved' AND NEW.approval_status = 'approved' THEN
+        -- Call the stored procedure to move payment to balance
+        CALL sp_process_jw02_approval_payment(NEW.application_id, NEW.approved_by);
+    END IF;
+END //
+
+DELIMITER ;
+
+-- ============================================================================
+-- VIEWS FOR REPORTING
+-- ============================================================================
+
+CREATE VIEW vw_active_applications AS
+SELECT 
+    a.application_id,
+    a.application_number,
+    CONCAT(a.student_first_name, ' ', a.student_last_name) AS student_name,
+    a.student_email,
+    a.status,
+    p.program_name,
+    u.university_name,
+    CONCAT(ow.first_name, ' ', ow.last_name) AS office_worker,
+    CONCAT(ma.first_name, ' ', ma.last_name) AS main_agent,
+    a.submission_date,
+    ad.deadline_date,
+    ad.hours_remaining,
+    a.created_at
+FROM applications a
+JOIN programs p ON a.program_id = p.program_id
+JOIN universities u ON p.university_id = u.university_id
+LEFT JOIN users ow ON a.office_worker_id = ow.user_id
+LEFT JOIN users ma ON a.main_agent_id = ma.user_id
+LEFT JOIN application_deadlines ad ON a.application_id = ad.application_id
+WHERE a.status NOT IN ('complete', 'rejected');
+
+CREATE VIEW vw_wallet_summary AS
+SELECT 
+    w.wallet_id,
+    u.user_id,
+    CONCAT(u.first_name, ' ', u.last_name) AS user_name,
+    u.email,
+    r.role_name,
+    w.current_balance,
+    w.upcoming_payments,
+    w.total_earned,
+    w.total_withdrawn,
+    w.currency,
+    w.updated_at AS last_transaction_date
+FROM wallets w
+JOIN users u ON w.user_id = u.user_id
+JOIN roles r ON u.role_id = r.role_id;
+
+CREATE VIEW vw_payment_flow_tracking AS
+SELECT 
+    a.application_id,
+    a.application_number,
+    a.status,
+    CONCAT(u.first_name, ' ', u.last_name) AS agent_name,
+    w.upcoming_payments,
+    w.current_balance,
+    al.approval_status AS admission_letter_status,
+    jw.approval_status AS jw02_status,
+    CASE 
+        WHEN jw.approval_status = 'approved' THEN 'Payment in Balance'
+        WHEN al.approval_status = 'approved' THEN 'Waiting for JW02'
+        WHEN a.status = 'approved' THEN 'In Upcoming Payments'
+        ELSE 'Not Started'
+    END AS payment_status
+FROM applications a
+LEFT JOIN users u ON a.main_agent_id = u.user_id
+LEFT JOIN wallets w ON u.user_id = w.user_id
+LEFT JOIN admission_letters al ON a.application_id = al.application_id
+LEFT JOIN jw02_forms jw ON a.application_id = jw.application_id
+WHERE a.status NOT IN ('rejected', 'draft');
+
+-- ============================================================================
+-- ADDITIONAL INDEXES
+-- ============================================================================
+
+CREATE INDEX idx_app_status_date ON applications(status, submission_date);
+CREATE INDEX idx_doc_app_type ON documents(application_id, document_type_id);
+CREATE INDEX idx_trans_wallet_date ON payment_transactions(wallet_id, created_at);
+CREATE INDEX idx_notif_user_read ON notifications(user_id, is_read, created_at);
+CREATE INDEX idx_messages_unread ON internal_messages(recipient_id, is_read);
+
+-- ============================================================================
+-- COMPLETION MESSAGE
+-- ============================================================================
+
+SELECT '✅ Database schema v2.0 created successfully with corrected payment flow!' AS status;
+SELECT COUNT(*) AS total_tables FROM information_schema.tables 
+WHERE table_schema = 'university_admission_system';

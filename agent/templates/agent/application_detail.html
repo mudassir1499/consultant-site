@@ -1,0 +1,290 @@
+{% extends 'agent/base.html' %}
+
+{% block title %}Application #{{ application.app_id }} - Agent Review{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-file-earmark-text"></i> Application #{{ application.app_id }}</h3>
+    <a href="{% url 'agent:application_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<!-- Status & Info -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card stat-card">
+            <div class="card-header bg-white d-flex justify-content-between">
+                <h5 class="mb-0">Application Details</h5>
+                <span class="badge badge-status fs-6
+                    {% if application.status == 'submitted' %}bg-warning text-dark
+                    {% elif application.status == 'approved' %}bg-success
+                    {% elif application.status == 'rejected' %}bg-danger
+                    {% elif application.status == 'under_review' %}bg-info
+                    {% else %}bg-secondary{% endif %}">
+                    {{ application.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Student:</strong> {{ application.user.first_name }} {{ application.user.last_name }} ({{ application.user.username }})</p>
+                        <p><strong>Email:</strong> {{ application.user.email }}</p>
+                        <p><strong>Phone:</strong> {{ application.user.phone|default:"N/A" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Scholarship:</strong> {{ application.scholarship.name }}</p>
+                        <p><strong>Degree:</strong> {{ application.scholarship.get_degree_display }}</p>
+                        <p><strong>Major:</strong> {{ application.scholarship.major }}</p>
+                        <p><strong>Applied:</strong> {{ application.applied_date|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+
+                {% if application.rejection_reason %}
+                <div class="alert alert-danger mt-3">
+                    <strong><i class="bi bi-exclamation-triangle"></i> Rejection Reason:</strong>
+                    {{ application.rejection_reason }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Commission Info</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted">Agent Earns</p>
+                <h2 class="text-success">${{ application.scholarship.agent_commission }}</h2>
+                <hr>
+                <p class="mb-1 text-muted">HQ Earns</p>
+                <h4 class="text-info">${{ application.scholarship.hq_commission }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Verification -->
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-folder2-open"></i> Document Verification</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Document</th>
+                        <th>Status</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, file in documents.items %}
+                    <tr>
+                        <td>{{ name }}</td>
+                        <td>
+                            {% if file %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> Uploaded</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="bi bi-x"></i> Missing</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if file %}
+                                <a href="{{ file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Verification -->
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Verification</h5>
+    </div>
+    <div class="card-body">
+        {% if payments %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.transaction_id|default:"—" }}</td>
+                        <td>${{ payment.amount }}</td>
+                        <td>
+                            <span class="badge
+                                {% if payment.payment_status == 'completed' %}bg-success
+                                {% elif payment.payment_status == 'pending' %}bg-warning text-dark
+                                {% elif payment.payment_status == 'failed' %}bg-danger
+                                {% else %}bg-info{% endif %}">
+                                {{ payment.get_payment_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if payment.receipt_pdf %}
+                                <a href="{{ payment.receipt_pdf.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-pdf"></i> View Receipt
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No payment records found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Decision Buttons -->
+{% if application.status in 'submitted,under_review,documents_verified,payment_verified' %}
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-check2-square"></i> Decision</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <button type="button" class="btn btn-success btn-lg w-100" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    <i class="bi bi-check-circle"></i> Approve & Forward to HQ
+                </button>
+            </div>
+            <div class="col-md-6">
+                <button type="button" class="btn btn-danger btn-lg w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-circle"></i> Reject Application
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'agent:approve_application' application.app_id %}">
+                {% csrf_token %}
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-check-circle"></i> Approve & Forward to HQ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">This application will be approved and forwarded to the HQ team for university processing.</p>
+                    <div class="mb-3">
+                        <label for="deadline_days" class="form-label fw-bold">Deadline for HQ (days from now)</label>
+                        <input type="number" name="deadline_days" id="deadline_days" class="form-control" value="10" min="1" max="90" required>
+                        <div class="form-text">Set the number of days HQ has to complete the university application and upload the admission letter.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="approve_note" class="form-label fw-bold">Note for HQ (optional)</label>
+                        <textarea name="approve_note" id="approve_note" class="form-control" rows="3" placeholder="Any special instructions for the HQ team..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Confirm & Forward</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'agent:reject_application' application.app_id %}">
+                {% csrf_token %}
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-x-circle"></i> Reject Application</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="rejection_reason" class="form-label fw-bold">Rejection Reason (Required)</label>
+                        <textarea name="rejection_reason" id="rejection_reason" class="form-control" rows="4" required placeholder="Please provide a detailed reason for rejection..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Admission Letter / JW02 Quick Links -->
+{% if application.status == 'admission_letter_uploaded' %}
+<div class="alert alert-info">
+    <i class="bi bi-envelope-paper"></i> An admission letter has been uploaded.
+    <a href="{% url 'agent:admission_letter_review' application.app_id %}" class="btn btn-sm btn-info ms-2">Review Admission Letter</a>
+</div>
+{% elif application.status == 'jw02_uploaded' %}
+<div class="alert alert-info">
+    <i class="bi bi-file-earmark-check"></i> A JW02 form has been uploaded.
+    <a href="{% url 'agent:jw02_review' application.app_id %}" class="btn btn-sm btn-info ms-2">Review JW02 Form</a>
+</div>
+{% endif %}
+
+<!-- Status History -->
+<div class="card stat-card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Status History</h5>
+    </div>
+    <div class="card-body">
+        {% if status_history %}
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Changed By</th>
+                        <th>Note</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in status_history %}
+                    <tr>
+                        <td><span class="badge bg-secondary">{{ entry.old_status|default:"—" }}</span></td>
+                        <td><span class="badge bg-primary">{{ entry.new_status }}</span></td>
+                        <td>{{ entry.changed_by.username|default:"System" }}</td>
+                        <td>{{ entry.note|default:"—" }}</td>
+                        <td>{{ entry.changed_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No status history recorded.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1744 @@
+# University Admission System - User Role Perspectives
+## Detailed Point of View for Office Worker, Main Agent, and Headquarters
+
+---
+
+# 👔 OFFICE WORKER PERSPECTIVE
+
+## Role Overview
+**Primary Responsibility:** Student-facing role that manages the entire application creation and submission process. Acts as the bridge between students and the internal approval system.
+
+**Key Objective:** Create complete, accurate applications with all required documentation and successfully submit them for agent review.
+
+---
+
+## 📊 Office Worker Dashboard
+
+### At-a-Glance Metrics
+```
+┌─────────────────────────────────────────────────────────────┐
+│  OFFICE WORKER DASHBOARD                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  📝 My Applications Overview                                 │
+│  ├─ Draft Applications:           12                         │
+│  ├─ Submitted (Pending Review):    8                         │
+│  ├─ Approved This Month:          23                         │
+│  ├─ Rejected (Need Action):        3                         │
+│  └─ Completed:                    45                         │
+│                                                               │
+│  ⏰ Urgent Actions                                            │
+│  ├─ Deadlines Today:               2                         │
+│  ├─ Deadlines This Week:           5                         │
+│  ├─ Missing Documents:             4                         │
+│  └─ Rejection Reasons to Review:   3                         │
+│                                                               │
+│  📈 This Month's Performance                                 │
+│  ├─ Applications Submitted:       31                         │
+│  ├─ Approval Rate:               74%                         │
+│  ├─ Avg. Processing Time:      3.2 days                      │
+│  └─ Student Satisfaction:       4.6/5.0                      │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Quick Access Panels
+```
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ CREATE NEW       │  │ MY DRAFTS        │  │ AWAITING REVIEW  │
+│ APPLICATION      │  │                  │  │                  │
+│                  │  │ • App #1234      │  │ • App #1256      │
+│ [+ New Student]  │  │ • App #1235      │  │   Submitted 2h   │
+│                  │  │ • App #1236      │  │                  │
+│                  │  │                  │  │ • App #1257      │
+│                  │  │ View All (12) →  │  │   Submitted 1d   │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ REJECTED         │  │ APPROVED         │  │ COMPLETED        │
+│ Need Action      │  │ In Progress      │  │ Success!         │
+│                  │  │                  │  │                  │
+│ • App #1240      │  │ • App #1250      │  │ • App #1201      │
+│   Missing CV     │  │   At HQ          │  │   Letter Ready   │
+│                  │  │                  │  │                  │
+│ View All (3) →   │  │ View All (8) →   │  │ View All (45) →  │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+```
+
+---
+
+## 🔄 Office Worker Complete Workflow
+
+### STEP 1: Create Application (Draft Stage)
+
+#### Initial Setup
+```
+Action: Click "Create New Application"
+
+Form Fields:
+┌─────────────────────────────────────────────────────────────┐
+│ Student Information                                          │
+├─────────────────────────────────────────────────────────────┤
+│ First Name: ________________    Last Name: _______________  │
+│ Email: ________________________ Phone: ____________________ │
+│ Date of Birth: ___/___/____    Nationality: ____________    │
+│                                                              │
+│ Program Selection                                            │
+├─────────────────────────────────────────────────────────────┤
+│ University: [Search or Select ▼]                            │
+│ Program: [Available Programs ▼]                             │
+│ Degree Level: [Bachelor/Master/PhD ▼]                       │
+│ Intake: [Fall 2026/Spring 2027 ▼]                           │
+│                                                              │
+│ Priority: ◉ Normal  ○ High  ○ Urgent                        │
+│ Notes: _______________________________________________       │
+│                                                              │
+│ [Save as Draft]  [Cancel]                                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**System Response:**
+- ✅ Application created with unique number (e.g., APP-2026-001234)
+- ✅ Status: **DRAFT**
+- ✅ Automatic deadline set (10 days from creation)
+- ✅ Document checklist generated based on program requirements
+
+---
+
+### STEP 2: Upload Documents
+
+#### Document Upload Interface
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Application #APP-2026-001234                    Status: DRAFT│
+│ Student: John Doe | Program: MSc Computer Science            │
+├─────────────────────────────────────────────────────────────┤
+│ Required Documents                                           │
+│                                                              │
+│ ☐ 1. Academic Transcripts *                                 │
+│     [Choose File] [Upload]                                   │
+│     📎 No file uploaded                                      │
+│     Status: ⚠️ Required - Not Uploaded                       │
+│                                                              │
+│ ☐ 2. Passport Copy *                                         │
+│     [Choose File] [Upload]                                   │
+│     📎 passport_john_doe.pdf (2.3 MB)                        │
+│     Status: ✅ Uploaded - Pending Verification               │
+│                                                              │
+│ ☐ 3. Curriculum Vitae (CV) *                                │
+│     [Choose File] [Upload]                                   │
+│     📎 cv_john_doe.pdf (456 KB)                              │
+│     Status: ✅ Uploaded - Pending Verification               │
+│                                                              │
+│ ☐ 4. Recommendation Letters *                               │
+│     [Choose File] [Upload]                                   │
+│     📎 letter_1.pdf, letter_2.pdf                            │
+│     Status: ✅ 2 files uploaded                              │
+│                                                              │
+│ Optional Documents                                           │
+│                                                              │
+│ ☐ 5. English Language Test (IELTS/TOEFL)                   │
+│     [Choose File] [Upload]                                   │
+│     Status: Optional                                         │
+│                                                              │
+│ ☐ 6. Work Experience Certificates                           │
+│     [Choose File] [Upload]                                   │
+│     Status: Optional                                         │
+│                                                              │
+│ Progress: ████████░░ 80% Complete (4/5 required)             │
+│                                                              │
+│ [Save Progress]  [Continue to Payment]                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key Features:**
+- ✓ Drag-and-drop file upload
+- ✓ File size validation (max 10MB per file)
+- ✓ Format validation (PDF, JPG, PNG only)
+- ✓ Automatic virus scanning
+- ✓ Real-time upload progress
+- ✓ Preview uploaded documents
+- ✓ Replace/delete functionality
+- ✓ Bulk upload option (ZIP file)
+
+---
+
+### STEP 3: Upload Payment Receipt
+
+#### Payment Section
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Payment Information                                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Application Fee: $50.00 USD                                 │
+│ Payment Status: ⚠️ Receipt Required                         │
+│                                                              │
+│ Payment Details:                                             │
+│ ├─ Payment Date: [Select Date]                              │
+│ ├─ Payment Method: [Bank Transfer ▼]                        │
+│ │   Options: Bank Transfer, Credit Card, PayPal,            │
+│ │           Mobile Money, Cash                              │
+│ ├─ Transaction Reference: _______________                    │
+│ └─ Amount Paid: $______                                      │
+│                                                              │
+│ Upload Receipt:                                              │
+│ [Choose File] [Upload Receipt]                               │
+│                                                              │
+│ 📎 receipt_payment_john.pdf (1.2 MB)                         │
+│ Status: ✅ Uploaded - Awaiting Verification by Agent         │
+│                                                              │
+│ [Back to Documents]  [Save]  [Submit Application]            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 4: Final Review & Submission
+
+#### Pre-Submission Checklist
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Ready to Submit? - Final Checklist                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Student Information      ✅ Complete                         │
+│ Program Selection        ✅ Confirmed                        │
+│                                                              │
+│ Required Documents:                                          │
+│ ├─ Transcripts          ✅ Uploaded                         │
+│ ├─ Passport             ✅ Uploaded                         │
+│ ├─ CV                   ✅ Uploaded                         │
+│ └─ Letters              ✅ Uploaded (2 files)               │
+│                                                              │
+│ Payment Receipt          ✅ Uploaded & Verified              │
+│                                                              │
+│ Deadline: Feb 21, 2026   ⏰ 9 days, 14 hours remaining      │
+│                                                              │
+│ Assigned Agent: Sarah Johnson (Main Agent)                  │
+│                                                              │
+│ ⚠️ WARNING: Once submitted, you cannot edit this            │
+│    application. The Main Agent will review it.              │
+│                                                              │
+│ [◀ Back to Edit]  [✓ Confirm & Submit]                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**After Clicking "Confirm & Submit":**
+```
+┌─────────────────────────────────────────────────────────────┐
+│              ✅ Application Submitted Successfully!          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Application Number: APP-2026-001234                          │
+│ Status: SUBMITTED                                            │
+│ Submitted: Feb 11, 2026 at 2:45 PM                          │
+│                                                              │
+│ Your application has been sent to:                           │
+│ Main Agent: Sarah Johnson                                    │
+│ Email: sarah.j@agency.com                                    │
+│                                                              │
+│ Next Steps:                                                  │
+│ 1. Agent will review documents (24-48 hours)                │
+│ 2. Agent will verify payment receipt                        │
+│ 3. You'll receive notification of approval/rejection        │
+│                                                              │
+│ You can track the status in "My Applications"               │
+│                                                              │
+│ [View Application]  [Create Another]  [Back to Dashboard]   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 5: Monitor Application Status
+
+#### Application Tracking View
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Application #APP-2026-001234 - Timeline                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ ✅ Created                    Feb 11, 2:30 PM               │
+│    └─ By: You (Office Worker)                               │
+│                                                              │
+│ ✅ Documents Uploaded          Feb 11, 2:40 PM               │
+│    └─ 4 documents uploaded                                   │
+│                                                              │
+│ ✅ Payment Receipt Uploaded    Feb 11, 2:43 PM               │
+│    └─ $50.00 payment receipt                                 │
+│                                                              │
+│ ✅ Submitted for Review        Feb 11, 2:45 PM               │
+│    └─ Assigned to: Sarah Johnson (Main Agent)               │
+│                                                              │
+│ ⏳ Under Review               In Progress...                │
+│    └─ Agent reviewing documents                              │
+│    └─ Est. completion: Feb 13, 2026                          │
+│                                                              │
+│ ⏺️ Documents Verification      Pending                       │
+│                                                              │
+│ ⏺️ Payment Verification        Pending                       │
+│                                                              │
+│ ⏺️ Final Approval             Pending                       │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 6: Handle Rejections (If Any)
+
+#### Rejection Notice
+```
+┌─────────────────────────────────────────────────────────────┐
+│        ⚠️ Application #APP-2026-001234 - REJECTED           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Rejected By: Sarah Johnson (Main Agent)                     │
+│ Rejected On: Feb 12, 2026 at 10:30 AM                       │
+│                                                              │
+│ Rejection Reason:                                            │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ The academic transcripts are not properly certified.  │   │
+│ │ Please upload official transcripts with university    │   │
+│ │ seal and signature.                                   │   │
+│ │                                                       │   │
+│ │ Additionally, the CV is missing employment dates.    │   │
+│ │ Please update and resubmit.                           │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Required Actions:                                            │
+│ ☐ Upload certified transcripts                              │
+│ ☐ Update CV with employment dates                           │
+│                                                              │
+│ [Fix Issues & Resubmit]  [Contact Agent]  [View Details]    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**After Fixing Issues:**
+- Office worker uploads corrected documents
+- Application status returns to "SUBMITTED"
+- Goes back to agent for review
+- Agent can see the revision history
+
+---
+
+### STEP 7: Approved Application - Download Admission Letter
+
+#### Success Notification
+```
+┌─────────────────────────────────────────────────────────────┐
+│      🎉 Application #APP-2026-001234 - COMPLETED!           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Student: John Doe                                            │
+│ Program: MSc Computer Science                                │
+│ University: Tech University                                  │
+│                                                              │
+│ Status: ✅ COMPLETE                                          │
+│ Completed On: Feb 18, 2026                                   │
+│                                                              │
+│ Available Documents:                                         │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ 📄 Admission Letter                                   │   │
+│ │    Issued: Feb 18, 2026                               │   │
+│ │    Letter #: AL-2026-001234                           │   │
+│ │    [📥 Download PDF]                                  │   │
+│ │                                                       │   │
+│ │ 📄 JW02 Form (Approved)                              │   │
+│ │    Approved: Feb 18, 2026                             │   │
+│ │    Form #: JW02-2026-001234                           │   │
+│ │    [📥 Download PDF]                                  │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Next Steps for Student:                                     │
+│ 1. Review admission letter carefully                        │
+│ 2. Accept/Decline admission by: March 1, 2026              │
+│ 3. Pay tuition deposit if accepting                         │
+│ 4. Arrange visa application with JW02 form                  │
+│                                                              │
+│ [Email to Student]  [Print Package]  [Archive]              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔔 Notifications Office Worker Receives
+
+### Email Notifications
+```
+1. Application Submitted Confirmation
+   "Your application #APP-2026-001234 has been submitted for review"
+   
+2. Documents Verified
+   "All documents for application #APP-2026-001234 have been verified"
+   
+3. Payment Verified
+   "Payment receipt for application #APP-2026-001234 has been verified"
+   
+4. Application Approved
+   "🎉 Great news! Application #APP-2026-001234 has been approved"
+   
+5. Application Rejected
+   "⚠️ Application #APP-2026-001234 requires attention"
+   
+6. Deadline Reminders
+   "⏰ Reminder: 3 applications have deadlines in next 24 hours"
+   
+7. Admission Letter Available
+   "📄 Admission letter ready for application #APP-2026-001234"
+   
+8. JW02 Form Available
+   "📄 JW02 form ready for application #APP-2026-001234"
+```
+
+### In-App Notifications
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🔔 Notifications (8 unread)                                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ 🎉 Application #1234 APPROVED                    2 min ago │
+│    Main Agent approved your application                     │
+│    [View Application]                                        │
+│                                                              │
+│ ⚠️ Deadline Alert - 3 hours remaining            5 min ago  │
+│    App #1235 deadline approaching                            │
+│    [Take Action]                                             │
+│                                                              │
+│ ✅ Documents Verified - App #1236               1 hour ago │
+│    Sarah J. verified all documents                           │
+│    [View Details]                                            │
+│                                                              │
+│ 💬 New Message from Agent                       2 hours ago │
+│    "Please upload corrected CV for App #1240"               │
+│    [Read Message]                                            │
+│                                                              │
+│ [Mark All as Read]  [View All Notifications]                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📱 Mobile App Features for Office Worker
+
+### Quick Actions
+```
+┌─────────────────────┐
+│  📱 Mobile App      │
+│  Office Worker      │
+├─────────────────────┤
+│                     │
+│  Quick Actions:     │
+│  • 📸 Scan Document │
+│  • 📝 Create App    │
+│  • 👁️ Check Status  │
+│  • 📊 My Dashboard  │
+│  • 🔔 Notifications │
+│                     │
+│  Recent:            │
+│  • APP-001234       │
+│    ✅ Approved      │
+│  • APP-001235       │
+│    ⏳ Under Review  │
+│  • APP-001236       │
+│    📝 Draft         │
+│                     │
+└─────────────────────┘
+```
+
+---
+
+## 💼 Office Worker Common Scenarios
+
+### Scenario 1: Handling Multiple Students Daily
+```
+Morning Routine (9:00 AM - 12:00 PM):
+├─ Check dashboard for urgent items
+├─ Review overnight rejections
+├─ Meet with 3 new students
+│  ├─ Create applications for each
+│  ├─ Collect documents
+│  └─ Schedule follow-ups
+├─ Upload documents for 5 pending applications
+└─ Submit 3 completed applications
+
+Afternoon (2:00 PM - 5:00 PM):
+├─ Handle rejection corrections (2 apps)
+├─ Follow up with students for missing documents
+├─ Download admission letters for 2 successful apps
+├─ Update student records in CRM
+└─ Prepare next day's schedule
+```
+
+### Scenario 2: Emergency Deadline Management
+```
+Situation: Application deadline in 4 hours, missing transcript
+
+Actions Available:
+1. Quick Upload
+   └─ Use mobile app to scan document on-site
+   
+2. Request Extension
+   └─ Contact agent for deadline extension
+   
+3. Partial Submission
+   └─ Submit with note about pending document
+   
+4. Emergency Contact
+   └─ Direct call to assigned agent
+```
+
+### Scenario 3: Quality Check Before Submission
+```
+Built-in Quality Checker:
+┌─────────────────────────────────────────────────────────────┐
+│ ✓ All required fields filled                                │
+│ ✓ Valid email format                                         │
+│ ✓ Phone number verified                                      │
+│ ✓ All mandatory documents uploaded                          │
+│ ⚠️ Warning: CV file size is large (9.8 MB)                  │
+│   Consider compressing the file                              │
+│ ✓ Payment receipt uploaded                                   │
+│ ✓ Student consent form signed                               │
+│                                                              │
+│ Quality Score: 95/100 ⭐⭐⭐⭐⭐                              │
+│                                                              │
+│ [Proceed to Submit]  [Review Warnings]                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📈 Reports & Analytics for Office Worker
+
+### Personal Performance Report
+```
+┌─────────────────────────────────────────────────────────────┐
+│ My Performance - February 2026                               │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Applications Created:        45                              │
+│ Applications Submitted:      42                              │
+│ Applications Approved:       31                              │
+│ Applications Rejected:        8                              │
+│ Applications In Progress:     3                              │
+│                                                              │
+│ Success Rate:               73.8% ↑ 5%                       │
+│ Avg. Time to Submit:       2.3 days ↓ 0.5 days              │
+│ Avg. Approval Time:        4.2 days                          │
+│                                                              │
+│ Common Rejection Reasons:                                    │
+│ 1. Missing/Incomplete Documents (40%)                        │
+│ 2. Payment Issues (25%)                                      │
+│ 3. Eligibility Issues (20%)                                  │
+│ 4. Document Quality (15%)                                    │
+│                                                              │
+│ Universities Applied:                                        │
+│ • Tech University (15)                                       │
+│ • Business School (12)                                       │
+│ • Medical College (8)                                        │
+│ • Engineering Institute (10)                                 │
+│                                                              │
+│ [Download Report]  [Share with Manager]                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 Office Worker Pain Points & Solutions
+
+### Pain Point 1: Students Delay Document Submission
+**Solution:**
+- Automated reminder emails to students
+- SMS notifications for urgent items
+- Student portal for self-service upload
+- WhatsApp integration for quick communication
+
+### Pain Point 2: Unclear Rejection Reasons
+**Solution:**
+- Structured rejection forms with categories
+- Photos/annotations on rejected documents
+- Video explanations from agents
+- FAQ database of common issues
+
+### Pain Point 3: Too Many Applications to Track
+**Solution:**
+- Smart filters and saved views
+- Color-coded status indicators
+- Kanban board view
+- Bulk actions for similar tasks
+
+### Pain Point 4: Difficulty Meeting Deadlines
+**Solution:**
+- Visual deadline tracker
+- Automatic deadline calculations
+- Early warning system (3 days, 1 day, 6 hours)
+- One-click extension requests
+
+---
+
+# 🕵️ MAIN AGENT PERSPECTIVE
+
+## Role Overview
+**Primary Responsibility:** Review and verify all submitted applications, documents, and payment receipts. Make approval/rejection decisions and ensure quality control.
+
+**Key Objective:** Efficiently process applications while maintaining high verification standards, ensuring only complete and valid applications proceed to HQ.
+
+---
+
+## 📊 Main Agent Dashboard
+
+### At-a-Glance Metrics
+```
+┌─────────────────────────────────────────────────────────────┐
+│  MAIN AGENT DASHBOARD - Sarah Johnson                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ⚡ Priority Queue                                           │
+│  ├─ Urgent Applications:          5 🔴                       │
+│  ├─ High Priority:                8 🟠                       │
+│  ├─ Deadline Today:               3 ⏰                       │
+│  └─ SLA Breach Risk:              2 ⚠️                       │
+│                                                              │
+│  📋 My Workload                                              │
+│  ├─ Pending Review:              24                          │
+│  ├─ Under Review (by me):         6                          │
+│  ├─ Waiting for Info:             4                          │
+│  ├─ Reviewed Today:              12                          │
+│  └─ Approved This Month:        156                          │
+│                                                              │
+│  💰 Wallet Summary                                           │
+│  ├─ Current Balance:         $1,450.00                       │
+│  ├─ Upcoming Payments:          $50.00 (1 pending)           │
+│  ├─ This Month Earned:       $2,340.00                       │
+│  └─ Pending Withdrawal:     $1,100.00                        │
+│                                                              │
+│  📊 Performance Metrics                                      │
+│  ├─ Approval Rate:               82%                         │
+│  ├─ Avg. Review Time:         1.8 hours                      │
+│  ├─ SLA Compliance:              96%                         │
+│  └─ Quality Score:           4.8/5.0                         │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Task Management View
+```
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ NEW SUBMISSIONS  │  │ IN PROGRESS      │  │ DECISION NEEDED  │
+│ (24)             │  │ (6)              │  │ (3)              │
+│                  │  │                  │  │                  │
+│ 🔴 APP-001250    │  │ 🟢 APP-001245    │  │ ⚠️ APP-001240    │
+│    Urgent        │  │    Reviewing     │  │    Missing info  │
+│    Due: 3 hours  │  │    Documents OK  │  │                  │
+│                  │  │                  │  │ ⚠️ APP-001241    │
+│ 🔴 APP-001251    │  │ 🟢 APP-001246    │  │    Payment issue │
+│    Urgent        │  │    Verifying $   │  │                  │
+│    Due: 5 hours  │  │                  │  │ ⚠️ APP-001242    │
+│                  │  │ 🟢 APP-001247    │  │    Doc quality   │
+│ 🟠 APP-001252    │  │    Almost done   │  │                  │
+│    High Priority │  │                  │  │                  │
+│                  │  │                  │  │                  │
+│ [Review All]     │  │ [Continue]       │  │ [Make Decisions] │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ APPROVED TODAY   │  │ REJECTED TODAY   │  │ SENT TO HQ       │
+│ (12)             │  │ (3)              │  │ (9)              │
+│                  │  │                  │  │                  │
+│ ✅ APP-001230    │  │ ❌ APP-001235    │  │ 📤 APP-001220    │
+│ ✅ APP-001231    │  │    Docs issue    │  │ 📤 APP-001221    │
+│ ✅ APP-001232    │  │                  │  │ 📤 APP-001222    │
+│ ✅ APP-001233    │  │ ❌ APP-001236    │  │                  │
+│ ...              │  │    Payment       │  │ [Track Status]   │
+│                  │  │                  │  │                  │
+│ [View All]       │  │ [Review Reasons] │  │                  │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+```
+
+---
+
+## 🔄 Main Agent Complete Workflow
+
+### STEP 1: Review Application
+
+#### Application Review Screen
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📋 Application Review - #APP-2026-001234                    │
+│ Status: SUBMITTED | Priority: 🟠 High | Deadline: 6h 23m    │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ STUDENT INFORMATION                                          │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Name: John Doe                    DOB: Jan 15, 1998   │   │
+│ │ Email: john.doe@email.com         Phone: +1234567890  │   │
+│ │ Nationality: American                                 │   │
+│ │ Program: MSc Computer Science - Tech University       │   │
+│ │ Office Worker: Michael Chen (ID: OW-123)              │   │
+│ │ Submitted: Feb 11, 2026 at 2:45 PM                    │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ QUICK ACTIONS                                                │
+│ [👁️ Full Details]  [📧 Contact Student]  [💬 Message OW]   │
+│                                                              │
+│ [Start Review ▶]                                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 2: Verify Documents
+
+#### Document Verification Interface
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Document Verification - #APP-2026-001234                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ 📄 1. ACADEMIC TRANSCRIPTS                    Status: ⏳    │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ 📎 transcript_john_doe.pdf (3.2 MB)                   │   │
+│ │ Uploaded: Feb 11, 2026 at 2:35 PM                     │   │
+│ │                                                       │   │
+│ │ [🔍 View Document]  [⬇️ Download]  [🖨️ Print]        │   │
+│ │                                                       │   │
+│ │ Verification Checklist:                               │   │
+│ │ ☐ Official university seal present                   │   │
+│ │ ☐ Authorized signature visible                       │   │
+│ │ │ ☐ All pages included (check page numbers)            │   │
+│ │ ☐ Clear and readable quality                         │   │
+│ │ ☐ Matches stated degree/GPA                          │   │
+│ │ ☐ English translation included (if applicable)       │   │
+│ │                                                       │   │
+│ │ Quality Score: __/100                                 │   │
+│ │                                                       │   │
+│ │ Status: ◉ Approve  ○ Reject  ○ Request Revision      │   │
+│ │                                                       │   │
+│ │ Notes: ___________________________________________    │   │
+│ │ ___________________________________________________   │   │
+│ │                                                       │   │
+│ │ [✓ Verify & Next]  [✗ Reject]  [⚠️ Request Info]    │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Progress: [████░░░░░] 2/5 documents verified                │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Document Viewer Features:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🔍 Document Viewer - transcript_john_doe.pdf                │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ [◀ Previous] Page 1 of 4 [Next ▶]   Zoom: [100% ▼]         │
+│                                                              │
+│ ┌─────────────────────────────────────────────────┐         │
+│ │                                                 │         │
+│ │         [PDF/Image Document Display]            │         │
+│ │                                                 │         │
+│ │         Side-by-side comparison mode             │         │
+│ │         available for suspicious docs            │         │
+│ │                                                 │         │
+│ └─────────────────────────────────────────────────┘         │
+│                                                              │
+│ Tools:                                                       │
+│ [✏️ Annotate] [📌 Mark Issue] [🔍 Zoom In] [↻ Rotate]      │
+│ [📸 Screenshot] [📋 Compare] [⚡ Quick Reject]               │
+│                                                              │
+│ AI Document Analysis:                                        │
+│ ✅ Format: PDF valid                                         │
+│ ✅ Not tampered/edited                                       │
+│ ⚠️ Low resolution in some areas (75 DPI)                    │
+│ ✅ Text extractable (OCR passed)                             │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 3: Check Payment Invoice
+
+#### Payment Verification
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 💰 Payment Verification - #APP-2026-001234                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Required Fee: $50.00 USD                                    │
+│ Payment Method: Bank Transfer                                │
+│ Transaction Ref: TXN-20260211-1234                          │
+│ Payment Date: Feb 11, 2026                                   │
+│                                                              │
+│ Receipt Document:                                            │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ 📎 receipt_payment_john.pdf (1.2 MB)                  │   │
+│ │ [🔍 View Receipt]  [⬇️ Download]                      │   │
+│ │                                                       │   │
+│ │ Verification Checklist:                               │   │
+│ │ ☐ Amount matches required fee ($50.00)               │   │
+│ │ ☐ Payment date is valid                              │   │
+│ │ ☐ Bank details match our records                     │   │
+│ │ ☐ Transaction reference is unique                    │   │
+│ │ ☐ Receipt is authentic (not edited)                  │   │
+│ │ ☐ Student name matches application                   │   │
+│ │                                                       │   │
+│ │ Cross-Reference:                                      │   │
+│ │ ☐ Check with bank statement (if needed)              │   │
+│ │ ☐ Verify against duplicate payments                  │   │
+│ │                                                       │   │
+│ │ Status: ◉ Approve  ○ Reject  ○ Request Clarification │   │
+│ │                                                       │   │
+│ │ Notes: ___________________________________________    │   │
+│ │                                                       │   │
+│ │ [✓ Verify Payment]  [✗ Reject]  [💬 Contact OW]     │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 4: Make Decision (Approve or Reject)
+
+#### DECISION: APPROVE
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ✅ APPROVE APPLICATION - #APP-2026-001234                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Final Verification Summary:                                  │
+│ ✅ All documents verified                                    │
+│ ✅ Payment confirmed                                         │
+│ ✅ Student information accurate                              │
+│ ✅ Eligibility criteria met                                  │
+│                                                              │
+│ Quality Assessment:                                          │
+│ Overall Score: 94/100 ⭐⭐⭐⭐⭐                              │
+│                                                              │
+│ Document Scores:                                             │
+│ • Transcripts:    95/100 ✅                                  │
+│ • Passport:       98/100 ✅                                  │
+│ • CV:             90/100 ✅                                  │
+│ • Letters:        92/100 ✅                                  │
+│                                                              │
+│ Approval Notes (Optional):                                   │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Strong academic background. All documents in order.   │   │
+│ │ Recommended for acceptance.                           │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Next Steps After Approval:                                   │
+│ • Application status → APPROVED                              │
+│ • Notification sent to Office Worker                        │
+│ • Application forwarded to HQ for university submission     │
+│ • $50 added to your Upcoming Payments                       │
+│                                                              │
+│ ⚠️ Once approved, this cannot be undone without admin       │
+│    intervention. Are you sure?                               │
+│                                                              │
+│ [◀ Back to Review]  [✓ CONFIRM APPROVAL]                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**After Approval:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│              ✅ Application Approved Successfully!           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Application #APP-2026-001234 has been approved!              │
+│                                                              │
+│ ✓ Office Worker notified                                     │
+│ ✓ Application sent to HQ queue                               │
+│ ✓ $50.00 added to your Upcoming Payments                    │
+│   (Will move to Balance after JW02 approval)                │
+│ ✓ Student will receive email notification                   │
+│                                                              │
+│ Timeline:                                                    │
+│ HQ will now:                                                 │
+│ 1. Download all documents                                    │
+│ 2. Apply to university                                       │
+│ 3. Upload admission letter (when received)                  │
+│ 4. Upload JW02 form                                          │
+│                                                              │
+│ Estimated completion: 7-14 days                              │
+│                                                              │
+│ [View Next Application]  [Back to Dashboard]                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### DECISION: REJECT
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ❌ REJECT APPLICATION - #APP-2026-001234                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Select Rejection Reason(s): (Check all that apply)          │
+│                                                              │
+│ Document Issues:                                             │
+│ ☑ Missing required documents                                │
+│ ☑ Documents not certified/official                          │
+│ ☐ Document quality too low                                  │
+│ ☐ Documents in wrong language                               │
+│ ☐ Expired documents (passport, etc.)                        │
+│ ☐ Suspicious/tampered documents                             │
+│                                                              │
+│ Payment Issues:                                              │
+│ ☐ Payment receipt missing                                   │
+│ ☐ Amount incorrect                                          │
+│ ☐ Payment not verified                                      │
+│ ☐ Suspicious payment receipt                                │
+│                                                              │
+│ Student Information:                                         │
+│ ☐ Incomplete information                                    │
+│ ☐ Information mismatch                                      │
+│ ☐ Eligibility criteria not met                              │
+│                                                              │
+│ Detailed Explanation (Mandatory):                            │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ The academic transcripts lack official university     │   │
+│ │ seal and authorized signature. Please upload          │   │
+│ │ properly certified transcripts with:                  │   │
+│ │ 1. University seal/stamp on each page                 │   │
+│ │ 2. Authorized signatory signature                     │   │
+│ │ 3. Date of issuance                                   │   │
+│ │                                                       │   │
+│ │ Additionally, the CV is missing employment dates     │   │
+│ │ for the last two positions. Please update with       │   │
+│ │ start and end dates.                                  │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Required Actions for Office Worker:                         │
+│ ☑ Upload certified transcripts                              │
+│ ☑ Update CV with employment dates                           │
+│                                                              │
+│ Allow Resubmission: ◉ Yes  ○ No (Permanent Rejection)       │
+│                                                              │
+│ Notify via: ☑ Email  ☑ In-App  ☑ SMS                       │
+│                                                              │
+│ [◀ Cancel]  [✗ CONFIRM REJECTION]                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 5: Verify Admission Letter (When HQ Uploads)
+
+#### Admission Letter Review
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📄 Admission Letter Verification - #APP-2026-001234         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Application Status: IN PROGRESS (At HQ)                      │
+│ HQ uploaded admission letter: Feb 18, 2026                   │
+│                                                              │
+│ Letter Details:                                              │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Letter Number: AL-2026-001234                         │   │
+│ │ File: admission_letter_john_doe.pdf (2.5 MB)          │   │
+│ │ Uploaded By: Maria Garcia (HQ)                        │   │
+│ │ Upload Date: Feb 18, 2026 at 10:30 AM                 │   │
+│ │                                                       │   │
+│ │ [🔍 View Letter]  [⬇️ Download]  [🖨️ Print]          │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Verification Checklist:                                      │
+│ ☐ Letter is from correct university                         │
+│ ☐ Student name matches application                          │
+│ ☐ Program name is correct                                   │
+│ ☐ Start date is mentioned                                   │
+│ ☐ Letter is official (letterhead, signature, seal)          │
+│ ☐ No spelling errors or issues                              │
+│ ☐ Conditions of admission stated (if any)                   │
+│                                                              │
+│ Decision:                                                    │
+│ ◉ Approve Letter - Send to Office Worker                    │
+│ ○ Request Revision - Send back to HQ                        │
+│                                                              │
+│ Notes/Comments:                                              │
+│ ___________________________________________________________  │
+│                                                              │
+│ [✓ Approve]  [⚠️ Request Revision]  [◀ Back]                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**After Approving Admission Letter:**
+```
+Note: Payment STAYS in "Upcoming Payments" at this point.
+It will only move to "Balance" after JW02 is also approved.
+```
+
+---
+
+### STEP 6: Payment Moves to Balance (After JW02 Approval)
+
+#### Wallet Update Notification
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 💰 Payment Received! - #APP-2026-001234                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Great news! The JW02 form has been approved.                │
+│ Your payment has been moved to your balance!                │
+│                                                              │
+│ Transaction Details:                                         │
+│ • Application: #APP-2026-001234                             │
+│ • Amount: $50.00                                             │
+│ • From: Upcoming Payments                                    │
+│ • To: Current Balance                                        │
+│ • Date: Feb 18, 2026 at 3:15 PM                             │
+│                                                              │
+│ Updated Wallet:                                              │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Current Balance:      $1,500.00 (+ $50.00)           │   │
+│ │ Upcoming Payments:       $0.00 (- $50.00)            │   │
+│ │ Total Earned:        $2,390.00                        │   │
+│ │ Total Withdrawn:     $1,100.00                        │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ You can now request withdrawal!                              │
+│                                                              │
+│ [💵 Request Withdrawal]  [📊 View Wallet]  [✓ OK]           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 💰 Main Agent Wallet Management
+
+### Wallet Dashboard
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 💰 MY WALLET - Sarah Johnson (Main Agent)                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ ┌──────────────────┐  ┌──────────────────┐                  │
+│ │ Current Balance  │  │ Upcoming Payments│                  │
+│ │   $1,500.00     │  │    $50.00        │                  │
+│ │  💵 Available    │  │  ⏳ Pending      │                  │
+│ └──────────────────┘  └──────────────────┘                  │
+│                                                              │
+│ ┌──────────────────┐  ┌──────────────────┐                  │
+│ │ Total Earned     │  │ Total Withdrawn  │                  │
+│ │  $2,390.00      │  │   $1,100.00      │                  │
+│ │  ↗️ This Month   │  │  💸 Lifetime     │                  │
+│ └──────────────────┘  └──────────────────┘                  │
+│                                                              │
+│ [💵 Request Withdrawal]  [📊 Transaction History]            │
+│                                                              │
+├─────────────────────────────────────────────────────────────┤
+│ Recent Transactions                                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ ✅ Feb 18, 3:15 PM | App #001234 | JW02 Approved            │
+│    +$50.00 → Current Balance                                 │
+│                                                              │
+│ ⏳ Feb 17, 2:30 PM | App #001250 | Application Approved      │
+│    +$50.00 → Upcoming Payments                               │
+│                                                              │
+│ ✅ Feb 16, 4:45 PM | App #001235 | JW02 Approved            │
+│    +$50.00 → Current Balance                                 │
+│                                                              │
+│ 💸 Feb 15, 10:00 AM | Withdrawal Request #WR-001            │
+│    -$1,100.00 → Bank Transfer (Processed)                   │
+│                                                              │
+│ [View All Transactions]                                      │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Withdrawal Request Process
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 💵 Request Withdrawal                                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Available Balance: $1,500.00                                 │
+│ Minimum Withdrawal: $100.00                                  │
+│                                                              │
+│ Withdrawal Amount: $ [____________]                          │
+│                                                              │
+│ Withdrawal Method:                                           │
+│ ◉ Bank Transfer                                              │
+│ ○ PayPal                                                     │
+│ ○ Mobile Money                                               │
+│ ○ Check                                                      │
+│                                                              │
+│ Bank Account Details:                                        │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Bank Name: _________________________________________  │   │
+│ │ Account Number: ____________________________________  │   │
+│ │ Account Name: ______________________________________  │   │
+│ │ Branch/Routing: ____________________________________  │   │
+│ │ SWIFT Code: ________________________________________  │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Processing Time: 2-5 business days                          │
+│ Processing Fee: $0 (Free)                                    │
+│                                                              │
+│ Notes (Optional):                                            │
+│ ___________________________________________________________  │
+│                                                              │
+│ [Cancel]  [Submit Withdrawal Request]                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 Main Agent Reports & Analytics
+
+### Performance Dashboard
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📈 My Performance Analytics - February 2026                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Applications Processed:      168                             │
+│ ├─ Approved:                 138 (82%)                       │
+│ ├─ Rejected:                  24 (14%)                       │
+│ └─ Pending Decision:           6 (4%)                        │
+│                                                              │
+│ Processing Efficiency:                                       │
+│ ├─ Avg. Review Time:        1.8 hours ⬇️ 0.3h              │
+│ ├─ Fastest Review:          0.5 hours                        │
+│ ├─ Slowest Review:          4.2 hours                        │
+│ └─ SLA Compliance:          96% ⬆️ 2%                        │
+│                                                              │
+│ Quality Metrics:                                             │
+│ ├─ Approval Accuracy:       98.5%                            │
+│ │  (2 appeals, 0 overturned)                                │
+│ ├─ Rejection Validity:      100%                             │
+│ │  (All rejections upheld)                                  │
+│ └─ Quality Score:           4.8/5.0 ⭐⭐⭐⭐⭐               │
+│                                                              │
+│ Financial Summary:                                           │
+│ ├─ Total Earned:            $2,390.00                        │
+│ ├─ Average Per App:         $14.23                           │
+│ ├─ Projected Month End:     $2,600.00                        │
+│ └─ Top Performer Bonus:     Eligible! 🏆                     │
+│                                                              │
+│ Comparison with Team:                                        │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Your Rank: #2 out of 12 agents                       │   │
+│ │ Above Average: +15% faster processing                │   │
+│ │ Quality: Top 3 in accuracy                            │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Common Rejection Reasons (My Applications):                  │
+│ 1. Document certification issues (42%)                       │
+│ 2. Incomplete documents (25%)                                │
+│ 3. Payment verification issues (18%)                         │
+│ 4. Eligibility criteria not met (15%)                        │
+│                                                              │
+│ [Download Detailed Report]  [Share with Manager]             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔔 Notifications Main Agent Receives
+
+### Critical Notifications
+```
+1. New Application Assigned
+   "🆕 New application #APP-001250 assigned to you (Priority: High)"
+   
+2. Deadline Warning
+   "⏰ URGENT: 3 applications have deadlines in next 2 hours"
+   
+3. SLA Breach Alert
+   "⚠️ SLA BREACH: App #APP-001245 exceeded 24-hour review target"
+   
+4. Payment Added
+   "💰 +$50.00 added to Upcoming Payments (App #APP-001250 approved)"
+   
+5. Payment to Balance
+   "💵 +$50.00 moved to Balance (App #APP-001234 JW02 approved)"
+   
+6. Withdrawal Processed
+   "✅ Your withdrawal request of $1,100 has been approved and processed"
+   
+7. Quality Alert
+   "⚠️ Rejection appeal received for App #APP-001240"
+   
+8. System Messages
+   "📢 New policy update: Enhanced document verification required"
+```
+
+---
+
+## 🎯 Main Agent Pain Points & Solutions
+
+### Pain Point 1: Too Many Applications to Review
+**Solution:**
+- Smart prioritization algorithm
+- AI-assisted document pre-screening
+- Bulk approval for low-risk applications
+- Team collaboration features
+
+### Pain Point 2: Difficult to Verify Document Authenticity
+**Solution:**
+- AI-powered fraud detection
+- Database of known fake documents
+- Direct university verification API
+- Blockchain document verification
+
+### Pain Point 3: Unclear When Payment Moves to Balance
+**Solution:**
+- Clear visual payment flow tracker
+- Real-time wallet notifications
+- Detailed transaction history
+- Automated payment rules
+
+### Pain Point 4: Missing Context on Student Background
+**Solution:**
+- Student profile with complete history
+- Previous application attempts
+- Notes from office workers
+- University admission probability score
+
+---
+
+# 🏢 HEADQUARTERS (HQ) PERSPECTIVE
+
+## Role Overview
+**Primary Responsibility:** Process approved applications by submitting to universities, managing admission letters, JW02 forms, and handling revision requests.
+
+**Key Objective:** Successfully obtain admission letters and JW02 forms for approved applications, maintaining relationships with universities.
+
+---
+
+## 📊 Headquarters Dashboard
+
+### At-a-Glance Metrics
+```
+┌─────────────────────────────────────────────────────────────┐
+│  HEADQUARTERS DASHBOARD - Maria Garcia                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  📥 Incoming Queue                                           │
+│  ├─ New Approvals (Ready to Apply):    15                   │
+│  ├─ Awaiting University Response:      32                   │
+│  ├─ Admission Letters Received:         8                   │
+│  └─ JW02 Forms Pending:                 5                   │
+│                                                              │
+│  📤 Active Applications                                      │
+│  ├─ In Progress:                       42                   │
+│  ├─ Admission Letter Uploaded:         12                   │
+│  ├─ JW02 Uploaded:                      8                   │
+│  ├─ Revision Requests:                  3                   │
+│  └─ Completed This Month:              67                   │
+│                                                              │
+│  🎓 University Partners                                      │
+│  ├─ Tech University:           18 active apps               │
+│  ├─ Business School:           12 active apps               │
+│  ├─ Medical College:            7 active apps               │
+│  └─ Engineering Institute:      5 active apps               │
+│                                                              │
+│  📊 This Month's Performance                                 │
+│  ├─ Applications Processed:            67                   │
+│  ├─ Success Rate:                      94%                  │
+│  ├─ Avg. Processing Time:           8.3 days                │
+│  └─ Partner Satisfaction:           4.7/5.0                 │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Workflow Status View
+```
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ DOWNLOAD DOCS    │  │ APPLY TO UNI     │  │ AWAITING LETTER  │
+│ Ready (15)       │  │ In Progress (18) │  │ Submitted (32)   │
+│                  │  │                  │  │                  │
+│ • APP-001260     │  │ • APP-001250     │  │ • APP-001240     │
+│   ⬇️ Download    │  │   Tech Uni       │  │   Tech Uni       │
+│   All Docs       │  │   Submitted 2d   │  │   Waiting 5d     │
+│                  │  │                  │  │                  │
+│ • APP-001261     │  │ • APP-001251     │  │ • APP-001241     │
+│   ⬇️ Download    │  │   Business       │  │   Business       │
+│                  │  │   Submitted 1d   │  │   Waiting 3d     │
+│                  │  │                  │  │                  │
+│ [Process All]    │  │ [Track Status]   │  │ [Follow Up]      │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ UPLOAD LETTER    │  │ UPLOAD JW02      │  │ REVISIONS        │
+│ Ready (8)        │  │ Ready (5)        │  │ Needed (3)       │
+│                  │  │                  │  │                  │
+│ • APP-001234     │  │ • APP-001230     │  │ • APP-001235     │
+│   📤 Upload      │  │   📤 Upload      │  │   Agent request  │
+│   Letter         │  │   JW02           │  │                  │
+│                  │  │                  │  │ • APP-001236     │
+│ • APP-001235     │  │ • APP-001231     │  │   Uni requested  │
+│   📤 Upload      │  │   📤 Upload      │  │                  │
+│                  │  │                  │  │                  │
+│ [Upload All]     │  │ [Upload All]     │  │ [Handle Now]     │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+```
+
+---
+
+## 🔄 Headquarters Complete Workflow
+
+### STEP 1: Download All Documents
+
+#### Document Download Interface
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📥 Download Documents - #APP-2026-001234                    │
+│ Status: APPROVED (Ready for University Application)         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Student: John Doe                                            │
+│ Program: MSc Computer Science                                │
+│ University: Tech University                                  │
+│ Approved By: Sarah Johnson (Main Agent)                     │
+│ Approved On: Feb 12, 2026                                    │
+│                                                              │
+│ Available Documents:                                         │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ ☑ 1. Academic Transcripts (3.2 MB)                   │   │
+│ │     [Preview] [Download] [✓ Downloaded]               │   │
+│ │                                                       │   │
+│ │ ☑ 2. Passport Copy (2.1 MB)                          │   │
+│ │     [Preview] [Download] [✓ Downloaded]               │   │
+│ │                                                       │   │
+│ │ ☑ 3. Curriculum Vitae (456 KB)                       │   │
+│ │     [Preview] [Download] [✓ Downloaded]               │   │
+│ │                                                       │   │
+│ │ ☑ 4. Recommendation Letters (1.8 MB)                 │   │
+│ │     [Preview] [Download] [✓ Downloaded]               │   │
+│ │                                                       │   │
+│ │ ☑ 5. English Test (IELTS) (890 KB)                  │   │
+│ │     [Preview] [Download] [✓ Downloaded]               │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Quick Actions:                                               │
+│ [⬇️ Download All as ZIP]  [📧 Email Package]  [🖨️ Print]   │
+│                                                              │
+│ Application Checklist:                                       │
+│ ☑ All documents downloaded                                  │
+│ ☐ Documents organized for submission                        │
+│ ☐ Cover letter prepared                                     │
+│ ☐ University application form completed                     │
+│                                                              │
+│ [✓ Mark as Downloaded]  [➜ Apply to University]            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 2: Apply to University
+
+#### University Application Tracker
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🎓 University Application - #APP-2026-001234                │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ University: Tech University                                  │
+│ Application Portal: https://apply.techuni.edu                │
+│ Contact: admissions@techuni.edu | +1-555-1234               │
+│                                                              │
+│ Application Method:                                          │
+│ ◉ Online Portal                                              │
+│ ○ Email Submission                                           │
+│ ○ Manual/Courier                                             │
+│                                                              │
+│ Application Details:                                         │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ University Ref: UNI-TU-2026-5678                      │   │
+│ │ Submitted On: [Select Date] Feb 13, 2026              │   │
+│ │ Submission Method: Online Portal                      │   │
+│ │ Tracking Number: TU20265678                           │   │
+│ │                                                       │   │
+│ │ Documents Submitted:                                  │   │
+│ │ ☑ Application Form                                   │   │
+│ │ ☑ Academic Transcripts                               │   │
+│ │ ☑ Passport Copy                                      │   │
+│ │ ☑ CV                                                 │   │
+│ │ ☑ Recommendation Letters (2)                         │   │
+│ │ ☑ English Test (IELTS)                               │   │
+│ │ ☑ Application Fee Receipt ($75)                      │   │
+│ │                                                       │   │
+│ │ Expected Response: 7-14 business days                │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Follow-up Schedule:                                          │
+│ ☐ Day 7: Check status                                       │
+│ ☐ Day 10: Follow-up email                                   │
+│ ☐ Day 14: Phone call if no response                         │
+│                                                              │
+│ Notes:                                                       │
+│ ___________________________________________________________  │
+│ ___________________________________________________________  │
+│                                                              │
+│ [Save]  [Set Reminder]  [Mark as Submitted]                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### STEP 3: Upload Admission Letter
+
+#### Admission Letter Upload
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📄 Upload Admission Letter - #APP-2026-001234               │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Application Status: IN PROGRESS                              │
+│ Student: John Doe                                            │
+│ University: Tech University                                  │
+│                                                              │
+│ Letter Information:                                          │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Letter Number: AL-2026-001234                         │   │
+│ │ Issue Date: [Select Date] Feb 18, 2026                │   │
+│ │ Program Start Date: [Select Date] Sep 2026            │   │
+│ │                                                       │   │
+│ │ Letter Details:                                       │   │
+│ │ Program: MSc Computer Science                         │   │
+│ │ Duration: 2 years                                     │   │
+│ │ Tuition Fee: $25,000/year                             │   │
+│ │ Scholarship: None                                     │   │
+│ │                                                       │   │
+│ │ Conditions:                                           │   │
+│ │ ☑ None (Unconditional Offer)                         │   │
+│ │ ☐ English Test Required                              │   │
+│ │ ☐ Deposit Payment Required                           │   │
+│ │ ☐ Other: _____________________                        │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Upload Admission Letter:                                     │
+│ [Choose File] admission_letter_john_doe.pdf                  │
+│ [Upload File] ✅ Uploaded Successfully (2.5 MB)              │
+│                                                              │
+│ Preview:                                                     │
+│ [🔍 View Letter]  [⬇️ Download]                              │
+│                                                              │
+│ Quality Check:                                               │
+│ ☑ Letter is official (letterhead, seal, signature)          │
+│ ☑ Student details match application                         │
+│ ☑ Program details are correct                               │
+│ ☑ Start date is clearly mentioned                           │
+│ ☑ Letter is in good quality (readable)                      │
+│                                                              │
+│ Next Steps:                                                  │
+│ • Letter will be sent to Main Agent for verification        │
+│ • Agent will approve/request revision                       │
+│ • After approval, letter sent to Office Worker              │
+│                                                              │
+│ [Save Draft]  [Submit for Agent Verification]                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**After Uploading Admission Letter:**
+```
+Application Status: ADMISSION_LETTER_UPLOADED
+→ Sent to Main Agent for verification
+→ Office Worker receives notification
+→ Payment stays in Agent's "Upcoming Payments"
+```
+
+---
+
+### STEP 4: Upload JW02 Form
+
+#### JW02 Form Upload
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📋 Upload JW02 Form - #APP-2026-001234                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Application Status: ADMISSION_LETTER_APPROVED                │
+│ Student: John Doe                                            │
+│ University: Tech University                                  │
+│                                                              │
+│ JW02 Form Information:                                       │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Form Number: JW02-2026-001234                         │   │
+│ │ Issue Date: [Select Date] Feb 18, 2026                │   │
+│ │ Valid Until: [Select Date] Aug 2026                   │   │
+│ │                                                       │   │
+│ │ Form Type:                                            │   │
+│ │ ◉ Student Visa (F-1)                                  │   │
+│ │ ○ Work Permit                                         │   │
+│ │ ○ Other                                               │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Upload JW02 Form:                                            │
+│ [Choose File] jw02_form_john_doe.pdf                         │
+│ [Upload File] ✅ Uploaded Successfully (1.8 MB)              │
+│                                                              │
+│ Preview:                                                     │
+│ [🔍 View Form]  [⬇️ Download]                                │
+│                                                              │
+│ Verification Checklist:                                      │
+│ ☑ Form is complete and signed                               │
+│ ☑ Student details match admission letter                    │
+│ ☑ University seal/stamp present                             │
+│ ☑ Valid dates (not expired)                                 │
+│ ☑ Form is legible and clear                                 │
+│                                                              │
+│ Notes:                                                       │
+│ ___________________________________________________________  │
+│                                                              │
+│ ⚠️ IMPORTANT: After agent approves this JW02 form,          │
+│    the $50 payment will move from "Upcoming Payments"       │
+│    to agent's "Current Balance"                             │
+│                                                              │
+│ [Save Draft]  [Submit for Agent Verification]                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**After Uploading JW02:**
+```
+Application Status: JW02_UPLOADED
+→ Sent to Main Agent for verification
+→ Office Worker receives notification
+
+AFTER AGENT APPROVES JW02:
+→ Application Status: COMPLETE
+→ $50 moves from Agent's "Upcoming" to "Balance"
+→ Agent can now withdraw the payment
+→ Office Worker can download final package
+```
+
+---
+
+### STEP 5: Handle Revision Requests
+
+#### Revision Request Interface
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ⚠️ Revision Request - #APP-2026-001235                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Request Type: Admission Letter Revision                      │
+│ Requested By: Sarah Johnson (Main Agent)                    │
+│ Requested On: Feb 19, 2026 at 2:30 PM                       │
+│ Priority: High                                               │
+│                                                              │
+│ Current Status: PENDING                                      │
+│                                                              │
+│ Revision Request Details:                                    │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ The admission letter has an incorrect start date.     │   │
+│ │ It shows "September 2025" but should be "September    │   │
+│ │ 2026". Please request a corrected letter from the     │   │
+│ │ university.                                           │   │
+│ │                                                       │   │
+│ │ Additionally, the student's middle name is missing    │   │
+│ │ from the letter. Full name should be:                 │   │
+│ │ "John Michael Doe" not "John Doe"                     │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Current Letter:                                              │
+│ [🔍 View Current Letter]  [⬇️ Download]                      │
+│                                                              │
+│ Action Taken:                                                │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ [Text area for HQ response]                           │   │
+│ │                                                       │   │
+│ │ Example: "Contacted university on Feb 19. Corrected  │   │
+│ │ letter will be issued by Feb 21. Will upload once    │   │
+│ │ received."                                            │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ Upload Revised Letter (When Ready):                          │
+│ [Choose File] [Upload]                                       │
+│                                                              │
+│ Status Update:                                               │
+│ ◉ In Progress - Working on it                               │
+│ ○ Completed - Revision uploaded                             │
+│ ○ Cannot Complete - University refused                      │
+│                                                              │
+│ [Save Update]  [Upload Revised Letter]  [Contact Agent]     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 HQ Reports & Analytics
+
+### University Partnership Dashboard
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🎓 University Partners Performance - February 2026          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ Tech University                                              │
+│ ├─ Active Applications:     18                              │
+│ ├─ Acceptance Rate:         89%                             │
+│ ├─ Avg. Processing Time:    9 days                          │
+│ ├─ Response Time:           ⭐⭐⭐⭐⭐ (Excellent)           │
+│ └─ Last Contact:            Feb 18, 2026                     │
+│                                                              │
+│ Business School                                              │
+│ ├─ Active Applications:     12                              │
+│ ├─ Acceptance Rate:         75%                             │
+│ ├─ Avg. Processing Time:    14 days                         │
+│ ├─ Response Time:           ⭐⭐⭐⭐ (Good)                  │
+│ └─ Last Contact:            Feb 17, 2026                     │
+│                                                              │
+│ Medical College                                              │
+│ ├─ Active Applications:     7                               │
+│ ├─ Acceptance Rate:         92%                             │
+│ ├─ Avg. Processing Time:    7 days                          │
+│ ├─ Response Time:           ⭐⭐⭐⭐⭐ (Excellent)           │
+│ └─ Last Contact:            Feb 19, 2026                     │
+│                                                              │
+│ Issues & Alerts:                                             │
+│ ⚠️ Business School - Slow response (3 apps pending 14+ days)│
+│ ✅ Tech University - Partnership renewal signed              │
+│ 💰 Medical College - New scholarship program available      │
+│                                                              │
+│ [View Detailed Report]  [Contact Universities]               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 HQ Pain Points & Solutions
+
+### Pain Point 1: University Response Delays
+**Solution:**
+- Automated follow-up reminders
+- Direct API integration with university portals
+- Escalation to university contact person
+- Alternative university suggestions
+
+### Pain Point 2: Document Format Compatibility
+**Solution:**
+- Universal document converter
+- Pre-formatted templates per university
+- Automated format validation
+- Batch document preparation
+
+### Pain Point 3: Tracking Multiple Applications Across Universities
+**Solution:**
+- Unified dashboard with all universities
+- Visual pipeline for each university
+- Automated status updates
+- Bulk operations for same university
+
+---
+
+## 📧 Communication Between Roles
+
+### Internal Messaging System
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 💬 Internal Messages - #APP-2026-001234                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ From: Sarah Johnson (Main Agent)                            │
+│ To: Maria Garcia (HQ)                                        │
+│ Date: Feb 19, 2026 at 2:30 PM                               │
+│ Subject: Admission Letter Correction Needed                 │
+│                                                              │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Hi Maria,                                             │   │
+│ │                                                       │   │
+│ │ The admission letter for John Doe has incorrect      │   │
+│ │ dates. Please request a corrected version from       │   │
+│ │ Tech University.                                      │   │
+│ │                                                       │   │
+│ │ Issues:                                               │   │
+│ │ - Start date shows Sept 2025, should be Sept 2026    │   │
+│ │ - Middle name missing                                 │   │
+│ │                                                       │   │
+│ │ Thanks!                                               │   │
+│ │ Sarah                                                 │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ ─────────────────────────────────────────────────────────   │
+│                                                              │
+│ From: Maria Garcia (HQ)                                      │
+│ To: Sarah Johnson (Main Agent)                              │
+│ Date: Feb 19, 2026 at 3:15 PM                               │
+│ Subject: RE: Admission Letter Correction Needed             │
+│                                                              │
+│ ┌───────────────────────────────────────────────────────┐   │
+│ │ Hi Sarah,                                             │   │
+│ │                                                       │   │
+│ │ I've contacted Tech University admissions office.    │   │
+│ │ They confirmed the error and will issue a corrected  │   │
+│ │ letter by Feb 21. I'll upload it as soon as I        │   │
+│ │ receive it.                                           │   │
+│ │                                                       │   │
+│ │ Thanks for catching this!                             │   │
+│ │ Maria                                                 │   │
+│ └───────────────────────────────────────────────────────┘   │
+│                                                              │
+│ [Reply]  [Forward]  [Archive]                                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📱 Mobile & Desktop Features Summary
+
+### Office Worker Mobile App
+- Quick document scanning
+- Application status checking
+- Student communication
+- Deadline notifications
+- Document upload on-the-go
+
+### Main Agent Desktop Focus
+- Large screen document review
+- Side-by-side comparison
+- Batch processing capabilities
+- Detailed analytics
+- Multi-application management
+
+### HQ Web Portal
+- University portal integration
+- Bulk document management
+- Relationship management tools
+- Long-term tracking
+- Reporting and analytics
+
+---
+
+## 🔄 Complete System Flow Summary
+
+```
+OFFICE WORKER:
+├─ Creates application
+├─ Uploads documents
+├─ Submits for review
+└─ Downloads final package when complete
+
+MAIN AGENT:
+├─ Reviews application
+├─ Verifies documents
+├─ Checks payment
+├─ Approves → $50 to Upcoming Payments
+├─ Verifies admission letter → Payment stays Upcoming
+├─ Verifies JW02 → Payment moves to Balance ✅
+└─ Can withdraw when balance available
+
+HEADQUARTERS:
+├─ Downloads approved documents
+├─ Applies to university
+├─ Uploads admission letter
+├─ Uploads JW02 form
+└─ Handles revisions if needed
+
+PAYMENTS:
+1. Application Approved → +$50 Upcoming
+2. Admission Letter Approved → Stays in Upcoming
+3. JW02 Approved → Moves to Balance
+4. Agent Withdraws → -$X from Balance
+```
+
+---
+
+This comprehensive documentation provides detailed perspectives for each role, showing exactly how they interact with the system, what they see, and how they perform their daily tasks.

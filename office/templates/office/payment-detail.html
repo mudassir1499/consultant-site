@@ -1,0 +1,169 @@
+{% extends 'office/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-credit-card-2-front"></i> Payment Detail</h3>
+    <a href="{% url 'office:payment_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Payments
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h5 class="mb-3">Payment #{{ payment.application_payment_id }}</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="200">Student</th>
+                        <td>{{ payment.application.user.get_full_name|default:payment.application.user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>Scholarship</th>
+                        <td>{{ payment.application.scholarship.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Application #</th>
+                        <td>
+                            <a href="{% url 'office:application_detail' payment.application.app_id %}">
+                                #{{ payment.application.app_id }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Amount</th>
+                        <td class="fw-bold fs-5">${{ payment.amount }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>
+                            <span class="badge fs-6
+                                {% if payment.payment_status == 'completed' %}bg-success
+                                {% elif payment.payment_status == 'pending' %}bg-warning text-dark
+                                {% elif payment.payment_status == 'under_review' %}bg-info
+                                {% elif payment.payment_status == 'failed' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ payment.get_payment_status_display|default:payment.payment_status }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Payment Date</th>
+                        <td>{{ payment.payment_date|date:"F j, Y, g:i a"|default:"—" }}</td>
+                    </tr>
+                    {% if payment.transaction_id %}
+                    <tr>
+                        <th>Transaction ID</th>
+                        <td><code>{{ payment.transaction_id }}</code></td>
+                    </tr>
+                    {% endif %}
+                    {% if payment.reviewed_by %}
+                    <tr>
+                        <th>Reviewed By</th>
+                        <td>{{ payment.reviewed_by.get_full_name|default:payment.reviewed_by.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>Reviewed At</th>
+                        <td>{{ payment.reviewed_at|date:"F j, Y, g:i a" }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if payment.review_note %}
+                    <tr>
+                        <th>Review Note</th>
+                        <td>{{ payment.review_note }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+
+                <!-- Receipt Viewer -->
+                {% if payment.receipt_pdf %}
+                <hr>
+                <h6><i class="bi bi-receipt"></i> Receipt</h6>
+                <div class="border rounded p-3 mb-3" style="max-height:500px;overflow-y:auto;">
+                    {% with ext=payment.receipt_pdf.name %}
+                    {% if '.pdf' in ext %}
+                        <embed src="{{ payment.receipt_pdf.url }}" type="application/pdf" style="width:100%;height:450px;border:none;">
+                        <p class="mt-2 text-muted small"><i class="bi bi-info-circle"></i> Can't see the PDF? <a href="{{ payment.receipt_pdf.url }}" target="_blank">Open in new tab</a>.</p>
+                    {% else %}
+                        <img src="{{ payment.receipt_pdf.url }}" class="img-fluid" alt="Receipt">
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <a href="{{ payment.receipt_pdf.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="bi bi-download"></i> Download Receipt
+                </a>
+                {% endif %}
+
+                <!-- Approve / Reject Buttons -->
+                {% if can_review %}
+                <hr>
+                <h6><i class="bi bi-clipboard-check"></i> Review Actions</h6>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmApprove">
+                        <i class="bi bi-check-circle"></i> Approve Payment
+                    </button>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmReject">
+                        <i class="bi bi-x-circle"></i> Reject Payment
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+{% if can_review %}
+<div class="modal fade" id="confirmApprove" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Approve Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'office:approve_payment' payment.application_payment_id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to <strong>approve</strong> payment <strong>#{{ payment.application_payment_id }}</strong> of <strong>${{ payment.amount }}</strong>?</p>
+                    <div class="mb-3">
+                        <label for="approve_note" class="form-label">Note <small class="text-muted">(optional)</small></label>
+                        <textarea name="review_note" id="approve_note" class="form-control" rows="2" placeholder="Any comments..."></textarea>
+                    </div>
+                    <p class="text-muted mb-0">This will mark the payment as <span class="badge bg-success">Completed</span> and notify the student.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Yes, Approve</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="confirmReject" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Reject Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'office:reject_payment' payment.application_payment_id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to <strong>reject</strong> payment <strong>#{{ payment.application_payment_id }}</strong> of <strong>${{ payment.amount }}</strong>?</p>
+                    <div class="mb-3">
+                        <label for="reject_note" class="form-label">Reason for rejection</label>
+                        <textarea name="review_note" id="reject_note" class="form-control" rows="2" placeholder="Reason for rejection..." required></textarea>
+                    </div>
+                    <p class="text-muted mb-0">This will mark the payment as <span class="badge bg-danger">Failed</span> and notify the student.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle"></i> Yes, Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,281 @@
+{% extends 'office/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Header Row -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-file-earmark-text"></i> Application #{{ application.app_id }}</h2>
+            <a href="{% url 'office:application_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+
+        <!-- Rejection Banner -->
+        {% if application.status == 'rejected' and application.rejection_reason %}
+        <div class="alert alert-danger mb-4">
+            <h6 class="alert-heading"><i class="bi bi-x-circle"></i> Application Rejected</h6>
+            <p class="mb-0">{{ application.rejection_reason }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Info & Status Row -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5 class="mb-3">Applicant: {{ application.user.get_full_name|default:application.user.username }}</h5>
+                        <p><strong>Scholarship:</strong> {{ application.scholarship.name }}</p>
+                        <p><strong>Applied On:</strong> {{ application.applied_date|date:"F j, Y, g:i a" }}</p>
+                        {% if application.assigned_agent %}
+                        <p><strong>Assigned Agent:</strong> {{ application.assigned_agent.get_full_name|default:application.assigned_agent.username }}</p>
+                        {% endif %}
+                        {% if application.assigned_hq %}
+                        <p><strong>Assigned HQ:</strong> {{ application.assigned_hq.get_full_name|default:application.assigned_hq.username }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow text-center">
+                    <div class="card-body">
+                        <h6>Status</h6>
+                        <span class="badge fs-6
+                            {% if application.status == 'draft' %}bg-secondary
+                            {% elif application.status == 'submitted' %}bg-primary
+                            {% elif application.status == 'under_review' %}bg-info
+                            {% elif application.status == 'documents_verified' %}bg-info
+                            {% elif application.status == 'payment_verified' %}bg-info
+                            {% elif application.status == 'approved' %}bg-success
+                            {% elif application.status == 'rejected' %}bg-danger
+                            {% elif application.status == 'in_progress' %}bg-warning text-dark
+                            {% elif application.status == 'complete' %}bg-dark
+                            {% else %}bg-primary{% endif %}">
+                            {{ application.get_status_display }}
+                        </span>
+
+                        <!-- Submit Button for drafts -->
+                        {% if application.status == 'draft' %}
+                        <form method="post" action="{% url 'office:submit_application' application.app_id %}" class="mt-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-send"></i> Submit Application
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admission Letter Section -->
+        {% if admission_letter %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-envelope-paper"></i> Admission Letter</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1"><strong>Status:</strong>
+                            <span class="badge {% if admission_letter.status == 'approved' %}bg-success{% elif admission_letter.status == 'revision_requested' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                {{ admission_letter.get_status_display }}
+                            </span>
+                        </p>
+                        <p class="mb-0"><strong>Uploaded:</strong> {{ admission_letter.uploaded_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <a href="{{ admission_letter.file.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- JW02 Form Section -->
+        {% if jw02 %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-ruled"></i> JW02 Form</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1"><strong>Status:</strong>
+                            <span class="badge {% if jw02.status == 'approved' %}bg-success{% else %}bg-info{% endif %}">
+                                {{ jw02.get_status_display }}
+                            </span>
+                        </p>
+                        <p class="mb-0"><strong>Uploaded:</strong> {{ jw02.uploaded_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <a href="{{ jw02.file.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Application Documents -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-folder2-open"></i> Application Documents</h5>
+            </div>
+            <div class="card-body">
+                <div class="application-details">
+                    {% if documents %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Document Type</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if documents.passport %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> Passport</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.passport }}', 'Passport')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.photo %}
+                                    <tr>
+                                        <td><i class="bi bi-image"></i> Photo</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.photo }}', 'Photo')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.graduation_certificate %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> Graduation Certificate</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.graduation_certificate }}', 'Graduation Certificate')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.criminal_record %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> Criminal Record</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.criminal_record }}', 'Criminal Record')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.medical_examination %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> Medical Examination</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.medical_examination }}', 'Medical Examination')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.letter_of_recommendation_1 %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> Letter of Recommendation 1</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.letter_of_recommendation_1 }}', 'Letter of Recommendation 1')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.letter_of_recommendation_2 %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> Letter of Recommendation 2</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.letter_of_recommendation_2 }}', 'Letter of Recommendation 2')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.study_plan %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> Study Plan</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.study_plan }}', 'Study Plan')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if documents.english_certificate %}
+                                    <tr>
+                                        <td><i class="bi bi-file-pdf"></i> English Certificate</td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                        <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#documentModal" onclick="openDocument('{{ documents.english_certificate }}', 'English Certificate')"><i class="bi bi-eye"></i> View</button></td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No documents uploaded.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Status History -->
+        {% if status_history %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Status History</h5>
+            </div>
+            <div class="card-body">
+                {% for entry in status_history %}
+                <div class="d-flex mb-3">
+                    <div class="me-3 text-center" style="min-width: 80px;">
+                        <small class="text-muted">{{ entry.changed_at|date:"M d" }}<br>{{ entry.changed_at|date:"H:i" }}</small>
+                    </div>
+                    <div class="border-start border-3 border-primary ps-3">
+                        <strong>{{ entry.get_new_status_display }}</strong>
+                        {% if entry.changed_by %}
+                        <small class="text-muted">by {{ entry.changed_by.username }}</small>
+                        {% endif %}
+                        {% if entry.note %}
+                        <p class="text-muted mb-0 mt-1"><small>{{ entry.note }}</small></p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Document Viewer Modal -->
+<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentName">Document Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div id="documentContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <a id="downloadLink" href="#" class="btn btn-primary" download><i class="bi bi-download"></i> Download</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openDocument(url, docName) {
+    document.getElementById('documentName').textContent = docName;
+    document.getElementById('downloadLink').href = url;
+    const container = document.getElementById('documentContainer');
+    const ext = url.split('.').pop().toLowerCase();
+    if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+        container.innerHTML = `<img src="${url}" class="img-fluid" alt="${docName}">`;
+    } else if (ext === 'pdf') {
+        container.innerHTML = `<embed src="${url}" type="application/pdf" style="width:100%;height:600px;border:none;"><p class="mt-3 text-muted small"><i class="bi bi-info-circle"></i> If the PDF doesn't display, <a href="${url}" target="_blank">open in new tab</a>.</p>`;
+    } else {
+        container.innerHTML = `<p class="text-warning"><i class="bi bi-exclamation-triangle"></i> Preview not available. Please download.</p>`;
+    }
+}
+</script>
+{% endblock content %}

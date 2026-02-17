@@ -1,0 +1,64 @@
+{% if applications %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>App #</th>
+                <th>Student</th>
+                <th>Scholarship</th>
+                <th>HQ Commission</th>
+                <th>Deadline</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td><strong>#{{ app.app_id }}</strong></td>
+                <td>{{ app.user.get_full_name|default:app.user.username }}</td>
+                <td>{{ app.scholarship.name }}</td>
+                <td class="text-success fw-bold">${{ app.scholarship.hq_commission }}</td>
+                <td>
+                    {% if app.deadline %}
+                    <span class="{% if app.deadline_passed %}text-danger{% endif %}">{{ app.deadline|date:"M d, Y" }}</span>
+                    {% else %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge
+                        {% if app.status == 'approved' %}bg-success
+                        {% elif app.status == 'in_progress' %}bg-info
+                        {% elif app.status == 'admission_letter_uploaded' or app.status == 'jw02_uploaded' %}bg-primary
+                        {% elif app.status == 'admission_letter_approved' or app.status == 'jw02_approved' %}bg-success
+                        {% elif app.status == 'letter_pending' or app.status == 'jw02_pending' %}bg-warning text-dark
+                        {% elif app.status == 'complete' %}bg-dark
+                        {% elif app.status == 'rejected' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ app.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    {% if app.status == 'letter_pending' or app.status == 'jw02_pending' %}
+                        <a href="{% url 'headquarters:revision_list' %}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil-square"></i> Fix Revision
+                        </a>
+                    {% elif app.status == 'admission_letter_approved' %}
+                        <a href="{% url 'headquarters:upload_jw02' app.app_id %}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-upload"></i> Upload JW02
+                        </a>
+                    {% else %}
+                        <a href="{% url 'headquarters:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-muted text-center py-5">{{ empty_msg|default:"No applications found." }}</p>
+{% endif %}

@@ -1,0 +1,205 @@
+{% extends 'headquarters/base.html' %}
+
+{% block title %}HQ Dashboard{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-speedometer2"></i> Headquarters Dashboard</h3>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="opacity-75">Total Assigned</h6>
+                        <h2 class="mb-0">{{ total_assigned }}</h2>
+                    </div>
+                    <i class="bi bi-folder2-open fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="opacity-75">In Progress</h6>
+                        <h2 class="mb-0">{{ in_progress }}</h2>
+                    </div>
+                    <i class="bi bi-gear-wide-connected fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="opacity-75">Completed</h6>
+                        <h2 class="mb-0">{{ completed_count }}</h2>
+                    </div>
+                    <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="opacity-75">Pending Revisions</h6>
+                        <h2 class="mb-0">{{ pending_revisions }}</h2>
+                    </div>
+                    <i class="bi bi-pencil-square fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallet Summary -->
+<div class="card wallet-card mb-4">
+    <div class="card-body p-4">
+        <h5 class="mb-3"><i class="bi bi-wallet2"></i> Wallet Summary</h5>
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Current Balance</small>
+                    <h3>${{ wallet.current_balance }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Upcoming Payments</small>
+                    <h3>${{ wallet.upcoming_payments }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Total Earned</small>
+                    <h3>${{ wallet.total_earned }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <small class="opacity-75">Total Withdrawn</small>
+                    <h3>${{ wallet.total_withdrawn }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="text-end mt-2">
+            <a href="{% url 'headquarters:wallet' %}" class="btn btn-outline-light btn-sm">View Details &rarr;</a>
+        </div>
+    </div>
+</div>
+
+<!-- In-Progress Applications with Deadline Timers -->
+{% if in_progress_apps %}
+<div class="card stat-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock"></i> Active Deadlines</h5>
+    </div>
+    <div class="card-body">
+        {% for app in in_progress_apps %}
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+                <strong>App #{{ app.app_id }}</strong> — {{ app.scholarship.name }}
+                <br><small class="text-muted">{{ app.user.username }}</small>
+            </div>
+            {% if app.deadline %}
+            <div class="deadline-timer text-danger" data-deadline="{{ app.deadline|date:'c' }}">
+                Deadline: {{ app.deadline|date:"M d, Y H:i" }}
+            </div>
+            {% endif %}
+            <a href="{% url 'headquarters:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Applications with Nav Tabs -->
+<div class="card stat-card">
+    <div class="card-header bg-white">
+        <ul class="nav nav-tabs card-header-tabs" id="hqAppTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="hq-all-tab" data-bs-toggle="tab" data-bs-target="#hq-tab-all" type="button" role="tab">
+                    All <span class="badge bg-primary ms-1">{{ total_assigned }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hq-approved-tab" data-bs-toggle="tab" data-bs-target="#hq-tab-approved" type="button" role="tab">
+                    Approved <span class="badge bg-warning text-dark ms-1">{{ approved_pending }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hq-progress-tab" data-bs-toggle="tab" data-bs-target="#hq-tab-progress" type="button" role="tab">
+                    In Progress <span class="badge bg-info ms-1">{{ in_progress }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hq-letters-tab" data-bs-toggle="tab" data-bs-target="#hq-tab-letters" type="button" role="tab">
+                    Letters <span class="badge bg-secondary ms-1">{{ letter_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hq-jw02-tab" data-bs-toggle="tab" data-bs-target="#hq-tab-jw02" type="button" role="tab">
+                    JW02 <span class="badge bg-secondary ms-1">{{ jw02_count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hq-revisions-tab" data-bs-toggle="tab" data-bs-target="#hq-tab-revisions" type="button" role="tab">
+                    Revisions <span class="badge bg-danger ms-1">{{ pending_revisions }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hq-completed-tab" data-bs-toggle="tab" data-bs-target="#hq-tab-completed" type="button" role="tab">
+                    Completed <span class="badge bg-dark ms-1">{{ completed_count }}</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="hqAppTabsContent">
+            <!-- All -->
+            <div class="tab-pane fade show active" id="hq-tab-all" role="tabpanel">
+                {% include 'headquarters/_app_table.html' with applications=all_applications empty_msg="No applications assigned yet." %}
+            </div>
+            <!-- Approved -->
+            <div class="tab-pane fade" id="hq-tab-approved" role="tabpanel">
+                {% include 'headquarters/_app_table.html' with applications=approved_apps empty_msg="No approved applications pending." %}
+            </div>
+            <!-- In Progress -->
+            <div class="tab-pane fade" id="hq-tab-progress" role="tabpanel">
+                {% include 'headquarters/_app_table.html' with applications=in_progress_apps_list empty_msg="No applications in progress." %}
+            </div>
+            <!-- Letters -->
+            <div class="tab-pane fade" id="hq-tab-letters" role="tabpanel">
+                {% include 'headquarters/_app_table.html' with applications=letter_apps empty_msg="No applications in letter stage." %}
+            </div>
+            <!-- JW02 -->
+            <div class="tab-pane fade" id="hq-tab-jw02" role="tabpanel">
+                {% include 'headquarters/_app_table.html' with applications=jw02_apps empty_msg="No applications in JW02 stage." %}
+            </div>
+            <!-- Revisions -->
+            <div class="tab-pane fade" id="hq-tab-revisions" role="tabpanel">
+                {% if revision_apps %}
+                    {% include 'headquarters/_app_table.html' with applications=revision_apps empty_msg="No pending revisions." %}
+                {% else %}
+                    <p class="text-muted text-center py-4">No pending revisions. <a href="{% url 'headquarters:revision_list' %}">View revision details &rarr;</a></p>
+                {% endif %}
+            </div>
+            <!-- Completed -->
+            <div class="tab-pane fade" id="hq-tab-completed" role="tabpanel">
+                {% include 'headquarters/_app_table.html' with applications=completed_apps empty_msg="No completed applications." %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

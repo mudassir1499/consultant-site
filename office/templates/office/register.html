@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Registration | EduConsult</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); min-height: 100vh; display: flex; align-items: center; }
+        .login-card { border: none; border-radius: 1rem; box-shadow: 0 10px 40px rgba(0,0,0,.15); }
+        .brand-header { background: #1e3a5f; color: #fff; padding: 2rem; border-radius: 1rem 1rem 0 0; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card login-card">
+                <div class="brand-header">
+                    <i class="bi bi-building" style="font-size:2.5rem;"></i>
+                    <h4 class="mt-2 mb-0">Office Registration</h4>
+                    <small class="opacity-75">EduConsult Management</small>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" action="{% url 'office:register' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last name">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone number">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password1" class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password1" name="password1" placeholder="Min 6 characters" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password2" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm password" required>
+                        </div>
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <p class="text-center mb-1">
+                        Already have an account? <a href="{% url 'office:login' %}">Login</a>
+                    </p>
+                    <p class="text-center mb-0 small">
+                        <a href="{% url 'pages:home' %}" class="text-muted">Back to Home</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

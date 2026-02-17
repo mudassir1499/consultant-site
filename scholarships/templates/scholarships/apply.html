@@ -1,0 +1,310 @@
+{% extends "scholarships/base.html" %}
+
+{% block title %}Apply — {{ scholarship.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-upload-card {
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .doc-upload-card:hover, .doc-upload-card:focus-within {
+        border-color: #0d6efd;
+        background: rgba(13, 110, 253, 0.03);
+    }
+    .doc-upload-card .doc-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .upload-progress-wrap {
+        display: none;
+        margin-top: 0.5rem;
+    }
+    .upload-progress-wrap.active { display: block; }
+    .file-name-display {
+        font-size: 0.8rem;
+        color: #198754;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Back link -->
+            <a href="/" class="text-decoration-none text-muted mb-3 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i> Back to Scholarships
+            </a>
+
+            <!-- Scholarship Summary Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                            <i class="bi bi-mortarboard-fill fs-3"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="fw-bold mb-1">{{ scholarship.name }}</h4>
+                            <div class="d-flex flex-wrap gap-3 text-muted small">
+                                <span><i class="bi bi-book me-1"></i>{{ scholarship.get_degree_display }}</span>
+                                <span><i class="bi bi-briefcase me-1"></i>{{ scholarship.major }}</span>
+                                <span><i class="bi bi-geo-alt me-1"></i>{{ scholarship.city }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <small class="text-muted d-block">Type</small>
+                            <span class="badge bg-success">{{ scholarship.get_scholarship_type_display }}</span>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Value</small>
+                            <strong class="text-success">${{ scholarship.price }}</strong>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Deadline</small>
+                            <strong class="text-danger">{{ scholarship.deadline|date:"M d, Y" }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Application Form -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-cloud-arrow-up me-2"></i>Upload Documents</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info border-0 d-flex align-items-start" role="alert">
+                        <i class="bi bi-info-circle-fill fs-5 me-3 mt-1"></i>
+                        <div>
+                            <strong>All documents are required.</strong> Upload clear, legible copies. 
+                            Each file has its own upload progress indicator.
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" data-loading="Uploading your documents..." novalidate>
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                            <!-- Passport -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-primary bg-opacity-10 text-primary">
+                                            <i class="bi bi-passport"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="passport" class="form-label fw-bold mb-1">
+                                                Passport <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="passport" name="passport" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <small class="text-muted">PDF, JPG, PNG (Max 5MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photo -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-success bg-opacity-10 text-success">
+                                            <i class="bi bi-person-bounding-box"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="photo" class="form-label fw-bold mb-1">
+                                                Photo (4x4 cm) <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="photo" name="photo" 
+                                                   accept=".jpg,.jpeg,.png" required>
+                                            <small class="text-muted">JPG, PNG (Max 2MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Graduation Certificate -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-warning bg-opacity-10 text-warning">
+                                            <i class="bi bi-award"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="graduation_certificate" class="form-label fw-bold mb-1">
+                                                Graduation Certificate <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="graduation_certificate" name="graduation_certificate" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <small class="text-muted">PDF, JPG, PNG (Max 5MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Criminal Record -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-danger bg-opacity-10 text-danger">
+                                            <i class="bi bi-shield-check"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="criminal_record" class="form-label fw-bold mb-1">
+                                                Criminal Record Certificate <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="criminal_record" name="criminal_record" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <small class="text-muted">PDF, JPG, PNG (Max 5MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Medical Examination -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-info bg-opacity-10 text-info">
+                                            <i class="bi bi-heart-pulse"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="medical_examination" class="form-label fw-bold mb-1">
+                                                Medical Examination <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="medical_examination" name="medical_examination" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <small class="text-muted">PDF, JPG, PNG (Max 5MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recommendation 1 -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-primary bg-opacity-10 text-primary">
+                                            <i class="bi bi-envelope-paper"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="letter_of_recommendation_1" class="form-label fw-bold mb-1">
+                                                Recommendation Letter 1 <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="letter_of_recommendation_1" name="letter_of_recommendation_1" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <small class="text-muted">PDF, JPG, PNG (Max 5MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recommendation 2 -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-success bg-opacity-10 text-success">
+                                            <i class="bi bi-envelope-paper-fill"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="letter_of_recommendation_2" class="form-label fw-bold mb-1">
+                                                Recommendation Letter 2 <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="letter_of_recommendation_2" name="letter_of_recommendation_2" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <small class="text-muted">PDF, JPG, PNG (Max 5MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Study Plan -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-warning bg-opacity-10 text-warning">
+                                            <i class="bi bi-journal-text"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="study_plan" class="form-label fw-bold mb-1">
+                                                Study Plan <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="study_plan" name="study_plan" 
+                                                   accept=".pdf,.doc,.docx" required>
+                                            <small class="text-muted">PDF, DOC (Max 5MB)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- English Certificate -->
+                            <div class="col-md-6">
+                                <div class="doc-upload-card">
+                                    <div class="d-flex gap-3">
+                                        <div class="doc-icon bg-info bg-opacity-10 text-info">
+                                            <i class="bi bi-translate"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="english_certificate" class="form-label fw-bold mb-1">
+                                                English Certificate <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-sm" id="english_certificate" name="english_certificate" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                                            <small class="text-muted">TOEFL/IELTS — PDF, JPG, PNG</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Overall upload progress (shown during submit) -->
+                        <div id="overallUploadProgress" class="mb-3" style="display:none;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted fw-bold">Uploading documents...</small>
+                                <small class="text-muted" id="uploadPercentText">0%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="uploadProgressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="/" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
+                                <i class="bi bi-send me-2"></i>Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

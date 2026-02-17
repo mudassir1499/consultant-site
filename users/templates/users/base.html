@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_settings.site_name|default:'Yaamaan Education Consultants' }}{% endblock %}</title>
+
+    {# SEO Meta Tags #}
+    <meta name="description" content="{% block meta_description %}{{ site_settings.meta_description|default:'' }}{% endblock %}">
+    <meta name="keywords" content="{{ site_settings.meta_keywords|default:'' }}">
+
+    {# Favicon #}
+    {% if site_settings.favicon %}
+    <link rel="icon" href="{{ site_settings.favicon.url }}" type="image/png">
+    {% endif %}
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        main { flex: 1; }
+        footer {
+            background-color: #1a1a2e;
+            color: #a0a0b0;
+        }
+        footer a { color: #c0c0d0; text-decoration: none; }
+        footer a:hover { color: #fff; }
+
+        /* Page Loader */
+        #pageLoader {
+            position: fixed; inset: 0;
+            background: rgba(255,255,255,0.85);
+            z-index: 9999;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            transition: opacity 0.3s;
+        }
+        #pageLoader.fade-out { opacity: 0; pointer-events: none; }
+        .loader-spinner {
+            width: 48px; height: 48px;
+            border: 4px solid #e9ecef; border-top-color: #0d6efd;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .upload-progress-wrapper { display: none; margin-top: 0.5rem; }
+        .upload-progress-wrapper.active { display: block; }
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    </style>
+    {% block extra_css %}{% endblock %}
+
+    {# Google Analytics #}
+    {% if site_settings.google_analytics_id %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site_settings.google_analytics_id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ site_settings.google_analytics_id }}');
+    </script>
+    {% endif %}
+</head>
+<body>
+    <!-- Page Loading Overlay -->
+    <div id="pageLoader">
+        <div class="loader-spinner mb-3"></div>
+        <span class="text-muted small">Loading...</span>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="/">
+                {% if site_settings.logo %}
+                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="max-height:36px;" class="me-2">
+                {% else %}
+                <i class="bi bi-mortarboard-fill me-2 fs-4"></i>
+                {% endif %}
+                {{ site_settings.site_name|default:'Yaamaan Education' }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house me-1"></i>Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about"><i class="bi bi-info-circle me-1"></i>About</a></li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'users:dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="{% url 'users:notifications' %}">
+                            <i class="bi bi-bell"></i>
+                            {% if unread_notifications_count %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;">{{ unread_notifications_count }}</span>{% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'users:profile' %}"><i class="bi bi-person me-1"></i>Profile</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="{% url 'users:logout' %}" onclick="return confirm('Are you sure you want to logout?')"><i class="bi bi-box-arrow-right me-1"></i>Logout</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+            {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
+            {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="container my-5">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width:3rem;height:3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mb-0 fw-semibold" id="loadingModalMessage">Processing...</p>
+                    <div class="progress mt-3" style="height:6px;" id="loadingModalProgress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="actionSuccessModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body text-center py-5">
+                    <div class="mb-3"><i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i></div>
+                    <h4 class="mb-2" id="successModalTitle">Action Completed!</h4>
+                    <p class="text-muted" id="successModalMessage">Your request has been processed successfully.</p>
+                    <button type="button" class="btn btn-primary px-4 mt-2" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0 small">{{ site_settings.footer_text|default:'© 2024 Yaamaan Education Consultants. All rights reserved.' }}</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    window.addEventListener('load', function() {
+        var loader = document.getElementById('pageLoader');
+        if (loader) { loader.classList.add('fade-out'); setTimeout(function() { loader.remove(); }, 300); }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form[data-loading]').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                showLoadingModal(form.getAttribute('data-loading') || 'Processing...');
+            });
+        });
+        document.querySelectorAll('input[type="file"]').forEach(function(input) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'upload-progress-wrapper';
+            wrapper.innerHTML = '<div class="progress" style="height:6px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:0%"></div></div><small class="text-muted upload-status"></small>';
+            input.parentNode.appendChild(wrapper);
+            input.addEventListener('change', function() {
+                if (input.files.length > 0) {
+                    var f = input.files[0], sz = (f.size / (1024*1024)).toFixed(2);
+                    wrapper.classList.add('active');
+                    wrapper.querySelector('.progress-bar').style.width = '100%';
+                    wrapper.querySelector('.upload-status').textContent = f.name + ' (' + sz + ' MB) \u2014 Ready';
+                } else { wrapper.classList.remove('active'); }
+            });
+        });
+        document.querySelectorAll('form[enctype="multipart/form-data"]').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                var hasFiles = false;
+                form.querySelectorAll('input[type="file"]').forEach(function(inp) { if (inp.files.length) hasFiles = true; });
+                if (!hasFiles) return;
+                e.preventDefault();
+                showLoadingModal('Uploading files...');
+                var bar = document.querySelector('#loadingModalProgress .progress-bar');
+                var xhr = new XMLHttpRequest();
+                xhr.open(form.method || 'POST', form.action || window.location.href, true);
+                xhr.upload.addEventListener('progress', function(ev) {
+                    if (ev.lengthComputable) { var p = Math.round((ev.loaded/ev.total)*100); bar.style.width = p+'%'; document.getElementById('loadingModalMessage').textContent = 'Uploading... '+p+'%'; }
+                });
+                xhr.addEventListener('load', function() { if (xhr.responseURL) window.location.href = xhr.responseURL; else window.location.reload(); });
+                xhr.addEventListener('error', function() { hideLoadingModal(); alert('Upload failed.'); });
+                xhr.send(new FormData(form));
+            });
+        });
+    });
+    function showLoadingModal(msg) {
+        document.getElementById('loadingModalMessage').textContent = msg || 'Processing...';
+        document.querySelector('#loadingModalProgress .progress-bar').style.width = '0%';
+        new bootstrap.Modal(document.getElementById('loadingModal')).show();
+    }
+    function hideLoadingModal() {
+        var m = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
+        if (m) m.hide();
+    }
+    function showSuccessModal(title, message) {
+        document.getElementById('successModalTitle').textContent = title || 'Success!';
+        document.getElementById('successModalMessage').textContent = message || 'Action completed successfully.';
+        new bootstrap.Modal(document.getElementById('actionSuccessModal')).show();
+    }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

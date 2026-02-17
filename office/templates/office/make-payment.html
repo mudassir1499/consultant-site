@@ -1,0 +1,78 @@
+{% extends 'office/base.html' %}
+{% block title %}Make Payment{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-credit-card-2-front"></i> Make Payment</h3>
+    <a href="{% url 'office:application_detail' application.app_id %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Application
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Application Info -->
+        <div class="card stat-card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">Application</small>
+                        <p class="fw-bold mb-1">#{{ application.app_id }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Student</small>
+                        <p class="fw-bold mb-1">{{ application.user.get_full_name|default:application.user.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Scholarship</small>
+                        <p class="fw-bold mb-1">{{ application.scholarship.name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Fee</small>
+                        <p class="fw-bold mb-1">${{ application.scholarship.price }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-receipt"></i> Payment Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" data-loading="Submitting payment...">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="amount" id="amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="receipt_pdf" class="form-label">Receipt File <span class="text-danger">*</span></label>
+                        <input type="file" name="receipt_pdf" id="receipt_pdf" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <small class="text-muted">Accepted formats: PDF, JPG, PNG</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transaction_id" class="form-label">Transaction ID <small class="text-muted">(optional)</small></label>
+                        <input type="text" name="transaction_id" id="transaction_id" class="form-control" placeholder="e.g. TXN-12345">
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> This payment will be recorded with status <span class="badge bg-info">Under Review</span> and can be approved or rejected later.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> Submit Payment</button>
+                        <a href="{% url 'office:application_detail' application.app_id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

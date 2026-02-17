@@ -1,0 +1,51 @@
+{% if applications %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>App #</th>
+                <th>Student</th>
+                <th>Scholarship</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td>#{{ app.app_id }}</td>
+                <td>{{ app.user.username }}</td>
+                <td>{{ app.scholarship.name }}</td>
+                <td>
+                    <span class="badge
+                        {% if app.status == 'submitted' or app.status == 'payment_verified' or app.status == 'documents_verified' %}bg-warning text-dark
+                        {% elif app.status == 'under_review' %}bg-info
+                        {% elif app.status == 'approved' or app.status == 'in_progress' %}bg-success
+                        {% elif app.status == 'rejected' %}bg-danger
+                        {% elif app.status == 'admission_letter_uploaded' or app.status == 'jw02_uploaded' %}bg-primary
+                        {% elif app.status == 'admission_letter_approved' or app.status == 'jw02_approved' %}bg-success
+                        {% elif app.status == 'letter_pending' or app.status == 'jw02_pending' %}bg-warning text-dark
+                        {% elif app.status == 'complete' %}bg-dark
+                        {% else %}bg-secondary{% endif %}">
+                        {{ app.get_status_display }}
+                    </span>
+                </td>
+                <td>{{ app.applied_date|date:"M d, Y" }}</td>
+                <td>
+                    {% if app.status == 'admission_letter_uploaded' %}
+                        <a href="{% url 'agent:admission_letter_review' app.app_id %}" class="btn btn-sm btn-outline-info">Review Letter</a>
+                    {% elif app.status == 'jw02_uploaded' %}
+                        <a href="{% url 'agent:jw02_review' app.app_id %}" class="btn btn-sm btn-outline-info">Review JW02</a>
+                    {% else %}
+                        <a href="{% url 'agent:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-muted text-center py-4">{{ empty_msg|default:"No applications found." }}</p>
+{% endif %}
