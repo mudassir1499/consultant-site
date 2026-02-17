@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ site_settings.site_name|default:'Yaamaan Education Consultants' }}{% endblock %}</title>
+    <title>{% block title %}{{ site_settings.site_name|default:'DFS Education' }}{% endblock %}</title>
 
     {# SEO Meta Tags #}
     <meta name="description" content="{% block meta_description %}{{ site_settings.meta_description|default:'' }}{% endblock %}">
@@ -72,7 +72,7 @@
         <span class="text-muted small">Loading...</span>
     </div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: var(--site-navbar-bg, #111111); border-bottom: 1px solid rgba(192,192,192,0.1);">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center fw-bold" href="/">
                 {% if site_settings.logo %}
@@ -80,7 +80,7 @@
                 {% else %}
                 <i class="bi bi-mortarboard-fill me-2 fs-4"></i>
                 {% endif %}
-                {{ site_settings.site_name|default:'Yaamaan Education' }}
+                {{ site_settings.site_name|default:'DFS Education' }}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -157,7 +157,7 @@
 
     <footer class="py-4 mt-5">
         <div class="container text-center">
-            <p class="mb-0 small">{{ site_settings.footer_text|default:'© 2024 Yaamaan Education Consultants. All rights reserved.' }}</p>
+            <p class="mb-0 small">{{ site_settings.footer_text|default:'\u00a9 2026 DFS Education. All rights reserved.' }}</p>
         </div>
     </footer>
 

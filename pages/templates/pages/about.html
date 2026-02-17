@@ -1,13 +1,31 @@
 {% extends "pages/base.html" %}
 
-{% block title %}About Us — {{ site_settings.site_name|default:'Yaamaan Education' }}{% endblock %}
+{% block title %}About Us — {{ site_settings.site_name|default:'DFS Education' }}{% endblock %}
 
 {% block extra_css %}
 <style>
     .about-hero {
-        background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%);
+        background: linear-gradient(135deg, var(--site-hero-start, #0a0a0a) 0%, #0d1117 50%, var(--site-hero-end, #1a1a2e) 100%);
         color: #fff;
         padding: 4rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        top: -40%;
+        right: -15%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(43,125,233,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .chrome-divider {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(192,192,192,0.4), transparent);
+        max-width: 300px;
+        margin: 1.5rem auto;
     }
     .value-card {
         border: none;
@@ -52,7 +70,8 @@
 <!-- Hero -->
 <section class="about-hero">
     <div class="container text-center">
-        <h1 class="display-5 fw-bold mb-3">About {{ site_settings.site_name|default:'Yaamaan Education Consultants' }}</h1>
+        <h1 class="display-5 fw-bold mb-3">About {{ site_settings.site_name|default:'DFS Education' }}</h1>
+        <div class="chrome-divider"></div>
         <p class="lead opacity-75 col-lg-8 mx-auto">
             We are dedicated to helping students around the world achieve their dreams of studying abroad 
             through expert guidance, scholarship matching, and end-to-end application support.

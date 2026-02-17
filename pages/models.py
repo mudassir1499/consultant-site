@@ -9,7 +9,7 @@ class SiteSettings(models.Model):
 
     # ─── Branding ────────────────────────────────────────────
     site_name = models.CharField(
-        max_length=200, default='Yaamaan Education Consultants',
+        max_length=200, default='DFS Education',
         help_text='Displayed in the navbar, browser tab title, and footer.',
     )
     tagline = models.CharField(
@@ -28,7 +28,7 @@ class SiteSettings(models.Model):
     # ─── SEO ─────────────────────────────────────────────────
     meta_description = models.CharField(
         max_length=300, blank=True,
-        default='Yaamaan Education Consultants - Helping students achieve their dreams of studying abroad.',
+        default='DFS Education - Expert consultancy for students seeking international scholarships and university admissions.',
         help_text='Meta description for search engines (max 160 chars recommended).',
     )
     meta_keywords = models.CharField(
@@ -43,7 +43,7 @@ class SiteSettings(models.Model):
 
     # ─── Contact / Footer Info ───────────────────────────────
     contact_email = models.EmailField(
-        blank=True, default='info@yaamaan.com',
+        blank=True, default='info@dfseducation.com',
         help_text='Public contact email displayed on the site.',
     )
     contact_phone = models.CharField(
@@ -75,7 +75,7 @@ class SiteSettings(models.Model):
     # ─── Footer ──────────────────────────────────────────────
     footer_text = models.CharField(
         max_length=500, blank=True,
-        default='© 2024 Yaamaan Education Consultants. All rights reserved.',
+        default='\u00a9 2026 DFS Education. All rights reserved.',
         help_text='Custom footer copyright / text.',
     )
 
