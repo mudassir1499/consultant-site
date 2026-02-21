@@ -35,6 +35,10 @@ desktop.ini
 .env
 *.env
 
+# Logs & Static
+logs/
+staticfiles/
+
 # Distribution
 dist/
 build/

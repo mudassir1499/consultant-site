@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .models import User
@@ -69,6 +69,11 @@ def user_login(request):
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')
                 
+                # Handle next parameter
+                next_url = request.POST.get('next') or request.GET.get('next')
+                if next_url:
+                    return redirect(next_url)
+                
                 # Redirect based on role
                 if user.role == 'office':
                     return redirect('office:office_dashboard')
@@ -88,8 +93,9 @@ def user_login(request):
     return render(request, 'users/login.html')
 
 
+@require_POST
 def user_logout(request):
-    """Handle user logout"""
+    """Handle user logout (POST only for CSRF safety)"""
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('users:login')
@@ -97,9 +103,29 @@ def user_logout(request):
 
 @login_required
 def user_profile(request):
-    """Display user profile"""
-    context = {'user': request.user}
-    return render(request, 'users/profile.html', context)
+    """Display and edit user profile"""
+    user = request.user
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+
+        # Validate email uniqueness (excluding current user)
+        if email and User.objects.filter(email=email).exclude(pk=user.pk).exists():
+            messages.error(request, 'This email is already in use.')
+            return render(request, 'users/profile.html', {'user': user})
+
+        user.first_name = first_name
+        user.last_name = last_name
+        if email:
+            user.email = email
+        user.phone = phone
+        user.save()
+        messages.success(request, 'Profile updated successfully.')
+        return redirect('users:profile')
+
+    return render(request, 'users/profile.html', {'user': user})
 
 
 
@@ -128,6 +154,7 @@ def dashboard(request):
         'complete': 11,
         'rejected': -1,
         'letter_pending': 7,
+        'jw02_pending': 9,
     }
     TOTAL_STEPS = 11  # complete = step 11
 
@@ -147,6 +174,7 @@ def dashboard(request):
         'complete': 'Congratulations! Your application is complete.',
         'rejected': 'Your application has been rejected.',
         'letter_pending': 'Your admission letter needs revision.',
+        'jw02_pending': 'Your JW02 form needs revision. Our team is working on the updated version.',
     }
 
     # Statuses that require user action
@@ -183,7 +211,7 @@ def dashboard(request):
     
     # Get stats
     in_progress_statuses = ['submitted', 'under_review', 'documents_verified', 'payment_verified', 'in_progress',
-                            'admission_letter_uploaded', 'admission_letter_approved', 'jw02_uploaded', 'jw02_approved', 'letter_pending']
+                            'admission_letter_uploaded', 'admission_letter_approved', 'jw02_uploaded', 'jw02_approved', 'letter_pending', 'jw02_pending']
     pending_apps = applications.filter(status__in=in_progress_statuses).count()
     approved_apps = applications.filter(status='approved').count()
     rejected_apps = applications.filter(status='rejected').count()
@@ -207,8 +235,12 @@ def dashboard(request):
 @login_required
 def notification_list(request):
     """Display all notifications for the logged-in user"""
+    from django.core.paginator import Paginator
     from .models import Notification
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    notifications_qs = Notification.objects.filter(user=request.user).order_by('-created_at')
+    paginator = Paginator(notifications_qs, 20)
+    page_number = request.GET.get('page')
+    notifications = paginator.get_page(page_number)
     return render(request, 'users/notifications.html', {'notifications': notifications})
 
 

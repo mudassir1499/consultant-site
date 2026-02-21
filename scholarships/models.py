@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-import os
 
 def get_upload_path(instance, filename):
     """

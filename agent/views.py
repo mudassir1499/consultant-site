@@ -2,6 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db import models
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 
 from users.decorators import role_required
@@ -38,7 +39,8 @@ def agent_login(request):
             if user.is_active:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')
-                return redirect('agent:dashboard')
+                next_url = request.POST.get('next') or request.GET.get('next')
+                return redirect(next_url or 'agent:dashboard')
             else:
                 messages.error(request, 'Your account is inactive.')
         else:
@@ -47,6 +49,7 @@ def agent_login(request):
     return render(request, 'agent/login.html')
 
 
+@require_POST
 def agent_logout(request):
     logout(request)
     messages.success(request, 'You have been logged out.')
@@ -98,10 +101,22 @@ def dashboard(request):
 def application_list(request):
     """List all applications assigned to this agent"""
     user = request.user
+    from django.db.models import Q
     
     all_apps = Application.objects.filter(
         assigned_agent=user
     ).select_related('user', 'scholarship').order_by('-applied_date')
+
+    # Search filter
+    query = request.GET.get('q', '').strip()
+    if query:
+        all_apps = all_apps.filter(
+            Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(scholarship__name__icontains=query) |
+            Q(app_id__icontains=query)
+        )
 
     pending_apps = all_apps.filter(status__in=['submitted', 'payment_verified', 'documents_verified'])
     in_review_apps = all_apps.filter(status='under_review')
@@ -114,6 +129,7 @@ def application_list(request):
     context = {
         'user': user,
         'all_applications': all_apps,
+        'search_query': query,
         'pending_apps': pending_apps,
         'in_review_apps': in_review_apps,
         'approved_apps': approved_apps,
@@ -483,3 +499,33 @@ def request_withdrawal(request):
         messages.error(request, str(e))
 
     return redirect('agent:wallet')
+
+
+# ——— Agent Notifications ————————————————————————————————————
+@role_required('agent', login_url_override='agent:login')
+def agent_notifications(request):
+    """Display all notifications for the agent"""
+    from users.models import Notification
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'agent/notifications.html', {'notifications': notifications})
+
+
+@role_required('agent', login_url_override='agent:login')
+def agent_mark_notification_read(request, notification_id):
+    """Mark a single notification as read, then redirect to its link"""
+    from users.models import Notification
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.is_read = True
+    notification.save()
+    if notification.link:
+        return redirect(notification.link)
+    return redirect('agent:notifications')
+
+
+@role_required('agent', login_url_override='agent:login')
+def agent_mark_all_read(request):
+    """Mark all notifications as read"""
+    from users.models import Notification
+    if request.method == 'POST':
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return redirect('agent:notifications')

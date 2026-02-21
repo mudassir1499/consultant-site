@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from datetime import timedelta
 
 from users.decorators import role_required
@@ -12,6 +13,7 @@ from users.models import User
 from users.notifications import send_notification
 from scholarships.models import Application, AdmissionLetter, JW02Form
 from scholarships.utils import change_application_status
+from main.utils import validate_uploaded_file
 from finance.services import (
     get_or_create_wallet,
     request_withdrawal as do_request_withdrawal,
@@ -40,7 +42,8 @@ def hq_login(request):
             if user.is_active:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')
-                return redirect('headquarters:dashboard')
+                next_url = request.POST.get('next') or request.GET.get('next')
+                return redirect(next_url or 'headquarters:dashboard')
             else:
                 messages.error(request, 'Your account is inactive.')
         else:
@@ -49,6 +52,7 @@ def hq_login(request):
     return render(request, 'headquarters/login.html')
 
 
+@require_POST
 def hq_logout(request):
     logout(request)
     messages.success(request, 'You have been logged out.')
@@ -108,6 +112,18 @@ def application_list(request):
         assigned_hq=user
     ).select_related('user', 'scholarship').order_by('-applied_date')
 
+    # Search filter
+    from django.db.models import Q
+    query = request.GET.get('q', '').strip()
+    if query:
+        all_apps = all_apps.filter(
+            Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(scholarship__name__icontains=query) |
+            Q(app_id__icontains=query)
+        )
+
     approved_apps = all_apps.filter(status='approved')
     in_progress_apps = all_apps.filter(status='in_progress')
     letter_apps = all_apps.filter(status__in=['admission_letter_uploaded', 'admission_letter_approved', 'letter_pending'])
@@ -118,6 +134,7 @@ def application_list(request):
     context = {
         'user': user,
         'all_applications': all_apps,
+        'search_query': query,
         'approved_apps': approved_apps,
         'in_progress_apps': in_progress_apps,
         'letter_apps': letter_apps,
@@ -244,6 +261,11 @@ def upload_admission_letter(request, app_id):
         messages.error(request, 'Please select a file to upload.')
         return redirect('headquarters:application_detail', app_id=app_id)
 
+    is_valid, error = validate_uploaded_file(file)
+    if not is_valid:
+        messages.error(request, error)
+        return redirect('headquarters:application_detail', app_id=app_id)
+
     AdmissionLetter.objects.create(
         application=application,
         uploaded_by=user,
@@ -276,6 +298,11 @@ def upload_jw02(request, app_id):
         file = request.FILES.get('jw02_form')
         if not file:
             messages.error(request, 'Please select a file to upload.')
+            return redirect('headquarters:upload_jw02', app_id=app_id)
+
+        is_valid, error = validate_uploaded_file(file)
+        if not is_valid:
+            messages.error(request, error)
             return redirect('headquarters:upload_jw02', app_id=app_id)
 
         JW02Form.objects.create(
@@ -345,6 +372,11 @@ def reupload_letter(request, letter_id):
             messages.error(request, 'Please select a file.')
             return redirect('headquarters:revision_list')
 
+        is_valid, error = validate_uploaded_file(file)
+        if not is_valid:
+            messages.error(request, error)
+            return redirect('headquarters:revision_list')
+
         # Create new letter
         AdmissionLetter.objects.create(
             application=old_letter.application,
@@ -392,6 +424,11 @@ def reupload_jw02(request, jw02_id):
         file = request.FILES.get('jw02_form')
         if not file:
             messages.error(request, 'Please select a file.')
+            return redirect('headquarters:revision_list')
+
+        is_valid, error = validate_uploaded_file(file)
+        if not is_valid:
+            messages.error(request, error)
             return redirect('headquarters:revision_list')
 
         JW02Form.objects.create(
@@ -458,3 +495,33 @@ def request_withdrawal(request):
         messages.error(request, str(e))
 
     return redirect('headquarters:wallet')
+
+
+# ——— HQ Notifications ——————————————————————————————————————
+@role_required('headquarters', login_url_override='headquarters:login')
+def hq_notifications(request):
+    """Display all notifications for the HQ user"""
+    from users.models import Notification
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'headquarters/notifications.html', {'notifications': notifications})
+
+
+@role_required('headquarters', login_url_override='headquarters:login')
+def hq_mark_notification_read(request, notification_id):
+    """Mark a single notification as read, then redirect to its link"""
+    from users.models import Notification
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.is_read = True
+    notification.save()
+    if notification.link:
+        return redirect(notification.link)
+    return redirect('headquarters:notifications')
+
+
+@role_required('headquarters', login_url_override='headquarters:login')
+def hq_mark_all_read(request):
+    """Mark all notifications as read"""
+    from users.models import Notification
+    if request.method == 'POST':
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return redirect('headquarters:notifications')

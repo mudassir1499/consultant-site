@@ -6,7 +6,11 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from scholarships.models import Application, scholarships, ApplicationStatusHistory
 from scholarships.utils import change_application_status
+from main.utils import validate_uploaded_file
 from users.notifications import send_notification
+
+
+from django.views.decorators.http import require_POST
 
 
 def is_office_staff(user):
@@ -35,7 +39,8 @@ def office_login(request):
             if user.is_active:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')
-                return redirect('office:office_dashboard')
+                next_url = request.POST.get('next') or request.GET.get('next')
+                return redirect(next_url or 'office:office_dashboard')
             else:
                 messages.error(request, 'Your account is inactive.')
         else:
@@ -44,6 +49,7 @@ def office_login(request):
     return render(request, 'office/login.html')
 
 
+@require_POST
 def office_logout(request):
     logout(request)
     messages.success(request, 'You have been logged out.')
@@ -95,6 +101,7 @@ def office_dashboard(request):
 @user_passes_test(is_office_staff, login_url='office:login')
 def application_list(request):
     from finance.models import application_payment
+    from django.core.paginator import Paginator
 
     applications = Application.objects.select_related('user', 'scholarship').all()
 
@@ -112,8 +119,13 @@ def application_list(request):
             Q(app_id__icontains=query)
         )
 
+    applications = applications.order_by('-applied_date')
+    paginator = Paginator(applications, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'applications': applications.order_by('-applied_date'),
+        'applications': page_obj,
         'status_filter': status_filter or '',
         'search_query': query or '',
         'status_choices': Application.STATUS_CHOICES,
@@ -200,7 +212,14 @@ def forward_to_agent(request, app_id):
 
         application.assigned_agent = agent
         application.save()
-        change_application_status(application, 'payment_verified', request.user, f'Forwarded to agent {agent.username}')
+        # Log the assignment without changing status (already payment_verified)
+        ApplicationStatusHistory.objects.create(
+            application=application,
+            old_status=application.status,
+            new_status=application.status,
+            changed_by=request.user,
+            note=f'Forwarded to agent {agent.username}',
+        )
 
         # Notify the agent
         send_notification(
@@ -245,6 +264,10 @@ def upload_documents(request, app_id):
         for field_name, label in DOCUMENT_FIELDS.items():
             file = request.FILES.get(field_name)
             if file:
+                is_valid, error = validate_uploaded_file(file)
+                if not is_valid:
+                    messages.error(request, error)
+                    return redirect('office:upload_documents', app_id=app_id)
                 setattr(application, field_name, file)
                 uploaded_count += 1
         if uploaded_count > 0:
@@ -319,9 +342,14 @@ def verify_documents(request, app_id):
 
 @user_passes_test(is_office_staff, login_url='office:login')
 def verify_payment(request, app_id):
-    """Move documents_verified → payment_verified"""
+    """Move documents_verified → payment_verified (only if receipt exists)"""
+    from finance.models import application_payment as PaymentModel
     application = get_object_or_404(Application, app_id=app_id)
     if request.method == 'POST' and application.status == 'documents_verified':
+        payment = PaymentModel.objects.filter(application=application).first()
+        if not payment or not payment.receipt_pdf:
+            messages.error(request, 'Cannot verify payment — no payment receipt has been uploaded.')
+            return redirect('office:application_detail', app_id=app_id)
         change_application_status(application, 'payment_verified', request.user, 'Payment verified by office')
         send_notification(
             application.user, 'Payment Verified',
@@ -336,6 +364,7 @@ def verify_payment(request, app_id):
 @user_passes_test(is_office_staff, login_url='office:login')
 def payment_list(request):
     from finance.models import application_payment
+    from django.core.paginator import Paginator
 
     status_filter = request.GET.get('status', '')
     payments = application_payment.objects.select_related(
@@ -345,8 +374,12 @@ def payment_list(request):
     if status_filter:
         payments = payments.filter(payment_status=status_filter)
 
+    paginator = Paginator(payments, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'payments': payments,
+        'payments': page_obj,
         'status_filter': status_filter,
     }
     return render(request, 'office/payments.html', context)
@@ -387,6 +420,11 @@ def make_payment(request, app_id):
 
         if not amount or not receipt:
             messages.error(request, 'Amount and receipt file are required.')
+            return render(request, 'office/make-payment.html', {'application': application})
+
+        is_valid, error = validate_uploaded_file(receipt)
+        if not is_valid:
+            messages.error(request, error)
             return render(request, 'office/make-payment.html', {'application': application})
 
         try:
@@ -455,6 +493,7 @@ def reject_payment(request, payment_id):
 @user_passes_test(is_office_staff, login_url='office:login')
 def user_list(request):
     """Only show student users — hide office, agent, HQ staff"""
+    from django.core.paginator import Paginator
     users = User.objects.filter(role='user').order_by('-date_joined')
 
     query = request.GET.get('q', '').strip()
@@ -466,8 +505,12 @@ def user_list(request):
             Q(email__icontains=query)
         )
 
+    paginator = Paginator(users, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'users': users,
+        'users': page_obj,
         'search_query': query,
         'total_students': User.objects.filter(role='user').count(),
         'active_students': User.objects.filter(role='user', is_active=True).count(),

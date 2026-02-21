@@ -1,0 +1,103 @@
+{% extends 'pages/base.html' %}
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-2"><i class="bi bi-envelope me-2"></i>Contact Us</h2>
+            <p class="text-muted mb-4">Have a question or need assistance? Send us a message and we'll get back to you as soon as possible.</p>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="row g-4">
+                <!-- Contact Form -->
+                <div class="col-md-7">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <form method="post" action="{% url 'pages:contact' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="subject" name="subject">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send me-1"></i>Send Message
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-md-5">
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-3">Get in Touch</h5>
+                            {% if site_settings.email %}
+                            <p class="mb-2">
+                                <i class="bi bi-envelope text-primary me-2"></i>
+                                <a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
+                            </p>
+                            {% endif %}
+                            {% if site_settings.phone %}
+                            <p class="mb-2">
+                                <i class="bi bi-telephone text-primary me-2"></i>
+                                <a href="tel:{{ site_settings.phone }}">{{ site_settings.phone }}</a>
+                            </p>
+                            {% endif %}
+                            {% if site_settings.address %}
+                            <p class="mb-0">
+                                <i class="bi bi-geo-alt text-primary me-2"></i>
+                                {{ site_settings.address }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if site_settings.facebook or site_settings.twitter or site_settings.instagram or site_settings.linkedin %}
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-3">Follow Us</h5>
+                            <div class="d-flex gap-3">
+                                {% if site_settings.facebook %}
+                                <a href="{{ site_settings.facebook }}" target="_blank" class="text-primary fs-4"><i class="bi bi-facebook"></i></a>
+                                {% endif %}
+                                {% if site_settings.twitter %}
+                                <a href="{{ site_settings.twitter }}" target="_blank" class="text-info fs-4"><i class="bi bi-twitter-x"></i></a>
+                                {% endif %}
+                                {% if site_settings.instagram %}
+                                <a href="{{ site_settings.instagram }}" target="_blank" class="text-danger fs-4"><i class="bi bi-instagram"></i></a>
+                                {% endif %}
+                                {% if site_settings.linkedin %}
+                                <a href="{{ site_settings.linkedin }}" target="_blank" class="text-primary fs-4"><i class="bi bi-linkedin"></i></a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

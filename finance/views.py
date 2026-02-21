@@ -47,6 +47,11 @@ def process_payment(request, application_id):
         messages.error(request, 'You do not have permission to access this application.')
         return redirect('users:dashboard')
     
+    # Status guard — only allow payment when documents are verified
+    if application.status != 'documents_verified':
+        messages.error(request, 'Payment is not available for this application at its current stage.')
+        return redirect('users:dashboard')
+    
     # Validate file upload
     if 'receipt' not in request.FILES:
         messages.error(request, 'Please upload a payment receipt.')

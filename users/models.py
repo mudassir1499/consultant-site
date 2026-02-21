@@ -29,6 +29,11 @@ class User(AbstractUser):
         """Check if user account is active"""
         return self.status == 'active'
 
+    def save(self, *args, **kwargs):
+        """Sync is_active with status field on every save"""
+        self.is_active = (self.status == 'active')
+        super().save(*args, **kwargs)
+
     class Meta:
         db_table = 'users'
 

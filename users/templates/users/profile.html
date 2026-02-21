@@ -43,12 +43,17 @@
                 </div>
             </div>
 
-            <!-- Profile Details -->
+            <!-- Profile Details / Edit Form -->
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-bottom py-3">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill me-2"></i>Account Details</h5>
+                    <button class="btn btn-sm btn-outline-primary" id="toggleEditBtn" onclick="toggleEditMode()">
+                        <i class="bi bi-pencil me-1"></i>Edit Profile
+                    </button>
                 </div>
-                <div class="card-body p-0">
+
+                <!-- View Mode -->
+                <div class="card-body p-0" id="viewMode">
                     <div class="list-group list-group-flush">
                         <div class="list-group-item px-4 py-3">
                             <div class="row align-items-center">
@@ -77,10 +82,37 @@
                         <div class="list-group-item px-4 py-3">
                             <div class="row align-items-center">
                                 <div class="col-sm-4 text-muted"><i class="bi bi-calendar3 me-2"></i>Member Since</div>
-                                <div class="col-sm-8 fw-bold">{{ user.created_at|date:"M d, Y" }}</div>
+                                <div class="col-sm-8 fw-bold">{{ user.date_joined|date:"M d, Y" }}</div>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Edit Mode (hidden by default) -->
+                <div class="card-body p-4" id="editMode" style="display:none;">
+                    <form method="post" action="{% url 'users:profile' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="phone" name="phone" value="{{ user.phone|default_if_none:'' }}">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleEditMode()">Cancel</button>
+                        </div>
+                    </form>
                 </div>
                 <div class="card-footer bg-white border-top p-4">
                     <div class="d-flex justify-content-end gap-2">
@@ -93,4 +125,21 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleEditMode() {
+    const viewMode = document.getElementById('viewMode');
+    const editMode = document.getElementById('editMode');
+    const btn = document.getElementById('toggleEditBtn');
+    if (editMode.style.display === 'none') {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+        btn.style.display = 'none';
+    } else {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        btn.style.display = 'inline-block';
+    }
+}
+</script>
 {% endblock %}

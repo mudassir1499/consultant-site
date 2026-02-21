@@ -1,7 +1,52 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from main.utils import validate_uploaded_file
 from .models import scholarships, Application
+
+
+def scholarship_list(request):
+    """Browse all available scholarships"""
+    qs = scholarships.objects.all().order_by('-deadline')
+
+    # Filters
+    query = request.GET.get('q', '').strip()
+    degree = request.GET.get('degree', '')
+    scholarship_type = request.GET.get('type', '')
+
+    if query:
+        qs = qs.filter(
+            Q(name__icontains=query) |
+            Q(city__icontains=query) |
+            Q(major__icontains=query) |
+            Q(description__icontains=query)
+        )
+    if degree:
+        qs = qs.filter(degree=degree)
+    if scholarship_type:
+        qs = qs.filter(scholarship_type=scholarship_type)
+
+    paginator = Paginator(qs, 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    context = {
+        'scholarships': page_obj,
+        'search_query': query,
+        'degree_filter': degree,
+        'type_filter': scholarship_type,
+        'degree_choices': scholarships.DEGREE_CHOICES,
+        'type_choices': scholarships.SCHOLARSHIP_TYPE_CHOICES,
+    }
+    return render(request, 'scholarships/scholarship_list.html', context)
+
+
+def scholarship_detail(request, scholarship_id):
+    """View details of a single scholarship"""
+    scholarship = get_object_or_404(scholarships, id=scholarship_id)
+    context = {'scholarship': scholarship}
+    return render(request, 'scholarships/scholarship_detail.html', context)
 
 @login_required
 def apply_scholarship(request, scholarship_id):
@@ -42,16 +87,17 @@ def apply_scholarship(request, scholarship_id):
             if not draft_application:
                 draft_application = Application(user=user, scholarship=scholarship, status='draft')
             
-            # Update fields if new files provided
-            if passport: draft_application.passport = passport
-            if photo: draft_application.photo = photo
-            if graduation_certificate: draft_application.graduation_certificate = graduation_certificate
-            if request.FILES.get('criminal_record'): draft_application.criminal_record = request.FILES.get('criminal_record')
-            if request.FILES.get('medical_examination'): draft_application.medical_examination = request.FILES.get('medical_examination')
-            if request.FILES.get('letter_of_recommendation_1'): draft_application.letter_of_recommendation_1 = request.FILES.get('letter_of_recommendation_1')
-            if request.FILES.get('letter_of_recommendation_2'): draft_application.letter_of_recommendation_2 = request.FILES.get('letter_of_recommendation_2')
-            if request.FILES.get('study_plan'): draft_application.study_plan = request.FILES.get('study_plan')
-            if request.FILES.get('english_certificate'): draft_application.english_certificate = request.FILES.get('english_certificate')
+            # Validate and update fields if new files provided
+            for field_name in ['passport', 'photo', 'graduation_certificate', 'criminal_record',
+                               'medical_examination', 'letter_of_recommendation_1',
+                               'letter_of_recommendation_2', 'study_plan', 'english_certificate']:
+                file = request.FILES.get(field_name)
+                if file:
+                    is_valid, error = validate_uploaded_file(file)
+                    if not is_valid:
+                        messages.error(request, error)
+                        return render(request, 'scholarships/apply.html', {'scholarship': scholarship, 'application': draft_application})
+                    setattr(draft_application, field_name, file)
             
             draft_application.save()
             messages.success(request, 'Application saved as draft.')
@@ -93,16 +139,17 @@ def apply_scholarship(request, scholarship_id):
                 
                 draft_application.status = 'submitted'
                 
-                # Assign files if provided
-                if request.FILES.get('passport'): draft_application.passport = request.FILES.get('passport')
-                if request.FILES.get('photo'): draft_application.photo = request.FILES.get('photo')
-                if request.FILES.get('graduation_certificate'): draft_application.graduation_certificate = request.FILES.get('graduation_certificate')
-                if request.FILES.get('criminal_record'): draft_application.criminal_record = request.FILES.get('criminal_record')
-                if request.FILES.get('medical_examination'): draft_application.medical_examination = request.FILES.get('medical_examination')
-                if request.FILES.get('letter_of_recommendation_1'): draft_application.letter_of_recommendation_1 = request.FILES.get('letter_of_recommendation_1')
-                if request.FILES.get('letter_of_recommendation_2'): draft_application.letter_of_recommendation_2 = request.FILES.get('letter_of_recommendation_2')
-                if request.FILES.get('study_plan'): draft_application.study_plan = request.FILES.get('study_plan')
-                if request.FILES.get('english_certificate'): draft_application.english_certificate = request.FILES.get('english_certificate')
+                # Validate and assign files if provided
+                for field_name in ['passport', 'photo', 'graduation_certificate', 'criminal_record',
+                                   'medical_examination', 'letter_of_recommendation_1',
+                                   'letter_of_recommendation_2', 'study_plan', 'english_certificate']:
+                    file = request.FILES.get(field_name)
+                    if file:
+                        is_valid, error = validate_uploaded_file(file)
+                        if not is_valid:
+                            messages.error(request, error)
+                            return render(request, 'scholarships/apply.html', {'scholarship': scholarship, 'application': draft_application})
+                        setattr(draft_application, field_name, file)
                 
                 draft_application.save()
                 
@@ -166,6 +213,7 @@ def application_detail(request, app_id):
         'complete': 9,
         'rejected': -2,
         'letter_pending': 7,
+        'jw02_pending': 8,
     }
 
     current_step_index = STATUS_TO_STEP.get(application.status, -1)
@@ -277,6 +325,12 @@ def application_detail(request, app_id):
         'letter_pending': {
             'title': 'Admission Letter Needs Revision',
             'message': 'Your admission letter requires revision. Our team is working on getting the updated version.',
+            'color': 'warning',
+            'icon': 'bi-exclamation-triangle',
+        },
+        'jw02_pending': {
+            'title': 'JW02 Form Needs Revision',
+            'message': 'Your JW02 form requires revision. Our team is working on getting the updated version.',
             'color': 'warning',
             'icon': 'bi-exclamation-triangle',
         },

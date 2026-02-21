@@ -1,0 +1,78 @@
+{% extends 'pages/base.html' %}
+{% block title %}Scholarships{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="fw-bold mb-4"><i class="bi bi-mortarboard me-2"></i>Browse Scholarships</h2>
+
+    <!-- Search & Filter -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" name="q" class="form-control" placeholder="Search by name, city, major..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="degree" class="form-select">
+                        <option value="">All Degrees</option>
+                        {% for val, label in degree_choices %}
+                        <option value="{{ val }}" {% if degree_filter == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for val, label in type_choices %}
+                        <option value="{{ val }}" {% if type_filter == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results -->
+    {% if scholarships %}
+    <div class="row g-4">
+        {% for s in scholarships %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary">{{ s.get_degree_display }}</span>
+                        <span class="badge bg-success">${{ s.price }}</span>
+                    </div>
+                    <h5 class="card-title fw-bold">{{ s.name }}</h5>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>{{ s.city }}
+                        <span class="mx-1">|</span>
+                        <i class="bi bi-book me-1"></i>{{ s.major }}
+                    </p>
+                    <p class="card-text text-muted small flex-grow-1">{{ s.description|truncatewords:25 }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>Deadline: {{ s.deadline|date:"M d, Y" }}</small>
+                        <a href="{% url 'scholarships:scholarship_detail' s.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% with page_obj=scholarships %}
+    {% include 'includes/pagination.html' %}
+    {% endwith %}
+
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-search" style="font-size:3rem;"></i>
+        <p class="mt-2">No scholarships found matching your criteria.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

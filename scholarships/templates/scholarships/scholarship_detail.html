@@ -1,0 +1,77 @@
+{% extends 'pages/base.html' %}
+{% block title %}{{ scholarship.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'scholarships:scholarship_list' %}">Scholarships</a></li>
+            <li class="breadcrumb-item active">{{ scholarship.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary">{{ scholarship.get_degree_display }}</span>
+                        <span class="badge bg-info text-dark">{{ scholarship.get_scholarship_type_display }}</span>
+                        <span class="badge bg-secondary">{{ scholarship.get_semester_display }} Semester</span>
+                    </div>
+                    <h2 class="fw-bold">{{ scholarship.name }}</h2>
+                    <p class="text-muted">
+                        <i class="bi bi-geo-alt me-1"></i>{{ scholarship.city }}
+                        <span class="mx-2">|</span>
+                        <i class="bi bi-book me-1"></i>{{ scholarship.major }}
+                        <span class="mx-2">|</span>
+                        <i class="bi bi-translate me-1"></i>{{ scholarship.language }}
+                    </p>
+
+                    <hr>
+                    <h5 class="fw-bold">Description</h5>
+                    <p>{{ scholarship.description|linebreaks }}</p>
+
+                    <h5 class="fw-bold mt-4">Eligibility</h5>
+                    <p>{{ scholarship.eligibility|linebreaks }}</p>
+
+                    {% if scholarship.note %}
+                    <h5 class="fw-bold mt-4">Additional Notes</h5>
+                    <p>{{ scholarship.note|linebreaks }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold text-primary mb-1">${{ scholarship.price }}</h3>
+                    <p class="text-muted small">Application Fee</p>
+                    <hr>
+                    <div class="text-start small">
+                        <p class="mb-2"><strong>Deadline:</strong> {{ scholarship.deadline|date:"F d, Y" }}</p>
+                        <p class="mb-2"><strong>Degree:</strong> {{ scholarship.get_degree_display }}</p>
+                        <p class="mb-2"><strong>Semester:</strong> {{ scholarship.get_semester_display }}</p>
+                        <p class="mb-0"><strong>Language:</strong> {{ scholarship.language }}</p>
+                    </div>
+                    <hr>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'scholarships:apply' scholarship.id %}" class="btn btn-primary w-100">
+                        <i class="bi bi-send me-1"></i>Apply Now
+                    </a>
+                    {% else %}
+                    <a href="{% url 'users:login' %}?next={% url 'scholarships:apply' scholarship.id %}" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Login to Apply
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-arrow-left me-1"></i>Back to Scholarships
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
