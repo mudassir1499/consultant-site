@@ -1,0 +1,102 @@
+/* ============================================================
+   DFS Education — Custom Admin Styles
+   Applied to all admin pages via admin.site overrides.
+   ============================================================ */
+
+/* ---------- Header & branding ---------- */
+#header {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%) !important;
+    color: #fff;
+    letter-spacing: .5px;
+}
+#header a:link, #header a:visited {
+    color: #e8eaf6 !important;
+}
+#branding h1 {
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+/* ---------- Sidebar / nav ---------- */
+#nav-sidebar {
+    background: #f5f7fa;
+}
+#nav-sidebar .module caption {
+    background: #1a237e;
+    color: #fff;
+    font-weight: 600;
+}
+#nav-sidebar .module th {
+    border-bottom: 1px solid #e0e3e8;
+}
+
+/* ---------- Fieldset descriptions / help text ---------- */
+.module .description {
+    padding: 10px 14px;
+    margin: 0 0 12px;
+    background: #f0f4ff;
+    border-left: 4px solid #3f51b5;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #333;
+}
+.module .description strong {
+    color: #1a237e;
+}
+
+/* ---------- List view badges ---------- */
+.field-status_badge span,
+.field-role_badge span,
+.field-type_badge span,
+.field-read_badge span,
+.field-degree_badge span,
+.field-type_badge span {
+    white-space: nowrap;
+}
+
+/* ---------- Changelist actions bar ---------- */
+#changelist .actions {
+    background: #eef1f7;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+/* ---------- Breadcrumbs ---------- */
+div.breadcrumbs {
+    background: #283593 !important;
+    color: #c5cae9 !important;
+}
+div.breadcrumbs a {
+    color: #e8eaf6 !important;
+}
+
+/* ---------- Submit row ---------- */
+.submit-row {
+    background: #f0f4ff !important;
+    border-top: 2px solid #3f51b5;
+}
+.submit-row input[type=submit] {
+    border-radius: 4px;
+}
+
+/* ---------- Dashboard module headers ---------- */
+.dashboard #content-main .module caption,
+.dashboard #content-related .module h2 {
+    background: #1a237e;
+    color: #fff;
+}
+
+/* ---------- Inline groups ---------- */
+.inline-group .tabular td,
+.inline-group .tabular th {
+    font-size: 12px;
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 767px) {
+    .module .description {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}
