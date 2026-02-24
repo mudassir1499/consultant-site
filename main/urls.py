@@ -30,6 +30,8 @@ urlpatterns = [
     path('hq/', include('headquarters.urls')),
 ]
 
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media & static files
+# In production on cPanel, Apache serves these via symlinks,
+# but this ensures they work in development and as a fallback.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

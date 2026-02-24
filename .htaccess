@@ -1,0 +1,19 @@
+# ─────────────────────────────────────────────────────────────
+# .htaccess — placed in public_html (document root)
+# Forces HTTPS and passes everything through Passenger/Django
+# ─────────────────────────────────────────────────────────────
+
+# Force HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Serve static & media files directly (bypass Django)
+RewriteCond %{REQUEST_URI} ^/static/
+RewriteRule ^(.*)$ - [L]
+
+RewriteCond %{REQUEST_URI} ^/files/
+RewriteRule ^(.*)$ - [L]
+
+# Everything else → Passenger (Django)
+# (Passenger handles this automatically, but this catches edge cases)
