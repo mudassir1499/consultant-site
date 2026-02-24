@@ -4,4 +4,6 @@
 Django==6.0.2
 Pillow==12.1.1
 python-dotenv==1.2.1
-mysqlclient==2.2.7
+
+# Uncomment for MySQL (production):
+# mysqlclient==2.2.7

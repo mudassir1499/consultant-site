@@ -10,7 +10,7 @@ env/
 .venv/
 
 # Django
-db.sqlite3
+# db.sqlite3  ← included in repo for testing; re-enable when switching to MySQL
 db.sqlite3-journal
 *.log
 media/
