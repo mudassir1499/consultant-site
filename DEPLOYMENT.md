@@ -39,29 +39,29 @@
 
 ## Step 2 — Upload Project Files
 
-### Option A: Git Clone (Recommended)
+### Prepare the ZIP on your computer
 
-SSH into your account:
-```bash
-ssh YOUR_USERNAME@dfsscholarships.com
-```
+1. Open the project folder (`c:\Users\sakan\Desktop\edu`)
+2. Select **all files and folders** inside it **except**: `venv/`, `__pycache__/`, `staticfiles/`, `.git/`
+3. Right-click → **Send to → Compressed (zipped) folder** — name it `edu.zip`
 
-Navigate to the app root and clone:
-```bash
-cd ~/edu
-# Remove any default files cPanel created
-rm -f passenger_wsgi.py
+> **Make sure** `manage.py` and `passenger_wsgi.py` are at the **root** of the ZIP (not inside a subfolder).
 
-# Clone your repo directly into this folder
-git clone https://github.com/mudassir1499/consultant-site.git .
-```
+### Upload via cPanel File Manager
 
-### Option B: File Manager / FTP
+1. Log in to cPanel → **File Manager**
+2. Navigate to `/home/YOUR_USERNAME/edu/`
+3. Delete any default `passenger_wsgi.py` cPanel created
+4. Click **Upload** → upload `edu.zip`
+5. Select the uploaded ZIP → click **Extract**
+6. Verify that `manage.py`, `passenger_wsgi.py`, `main/`, `users/`, etc. are directly inside `~/edu/`
 
-1. Download the project as a ZIP from GitHub
-2. In cPanel → **File Manager**, navigate to `/home/YOUR_USERNAME/edu/`
-3. Upload the ZIP and extract it
-4. Make sure `manage.py` and `passenger_wsgi.py` are directly inside `~/edu/` (not in a subfolder)
+### Alternative: FTP upload
+
+Use FileZilla or any FTP client:
+- Host: `ftp.dfsscholarships.com`
+- Username/Password: your cPanel credentials
+- Upload all project files into `/home/YOUR_USERNAME/edu/`
 
 ---
 
@@ -286,18 +286,21 @@ cPanel → **Cron Jobs** — add for maintenance:
 
 ## Updating the Site Later
 
-When you push new code to GitHub:
+When you have new code to upload:
 
-```bash
-ssh YOUR_USERNAME@dfsscholarships.com
-source /home/YOUR_USERNAME/virtualenv/edu/3.12/bin/activate
-cd ~/edu
+1. Create a new ZIP of your updated project files (same as Step 2)
+2. In cPanel → **File Manager** → navigate to `~/edu/`
+3. Upload the new ZIP and extract it (overwrite existing files)
+4. SSH in (or use cPanel → **Terminal**) and run:
+   ```bash
+   source /home/YOUR_USERNAME/virtualenv/edu/3.12/bin/activate
+   cd ~/edu
+   python manage.py migrate
+   python manage.py collectstatic --noinput
+   touch ~/edu/tmp/restart.txt
+   ```
 
-git pull origin main
-python manage.py migrate
-python manage.py collectstatic --noinput
-touch ~/edu/tmp/restart.txt
-```
+> **Tip:** You can also upload individual changed files via File Manager instead of re-uploading everything.
 
 ---
 
