@@ -91,6 +91,11 @@ class Application(models.Model):
     app_id = models.AutoField(primary_key=True)
     scholarship = models.ForeignKey(scholarships, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='applications')
+    office = models.ForeignKey(
+        'office.Office', on_delete=models.SET_NULL,
+        blank=True, null=True, related_name='applications',
+        help_text='Branch office that owns/created this application.',
+    )
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='draft')
     applied_date = models.DateTimeField(auto_now_add=True)
     

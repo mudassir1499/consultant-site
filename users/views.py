@@ -15,6 +15,8 @@ def register(request):
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         phone = request.POST.get('phone', '').strip()
+        country = request.POST.get('country', '').strip()
+        city = request.POST.get('city', '').strip()
 
         # Force role to 'user' — other roles are invitation-only
         role = 'user'
@@ -33,7 +35,10 @@ def register(request):
             return render(request, 'users/register.html')
 
         try:
-            # Create user using create_user helper (standard Django method)
+            # Auto-route to the correct office based on location
+            from office.models import get_office_for_location
+            office = get_office_for_location(country, city)
+
             user = User.objects.create_user(
                 username=username,
                 email=email,
@@ -41,7 +46,10 @@ def register(request):
                 role=role,
                 first_name=first_name,
                 last_name=last_name,
-                phone=phone
+                phone=phone,
+                country=country,
+                city=city,
+                office=office,
             )
             messages.success(request, 'Registration successful! Please login.')
             return redirect('users:login')

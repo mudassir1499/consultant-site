@@ -25,14 +25,15 @@ class CustomUserAdmin(UserAdmin):
     model = User
     add_form = StaffUserCreationForm
 
-    list_display = ['username', 'email', 'first_name', 'last_name', 'role', 'status', 'is_active', 'date_joined']
-    list_filter = ['role', 'status', 'is_active']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'role', 'office', 'status', 'is_active', 'date_joined']
+    list_filter = ['role', 'status', 'is_active', 'office']
     search_fields = ['username', 'email', 'first_name', 'last_name', 'phone']
     list_editable = ['role', 'status']
     ordering = ['-date_joined']
+    raw_id_fields = ['office']
 
     fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {'fields': ('role', 'phone', 'status')}),
+        ('Custom Fields', {'fields': ('role', 'phone', 'status', 'office', 'city', 'country')}),
     )
     add_fieldsets = (
         (None, {
@@ -40,7 +41,7 @@ class CustomUserAdmin(UserAdmin):
             'fields': (
                 'username', 'email', 'first_name', 'last_name',
                 'password1', 'password2',
-                'role', 'phone', 'send_welcome_email',
+                'role', 'phone', 'office', 'send_welcome_email',
             ),
         }),
     )

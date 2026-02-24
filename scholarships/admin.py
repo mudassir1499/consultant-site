@@ -36,11 +36,11 @@ class ScholarshipCommissionAdmin(admin.ModelAdmin):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ['app_id', 'user', 'scholarship', 'status', 'assigned_agent', 'assigned_hq', 'applied_date']
-    list_filter = ['status', 'applied_date']
+    list_display = ['app_id', 'user', 'scholarship', 'office', 'status', 'assigned_agent', 'assigned_hq', 'applied_date']
+    list_filter = ['status', 'office', 'applied_date']
     search_fields = ['user__username', 'scholarship__name']
     readonly_fields = ['applied_date', 'approved_date', 'completed_date']
-    raw_id_fields = ['user', 'scholarship', 'assigned_agent', 'assigned_hq']
+    raw_id_fields = ['user', 'scholarship', 'assigned_agent', 'assigned_hq', 'office']
 
 
 @admin.register(AdmissionLetter)

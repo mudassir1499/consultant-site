@@ -66,6 +66,11 @@
     <nav class="sidebar" id="sidebar">
         <div class="brand">
             <h5><i class="bi bi-building"></i> Office Portal</h5>
+            {% if request.user.office %}
+            <small class="text-white-50 d-block" style="margin-top:-4px;font-size:.75rem;">
+                <i class="bi bi-geo-alt-fill"></i> {{ request.user.office.name }}
+            </small>
+            {% endif %}
         </div>
         <div class="py-3">
             <div class="nav-section">Main</div>

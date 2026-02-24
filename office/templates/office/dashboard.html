@@ -2,7 +2,12 @@
 {% block title %}Office Dashboard{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard</h3>
+    <div>
+        <h3 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard</h3>
+        {% if office %}
+        <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ office.name }}{% if office.city %}, {{ office.city }}{% endif %}</small>
+        {% endif %}
+    </div>
     <span class="text-muted">Welcome, <strong>{{ user.get_full_name|default:user.username }}</strong></span>
 </div>
 

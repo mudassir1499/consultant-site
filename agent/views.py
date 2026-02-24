@@ -208,7 +208,7 @@ def approve_application(request, app_id):
     if approve_note:
         note_text += f' — Note: {approve_note}'
 
-    # Assign HQ user (first available headquarters user, or admin can reassign)
+    # Assign HQ user (first available headquarters user — HQ is global, not per-office)
     from users.models import User
     hq_user = User.objects.filter(role='headquarters', status='active').first()
     if hq_user:

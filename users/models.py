@@ -22,6 +22,15 @@ class User(AbstractUser):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Location & office assignment
+    city = models.CharField(max_length=100, blank=True, default='')
+    country = models.CharField(max_length=100, blank=True, default='')
+    office = models.ForeignKey(
+        'office.Office', on_delete=models.SET_NULL,
+        blank=True, null=True, related_name='staff',
+        help_text='Branch office this user belongs to (for office workers and agents).',
+    )
+
     def __str__(self):
         return self.username
 

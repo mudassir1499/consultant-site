@@ -17,6 +17,31 @@ def is_office_staff(user):
     return user.is_authenticated and user.role == 'office'
 
 
+def _get_office(user):
+    """Return the Office instance for the current office worker, or None."""
+    return getattr(user, 'office', None)
+
+
+def _office_applications(user):
+    """Return an Application queryset scoped to the user's office."""
+    office = _get_office(user)
+    qs = Application.objects.select_related('user', 'scholarship')
+    if office:
+        return qs.filter(office=office)
+    return qs.none()
+
+
+def _office_guard(application, user):
+    """
+    Return True if the application belongs to the user's office.
+    If user has no office, always deny.
+    """
+    office = _get_office(user)
+    if not office:
+        return False
+    return application.office_id == office.pk
+
+
 # ─── Office Auth ────────────────────────────────────────────────────
 def office_login(request):
     """Separate login page for office staff"""
@@ -61,22 +86,26 @@ def office_logout(request):
 def office_dashboard(request):
     from finance.models import application_payment
 
-    applications = Application.objects.select_related('user', 'scholarship').all()
+    office = _get_office(request.user)
+    applications = _office_applications(request.user)
 
     status_counts = dict(
         applications.values_list('status').annotate(count=Count('status')).values_list('status', 'count')
     )
 
-    total_payments = application_payment.objects.filter(
+    payments_qs = application_payment.objects.filter(application__office=office) if office else application_payment.objects.none()
+
+    total_payments = payments_qs.filter(
         payment_status='completed'
     ).aggregate(total=Sum('amount'))['total'] or 0
 
-    pending_payments = application_payment.objects.filter(
+    pending_payments = payments_qs.filter(
         payment_status__in=['pending', 'under_review']
     ).count()
 
     context = {
         'user': request.user,
+        'office': office,
         'total_applications': applications.count(),
         'submitted_count': status_counts.get('submitted', 0),
         'under_review_count': status_counts.get('under_review', 0),
@@ -103,7 +132,8 @@ def application_list(request):
     from finance.models import application_payment
     from django.core.paginator import Paginator
 
-    applications = Application.objects.select_related('user', 'scholarship').all()
+    office = _get_office(request.user)
+    applications = _office_applications(request.user)
 
     status_filter = request.GET.get('status')
     if status_filter:
@@ -124,16 +154,19 @@ def application_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    office_apps = Application.objects.filter(office=office) if office else Application.objects.none()
+    payments_qs = application_payment.objects.filter(application__office=office) if office else application_payment.objects.none()
+
     context = {
         'applications': page_obj,
         'status_filter': status_filter or '',
         'search_query': query or '',
         'status_choices': Application.STATUS_CHOICES,
-        'total_applications': Application.objects.count(),
-        'submitted_count': Application.objects.filter(status='submitted').count(),
-        'approved_count': Application.objects.filter(status='approved').count(),
-        'rejected_count': Application.objects.filter(status='rejected').count(),
-        'total_payments': application_payment.objects.filter(
+        'total_applications': office_apps.count(),
+        'submitted_count': office_apps.filter(status='submitted').count(),
+        'approved_count': office_apps.filter(status='approved').count(),
+        'rejected_count': office_apps.filter(status='rejected').count(),
+        'total_payments': payments_qs.filter(
             payment_status='completed'
         ).aggregate(total=Sum('amount'))['total'] or 0,
     }
@@ -145,9 +178,10 @@ def application_list(request):
 def application_detail(request, app_id):
     from finance.models import application_payment
 
+    office = _get_office(request.user)
     application = get_object_or_404(
         Application.objects.select_related('user', 'scholarship', 'assigned_agent', 'assigned_hq'),
-        app_id=app_id
+        app_id=app_id, office=office,
     )
     payments = application_payment.objects.filter(application=application)
     status_history = ApplicationStatusHistory.objects.filter(application=application)
@@ -173,8 +207,8 @@ def application_detail(request, app_id):
     can_submit = application.status == 'draft'
     can_forward_to_agent = application.status == 'payment_verified' and not application.assigned_agent
 
-    # Get available agents for forwarding
-    agents = User.objects.filter(role='agent', is_active=True) if can_forward_to_agent else []
+    # Get available agents for forwarding (same office only)
+    agents = User.objects.filter(role='agent', is_active=True, office=office) if can_forward_to_agent and office else []
 
     context = {
         'application': application,
@@ -197,7 +231,8 @@ def application_detail(request, app_id):
 @user_passes_test(is_office_staff, login_url='office:login')
 def forward_to_agent(request, app_id):
     """Assign a payment_verified application to an agent for approval"""
-    application = get_object_or_404(Application, app_id=app_id)
+    office = _get_office(request.user)
+    application = get_object_or_404(Application, app_id=app_id, office=office)
     if request.method == 'POST' and application.status == 'payment_verified':
         agent_id = request.POST.get('agent_id')
         if not agent_id:
@@ -205,7 +240,7 @@ def forward_to_agent(request, app_id):
             return redirect('office:application_detail', app_id=app_id)
 
         try:
-            agent = User.objects.get(id=agent_id, role='agent', is_active=True)
+            agent = User.objects.get(id=agent_id, role='agent', is_active=True, office=office)
         except User.DoesNotExist:
             messages.error(request, 'Invalid agent selected.')
             return redirect('office:application_detail', app_id=app_id)
@@ -254,9 +289,10 @@ DOCUMENT_FIELDS = {
 @user_passes_test(is_office_staff, login_url='office:login')
 def upload_documents(request, app_id):
     """Upload or replace documents for an application"""
+    office = _get_office(request.user)
     application = get_object_or_404(
         Application.objects.select_related('user', 'scholarship'),
-        app_id=app_id
+        app_id=app_id, office=office,
     )
 
     if request.method == 'POST':
@@ -298,7 +334,8 @@ def upload_documents(request, app_id):
 @user_passes_test(is_office_staff, login_url='office:login')
 def submit_application(request, app_id):
     """Submit a draft application"""
-    application = get_object_or_404(Application, app_id=app_id)
+    office = _get_office(request.user)
+    application = get_object_or_404(Application, app_id=app_id, office=office)
     if request.method == 'POST' and application.status == 'draft':
         change_application_status(application, 'submitted', request.user, 'Submitted by office worker')
         send_notification(
@@ -313,7 +350,8 @@ def submit_application(request, app_id):
 @user_passes_test(is_office_staff, login_url='office:login')
 def start_review(request, app_id):
     """Move submitted → under_review"""
-    application = get_object_or_404(Application, app_id=app_id)
+    office = _get_office(request.user)
+    application = get_object_or_404(Application, app_id=app_id, office=office)
     if request.method == 'POST' and application.status == 'submitted':
         change_application_status(application, 'under_review', request.user, 'Review started by office')
         send_notification(
@@ -328,7 +366,8 @@ def start_review(request, app_id):
 @user_passes_test(is_office_staff, login_url='office:login')
 def verify_documents(request, app_id):
     """Move under_review → documents_verified"""
-    application = get_object_or_404(Application, app_id=app_id)
+    office = _get_office(request.user)
+    application = get_object_or_404(Application, app_id=app_id, office=office)
     if request.method == 'POST' and application.status == 'under_review':
         change_application_status(application, 'documents_verified', request.user, 'Documents verified by office')
         send_notification(
@@ -344,7 +383,8 @@ def verify_documents(request, app_id):
 def verify_payment(request, app_id):
     """Move documents_verified → payment_verified (only if receipt exists)"""
     from finance.models import application_payment as PaymentModel
-    application = get_object_or_404(Application, app_id=app_id)
+    office = _get_office(request.user)
+    application = get_object_or_404(Application, app_id=app_id, office=office)
     if request.method == 'POST' and application.status == 'documents_verified':
         payment = PaymentModel.objects.filter(application=application).first()
         if not payment or not payment.receipt_pdf:
@@ -366,10 +406,11 @@ def payment_list(request):
     from finance.models import application_payment
     from django.core.paginator import Paginator
 
+    office = _get_office(request.user)
     status_filter = request.GET.get('status', '')
     payments = application_payment.objects.select_related(
         'application__user', 'application__scholarship'
-    ).all().order_by('-payment_date')
+    ).filter(application__office=office).order_by('-payment_date') if office else application_payment.objects.none()
 
     if status_filter:
         payments = payments.filter(payment_status=status_filter)
@@ -389,11 +430,12 @@ def payment_list(request):
 def payment_detail(request, payment_id):
     from finance.models import application_payment
 
+    office = _get_office(request.user)
     payment = get_object_or_404(
         application_payment.objects.select_related(
             'application__user', 'application__scholarship', 'reviewed_by'
         ),
-        application_payment_id=payment_id
+        application_payment_id=payment_id, application__office=office,
     )
     can_review = payment.payment_status in ('pending', 'under_review', 'processing')
     context = {
@@ -408,9 +450,10 @@ def payment_detail(request, payment_id):
 def make_payment(request, app_id):
     from finance.models import application_payment
 
+    office = _get_office(request.user)
     application = get_object_or_404(
         Application.objects.select_related('user', 'scholarship'),
-        app_id=app_id
+        app_id=app_id, office=office,
     )
 
     if request.method == 'POST':
@@ -450,7 +493,8 @@ def approve_payment(request, payment_id):
     from finance.models import application_payment
     from django.utils import timezone
 
-    payment = get_object_or_404(application_payment, application_payment_id=payment_id)
+    office = _get_office(request.user)
+    payment = get_object_or_404(application_payment, application_payment_id=payment_id, application__office=office)
     if request.method == 'POST' and payment.payment_status in ('pending', 'under_review', 'processing'):
         note = request.POST.get('review_note', '').strip()
         payment.payment_status = 'completed'
@@ -472,7 +516,8 @@ def reject_payment(request, payment_id):
     from finance.models import application_payment
     from django.utils import timezone
 
-    payment = get_object_or_404(application_payment, application_payment_id=payment_id)
+    office = _get_office(request.user)
+    payment = get_object_or_404(application_payment, application_payment_id=payment_id, application__office=office)
     if request.method == 'POST' and payment.payment_status in ('pending', 'under_review', 'processing'):
         note = request.POST.get('review_note', '').strip()
         payment.payment_status = 'failed'
@@ -492,9 +537,10 @@ def reject_payment(request, payment_id):
 # ─── Users ───────────────────────────────────────────────────────────
 @user_passes_test(is_office_staff, login_url='office:login')
 def user_list(request):
-    """Only show student users — hide office, agent, HQ staff"""
+    """Only show student users belonging to this office"""
     from django.core.paginator import Paginator
-    users = User.objects.filter(role='user').order_by('-date_joined')
+    office = _get_office(request.user)
+    users = User.objects.filter(role='user', office=office).order_by('-date_joined') if office else User.objects.none()
 
     query = request.GET.get('q', '').strip()
     if query:
@@ -512,8 +558,8 @@ def user_list(request):
     context = {
         'users': page_obj,
         'search_query': query,
-        'total_students': User.objects.filter(role='user').count(),
-        'active_students': User.objects.filter(role='user', is_active=True).count(),
+        'total_students': User.objects.filter(role='user', office=office).count() if office else 0,
+        'active_students': User.objects.filter(role='user', office=office, is_active=True).count() if office else 0,
     }
     return render(request, 'office/users.html', context)
 
@@ -521,6 +567,11 @@ def user_list(request):
 # ─── Create Application ─────────────────────────────────────────────
 @user_passes_test(is_office_staff, login_url='office:login')
 def create_application(request):
+    office = _get_office(request.user)
+    if not office:
+        messages.error(request, 'You are not assigned to any office. Please contact an administrator.')
+        return redirect('office:office_dashboard')
+
     if request.method == 'POST':
         scholarship_id = request.POST.get('scholarship_id')
         student_mode = request.POST.get('student_mode', 'existing')  # 'existing' or 'new'
@@ -538,6 +589,8 @@ def create_application(request):
             first_name = request.POST.get('new_first_name', '').strip()
             last_name = request.POST.get('new_last_name', '').strip()
             phone = request.POST.get('new_phone', '').strip()
+            new_country = request.POST.get('new_country', '').strip()
+            new_city = request.POST.get('new_city', '').strip()
 
             if not username or not email:
                 messages.error(request, 'Username and email are required for new student.')
@@ -557,9 +610,10 @@ def create_application(request):
                 student = User.objects.create_user(
                     username=username, email=email, password=temp_password,
                     role='user', first_name=first_name, last_name=last_name, phone=phone,
+                    office=office, country=new_country, city=new_city,
                 )
                 application = Application.objects.create(
-                    user=student, scholarship=scholarship, status='draft'
+                    user=student, scholarship=scholarship, status='draft', office=office,
                 )
 
                 # Send welcome email with password reset link
@@ -608,8 +662,12 @@ def create_application(request):
             try:
                 student = User.objects.get(id=student_id, role='user')
                 application = Application.objects.create(
-                    user=student, scholarship=scholarship, status='draft'
+                    user=student, scholarship=scholarship, status='draft', office=office,
                 )
+                # Also associate student with this office if not yet assigned
+                if not student.office:
+                    student.office = office
+                    student.save(update_fields=['office'])
                 messages.success(request, f'Application created for {student.username}.')
                 return redirect('office:application_detail', app_id=application.app_id)
             except User.DoesNotExist:
@@ -618,8 +676,9 @@ def create_application(request):
                 messages.error(request, f'Error creating application: {str(e)}')
 
     context = {
-        'students': User.objects.filter(role='user'),
+        'students': User.objects.filter(role='user', office=office),
         'scholarships': scholarships.objects.all(),
+        'office': office,
     }
     return render(request, 'office/create_application.html', context)
 
