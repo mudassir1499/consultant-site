@@ -4,6 +4,16 @@
 > **This guide uses SQLite** for quick testing. When you're ready for production,
 > switch to MySQL — see the "Switching to MySQL" section at the bottom.
 
+### What's Included
+
+| Feature | Details |
+|---------|---------|
+| **7 Django Apps** | pages, users, scholarships, finance, office, agent, headquarters |
+| **DevTools Portal** | Debug dashboard at `/devtools/` (disable in production) |
+| **SEO** | robots.txt, sitemap.xml, JSON-LD, Open Graph, Twitter Cards, slug URLs |
+| **4 Portals** | Office, Agent, HQ (with AJAX filters, bulk actions, CSV export) |
+| **Security** | HSTS, secure cookies, CSRF protection, noindex on internal pages |
+
 ---
 
 ## Prerequisites
@@ -114,6 +124,11 @@ DEFAULT_FROM_EMAIL=DFS Education <noreply@dfsscholarships.com>
 
 # ─── Security ────────────────────────────────────────────────
 SECURE_SSL_REDIRECT=False
+
+# ─── DevTools (keep disabled in production) ──────────────────
+DEVTOOLS_ENABLED=False
+DEVTOOLS_LOG_REQUESTS=False
+DEVTOOLS_QUERY_LOG=False
 ```
 
 **Generate a secret key** — run this command:
@@ -244,6 +259,9 @@ Open your browser and check:
 | `https://dfsscholarships.com` | Home page with styling |
 | `https://dfsscholarships.com/admin/` | Admin login page |
 | `https://dfsscholarships.com/users/register/` | Registration form |
+| `https://dfsscholarships.com/scholarships/` | Scholarship listing with slug URLs |
+| `https://dfsscholarships.com/robots.txt` | Crawler rules (text file) |
+| `https://dfsscholarships.com/sitemap.xml` | XML sitemap with all public URLs |
 | `https://dfsscholarships.com/static/admin/css/custom_admin.css` | CSS file (not 404) |
 
 ### Post-deployment checklist:
@@ -255,10 +273,38 @@ Open your browser and check:
 - [ ] Static files load (no broken CSS/images)
 - [ ] Set up Site Settings in admin (logo, contact info, footer)
 - [ ] Create offices and assign staff
+- [ ] `robots.txt` returns correct content
+- [ ] `sitemap.xml` lists all public pages + scholarships
+- [ ] Scholarship URLs use slugs (e.g., `/scholarships/csc-full-ride/`)
+- [ ] Old `/scholarships/id/1/` URLs redirect (301) to slug URLs
+- [ ] View page source — check `<title>`, `<meta description>`, OG tags present
+- [ ] Internal portals (`/office/`, `/agent/`, `/hq/`) have `noindex` meta tag
 
 ---
 
-## Step 13 — Set Up Email (Optional)
+## Step 13 — Configure Site Domain (SEO)
+
+The site uses `django.contrib.sites` for sitemap URLs. After first deploy:
+
+```bash
+source /home/YOUR_USERNAME/virtualenv/edu/3.12/bin/activate
+cd ~/edu
+python manage.py shell -c "
+from django.contrib.sites.models import Site
+site = Site.objects.get(id=1)
+site.domain = 'dfsscholarships.com'
+site.name = 'DFS Education'
+site.save()
+print('Site domain set to:', site.domain)
+"
+```
+
+> **Note:** The included `db.sqlite3` already has this configured. Only run this
+> if you started with a fresh database.
+
+---
+
+## Step 14 — Set Up Email (Optional)
 
 To send real emails (password reset, notifications):
 
@@ -273,7 +319,7 @@ To send real emails (password reset, notifications):
 
 ---
 
-## Step 14 — Set Up Cron Jobs (Optional)
+## Step 15 — Set Up Cron Jobs (Optional)
 
 cPanel → **Cron Jobs** — add for maintenance:
 
@@ -402,8 +448,14 @@ chmod 775 ~/edu/media
 │   ├── office/
 │   ├── agent/
 │   ├── headquarters/
-│   ├── pages/
+│   ├── pages/                        ← Public pages + SEO (sitemaps, templatetags)
+│   ├── devtools/                     ← Debug portal (disabled in production)
+│   ├── templates/
+│   │   └── robots.txt                ← Crawler rules
 │   ├── static/                       ← Source static files
+│   │   ├── css/dfs-shared.css
+│   │   ├── js/dfs-utils.js
+│   │   └── images/                   ← favicon.ico, og-default.png
 │   ├── staticfiles/                  ← Collected static (Step 6)
 │   ├── media/                        ← User uploads
 │   ├── logs/                         ← Django log files
