@@ -1,5 +1,12 @@
 {% extends "pages/base.html" %}
 
+{% block title %}{{ page_title|default:'Guaranteed Scholarships in China | DFS Education' }}{% endblock %}
+{% block meta_description %}{{ page_description|default:'DFS Education provides guaranteed scholarships in China for international students. Full, partial, and merit-based scholarships at top Chinese universities.' }}{% endblock %}
+{% block og_title %}{{ page_title|default:'Guaranteed Scholarships in China | DFS Education' }}{% endblock %}
+{% block og_description %}{{ page_description|default:'DFS Education provides guaranteed scholarships in China for international students.' }}{% endblock %}
+{% block twitter_title %}{{ page_title|default:'Guaranteed Scholarships in China | DFS Education' }}{% endblock %}
+{% block twitter_description %}{{ page_description|default:'DFS Education provides guaranteed scholarships in China for international students.' }}{% endblock %}
+
 {% block extra_css %}
 <style>
     .hero-section {

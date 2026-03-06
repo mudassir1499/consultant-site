@@ -1,0 +1,86 @@
+{% extends 'devtools/base.html' %}
+{% block title %}Log Viewer{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><i class="bi bi-terminal"></i> Log Viewer</h4>
+    <div class="d-flex gap-2">
+        <select id="fileSelect" class="form-select form-select-sm" style="width: auto;" onchange="updateLogView()">
+            {% for f in available_files %}
+            <option value="{{ f }}" {% if f == log_file %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+        </select>
+        <select id="levelSelect" class="form-select form-select-sm" style="width:auto;" onchange="updateLogView()">
+            <option value="">All Levels</option>
+            <option value="DEBUG" {% if level == 'DEBUG' %}selected{% endif %}>DEBUG</option>
+            <option value="INFO" {% if level == 'INFO' %}selected{% endif %}>INFO</option>
+            <option value="WARNING" {% if level == 'WARNING' %}selected{% endif %}>WARNING</option>
+            <option value="ERROR" {% if level == 'ERROR' %}selected{% endif %}>ERROR</option>
+            <option value="CRITICAL" {% if level == 'CRITICAL' %}selected{% endif %}>CRITICAL</option>
+        </select>
+        <select id="linesSelect" class="form-select form-select-sm" style="width:auto;" onchange="updateLogView()">
+            <option value="100" {% if max_lines == 100 %}selected{% endif %}>100 lines</option>
+            <option value="200" {% if max_lines == 200 %}selected{% endif %}>200 lines</option>
+            <option value="500" {% if max_lines == 500 %}selected{% endif %}>500 lines</option>
+            <option value="1000" {% if max_lines == 1000 %}selected{% endif %}>1000 lines</option>
+        </select>
+        <button class="btn btn-sm btn-outline-light" onclick="refreshLogs()"><i class="bi bi-arrow-clockwise"></i></button>
+    </div>
+</div>
+
+<div class="dt-card">
+    <div class="card-header p-3 d-flex justify-content-between">
+        <span><code>{{ log_file }}</code> — {{ lines|length }} lines</span>
+        <span id="autoRefreshStatus" class="small text-muted"></span>
+    </div>
+    <div class="card-body p-0" style="max-height:70vh;overflow-y:auto;" id="logContainer">
+        {% for line in lines %}
+        <div class="log-line px-3 {% if 'ERROR' in line %}error{% elif 'CRITICAL' in line %}critical{% elif 'WARNING' in line %}warning{% elif 'INFO' in line %}info{% elif 'DEBUG' in line %}debug{% endif %}">{{ line|truncatechars:500 }}</div>
+        {% empty %}
+        <div class="p-4 text-center text-muted"><i class="bi bi-inbox" style="font-size:2rem"></i><p class="mt-2">No log entries found.</p></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateLogView() {
+    var f = document.getElementById('fileSelect').value;
+    var l = document.getElementById('levelSelect').value;
+    var n = document.getElementById('linesSelect').value;
+    window.location.href = '{% url "devtools:log_viewer" %}?file=' + f + '&level=' + l + '&lines=' + n;
+}
+
+var autoRefreshTimer;
+function refreshLogs() {
+    var f = document.getElementById('fileSelect').value;
+    var l = document.getElementById('levelSelect').value;
+    var n = document.getElementById('linesSelect').value;
+    fetch('{% url "devtools:api_logs" %}?file=' + f + '&level=' + l + '&lines=' + n)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var container = document.getElementById('logContainer');
+            if (data.lines.length === 0) {
+                container.innerHTML = '<div class="p-4 text-center text-muted">No entries.</div>';
+                return;
+            }
+            var html = '';
+            data.lines.forEach(function(line) {
+                var cls = '';
+                if (line.indexOf('ERROR') >= 0) cls = 'error';
+                else if (line.indexOf('CRITICAL') >= 0) cls = 'critical';
+                else if (line.indexOf('WARNING') >= 0) cls = 'warning';
+                else if (line.indexOf('INFO') >= 0) cls = 'info';
+                else if (line.indexOf('DEBUG') >= 0) cls = 'debug';
+                html += '<div class="log-line px-3 ' + cls + '">' + line.replace(/</g, '&lt;') + '</div>';
+            });
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        });
+}
+
+// Auto-refresh every 5 seconds
+autoRefreshTimer = setInterval(refreshLogs, 5000);
+document.getElementById('autoRefreshStatus').textContent = 'Auto-refresh: 5s';
+</script>
+{% endblock %}

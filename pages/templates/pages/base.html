@@ -6,19 +6,51 @@
     <title>{% block title %}{{ site_settings.site_name|default:'DFS Education' }}{% endblock %}</title>
 
     {# SEO Meta Tags #}
-    <meta name="description" content="{% block meta_description %}{{ site_settings.meta_description|default:'' }}{% endblock %}">
-    <meta name="keywords" content="{{ site_settings.meta_keywords|default:'' }}">
+    <meta name="description" content="{% block meta_description %}{{ site_settings.meta_description|default:'DFS Education provides guaranteed scholarships in China for international students.' }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}{{ site_settings.meta_keywords|default:'scholarships in china, study in china, guaranteed scholarships, DFS Education, international students, chinese universities' }}{% endblock %}">
+
+    {# Canonical URL #}
+    <link rel="canonical" href="{% block canonical_url %}https://dfsscholarships.com{{ request.path }}{% endblock %}">
 
     {# Open Graph / Social #}
-    <meta property="og:title" content="{{ site_settings.site_name|default:'DFS Education' }}">
-    <meta property="og:description" content="{{ site_settings.meta_description|default:'' }}">
-    <meta property="og:type" content="website">
-    {% if site_settings.og_image %}<meta property="og:image" content="{{ site_settings.og_image.url }}">{% endif %}
+    <meta property="og:title" content="{% block og_title %}{{ site_settings.site_name|default:'DFS Education' }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ site_settings.meta_description|default:'DFS Education provides guaranteed scholarships in China for international students.' }}{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}https://dfsscholarships.com{{ request.path }}{% endblock %}">
+    <meta property="og:site_name" content="{{ site_settings.site_name|default:'DFS Education' }}">
+    <meta property="og:locale" content="en_US">
+    {% if site_settings.og_image %}
+    <meta property="og:image" content="{{ site_settings.og_image.url }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    {% else %}
+    {% load static %}
+    <meta property="og:image" content="https://dfsscholarships.com{% static 'images/og-default.png' %}">
+    {% endif %}
+
+    {# Twitter Card #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ site_settings.site_name|default:'DFS Education' }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ site_settings.meta_description|default:'DFS Education provides guaranteed scholarships in China for international students.' }}{% endblock %}">
+    {% if site_settings.og_image %}
+    <meta name="twitter:image" content="{{ site_settings.og_image.url }}">
+    {% else %}
+    <meta name="twitter:image" content="https://dfsscholarships.com{% static 'images/og-default.png' %}">
+    {% endif %}
 
     {# Favicon #}
     {% if site_settings.favicon %}
     <link rel="icon" href="{{ site_settings.favicon.url }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ site_settings.favicon.url }}">
+    {% else %}
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% endif %}
+
+    {# Extra head content (JSON-LD, per-page tags) #}
+    {% load seo_tags %}
+    {% jsonld_organization %}
+    {% jsonld_website %}
+    {% block extra_head %}{% endblock %}
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">

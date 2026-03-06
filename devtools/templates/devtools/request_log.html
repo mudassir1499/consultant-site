@@ -1,0 +1,110 @@
+{% extends 'devtools/base.html' %}
+{% block title %}Request Log{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><i class="bi bi-arrow-left-right"></i> Request Log</h4>
+    <div class="d-flex gap-2">
+        <select id="statusFilter" class="form-select form-select-sm" style="width:auto;" onchange="filterRequests()">
+            <option value="">All Status</option>
+            <option value="2" {% if status_filter == '2' %}selected{% endif %}>2xx Success</option>
+            <option value="3" {% if status_filter == '3' %}selected{% endif %}>3xx Redirect</option>
+            <option value="4" {% if status_filter == '4' %}selected{% endif %}>4xx Client Error</option>
+            <option value="5" {% if status_filter == '5' %}selected{% endif %}>5xx Server Error</option>
+        </select>
+        <select id="methodFilter" class="form-select form-select-sm" style="width:auto;" onchange="filterRequests()">
+            <option value="">All Methods</option>
+            <option value="GET" {% if method_filter == 'GET' %}selected{% endif %}>GET</option>
+            <option value="POST" {% if method_filter == 'POST' %}selected{% endif %}>POST</option>
+            <option value="PUT" {% if method_filter == 'PUT' %}selected{% endif %}>PUT</option>
+            <option value="DELETE" {% if method_filter == 'DELETE' %}selected{% endif %}>DELETE</option>
+        </select>
+        <button class="btn btn-sm btn-outline-light" onclick="refreshRequests()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    </div>
+</div>
+
+<div class="dt-card">
+    <div class="card-header p-3">
+        <span>{{ requests|length }} requests captured</span>
+    </div>
+    <div class="card-body p-0" style="max-height:75vh;overflow-y:auto;" id="requestContainer">
+        <table class="table table-sm table-hover small mb-0">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Method</th>
+                    <th>Path</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Queries</th>
+                    <th>User</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody id="requestBody">
+                {% for req in requests %}
+                <tr class="{% if req.status >= 500 %}table-danger{% elif req.status >= 400 %}table-warning{% elif req.duration_ms > 500 %}table-info{% endif %}">
+                    <td class="text-nowrap">{{ req.timestamp }}</td>
+                    <td><span class="badge {% if req.method == 'GET' %}bg-primary{% elif req.method == 'POST' %}bg-success{% else %}bg-secondary{% endif %}">{{ req.method }}</span></td>
+                    <td class="text-break" style="max-width:300px;">{{ req.path }}</td>
+                    <td>
+                        <span class="{% if req.status >= 500 %}text-danger{% elif req.status >= 400 %}text-warning{% elif req.status >= 300 %}text-info{% else %}text-success{% endif %} fw-bold">
+                            {{ req.status }}
+                        </span>
+                    </td>
+                    <td class="{% if req.duration_ms > 500 %}text-warning fw-bold{% endif %}">{{ req.duration_ms }}ms</td>
+                    <td>{{ req.query_count }}</td>
+                    <td>{{ req.user }}</td>
+                    <td class="text-muted">{{ req.ip }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No requests captured yet. The middleware records requests when DEVTOOLS_ENABLED=True.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterRequests() {
+    var s = document.getElementById('statusFilter').value;
+    var m = document.getElementById('methodFilter').value;
+    var params = new URLSearchParams();
+    if (s) params.set('status', s);
+    if (m) params.set('method', m);
+    window.location.href = '{% url "devtools:request_log" %}?' + params.toString();
+}
+
+function refreshRequests() {
+    fetch('{% url "devtools:api_requests" %}')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var tbody = document.getElementById('requestBody');
+            if (!data.requests.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No requests.</td></tr>'; return; }
+            var html = '';
+            data.requests.forEach(function(req) {
+                var rowClass = '';
+                if (req.status >= 500) rowClass = 'table-danger';
+                else if (req.status >= 400) rowClass = 'table-warning';
+                else if (req.duration_ms > 500) rowClass = 'table-info';
+                var methodBadge = req.method === 'GET' ? 'bg-primary' : req.method === 'POST' ? 'bg-success' : 'bg-secondary';
+                var statusClass = req.status >= 500 ? 'text-danger' : req.status >= 400 ? 'text-warning' : req.status >= 300 ? 'text-info' : 'text-success';
+                html += '<tr class="' + rowClass + '">' +
+                    '<td class="text-nowrap">' + req.timestamp + '</td>' +
+                    '<td><span class="badge ' + methodBadge + '">' + req.method + '</span></td>' +
+                    '<td class="text-break" style="max-width:300px;">' + req.path + '</td>' +
+                    '<td><span class="' + statusClass + ' fw-bold">' + req.status + '</span></td>' +
+                    '<td class="' + (req.duration_ms > 500 ? 'text-warning fw-bold' : '') + '">' + req.duration_ms + 'ms</td>' +
+                    '<td>' + req.query_count + '</td>' +
+                    '<td>' + req.user + '</td>' +
+                    '<td class="text-muted">' + req.ip + '</td></tr>';
+            });
+            tbody.innerHTML = html;
+        });
+}
+
+// Auto-refresh every 3 seconds
+setInterval(refreshRequests, 3000);
+</script>
+{% endblock %}

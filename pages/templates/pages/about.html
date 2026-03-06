@@ -1,6 +1,11 @@
 {% extends "pages/base.html" %}
 
-{% block title %}About Us — {{ site_settings.site_name|default:'DFS Education' }}{% endblock %}
+{% block title %}{{ page_title|default:'About Us — DFS Education' }}{% endblock %}
+{% block meta_description %}{{ page_description|default:'Learn about DFS Education, your trusted partner for guaranteed scholarships in China.' }}{% endblock %}
+{% block og_title %}{{ page_title|default:'About Us — DFS Education' }}{% endblock %}
+{% block og_description %}{{ page_description|default:'Learn about DFS Education, your trusted partner for guaranteed scholarships in China.' }}{% endblock %}
+{% block twitter_title %}{{ page_title|default:'About Us — DFS Education' }}{% endblock %}
+{% block twitter_description %}{{ page_description|default:'Learn about DFS Education, your trusted partner for guaranteed scholarships in China.' }}{% endblock %}
 
 {% block extra_css %}
 <style>

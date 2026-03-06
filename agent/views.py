@@ -2,8 +2,16 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db import models
+from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.http import JsonResponse, HttpResponse
+from django.db import transaction
+from django.core.paginator import Paginator
+
+import csv
+import json
+import logging
 
 from users.decorators import role_required
 from users.models import User
@@ -15,6 +23,8 @@ from finance.services import (
     get_or_create_wallet, add_upcoming_payments, move_to_balance,
     request_withdrawal as do_request_withdrawal,
 )
+
+logger = logging.getLogger('agent')
 
 
 # â”€â”€â”€ Agent Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -101,8 +111,7 @@ def dashboard(request):
 def application_list(request):
     """List all applications assigned to this agent"""
     user = request.user
-    from django.db.models import Q
-    
+
     all_apps = Application.objects.filter(
         assigned_agent=user
     ).select_related('user', 'scholarship').order_by('-applied_date')
@@ -118,26 +127,48 @@ def application_list(request):
             Q(app_id__icontains=query)
         )
 
-    pending_apps = all_apps.filter(status__in=['submitted', 'payment_verified', 'documents_verified'])
-    in_review_apps = all_apps.filter(status='under_review')
-    approved_apps = all_apps.filter(status__in=['approved', 'in_progress'])
-    letter_apps = all_apps.filter(status__in=['admission_letter_uploaded', 'admission_letter_approved', 'letter_pending'])
-    jw02_apps = all_apps.filter(status__in=['jw02_uploaded', 'jw02_approved', 'jw02_pending'])
-    completed_apps = all_apps.filter(status='complete')
-    rejected_apps = all_apps.filter(status='rejected')
+    # Status filter
+    status_filter = request.GET.get('status', '').strip()
+    if status_filter:
+        all_apps = all_apps.filter(status=status_filter)
+
+    # Date range filter
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    if date_from:
+        all_apps = all_apps.filter(applied_date__gte=date_from)
+    if date_to:
+        all_apps = all_apps.filter(applied_date__lte=date_to)
+
+    # Pagination
+    paginator = Paginator(all_apps, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    # AJAX: return partial HTML
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'agent/_application_table.html', {
+            'applications': page_obj,
+        })
+
+    # Tab counts (unfiltered)
+    base_apps = Application.objects.filter(assigned_agent=user)
+    pending_apps = base_apps.filter(status__in=['submitted', 'payment_verified', 'documents_verified'])
+    in_review_apps = base_apps.filter(status='under_review')
+    approved_apps = base_apps.filter(status__in=['approved', 'in_progress'])
+    letter_apps = base_apps.filter(status__in=['admission_letter_uploaded', 'admission_letter_approved', 'letter_pending'])
+    jw02_apps = base_apps.filter(status__in=['jw02_uploaded', 'jw02_approved', 'jw02_pending'])
+    completed_apps = base_apps.filter(status='complete')
+    rejected_apps = base_apps.filter(status='rejected')
 
     context = {
         'user': user,
-        'all_applications': all_apps,
+        'applications': page_obj,
         'search_query': query,
-        'pending_apps': pending_apps,
-        'in_review_apps': in_review_apps,
-        'approved_apps': approved_apps,
-        'letter_apps': letter_apps,
-        'jw02_apps': jw02_apps,
-        'completed_apps': completed_apps,
-        'rejected_apps': rejected_apps,
-        'total_count': all_apps.count(),
+        'status_filter': status_filter,
+        'date_from': date_from or '',
+        'date_to': date_to or '',
+        'status_choices': Application.STATUS_CHOICES,
+        'total_count': base_apps.count(),
         'pending_count': pending_apps.count(),
         'review_count': in_review_apps.count(),
         'approved_count': approved_apps.count(),
@@ -499,6 +530,109 @@ def request_withdrawal(request):
         messages.error(request, str(e))
 
     return redirect('agent:wallet')
+
+
+# ——— Bulk Actions ————————————————————————————————————————
+@role_required('agent', login_url_override='agent:login')
+@require_POST
+def bulk_action(request):
+    """Handle bulk approve / reject for agent applications"""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    action = data.get('action')
+    app_ids = data.get('ids', [])
+
+    if not app_ids:
+        return JsonResponse({'error': 'No applications selected.'}, status=400)
+
+    apps = Application.objects.filter(app_id__in=app_ids, assigned_agent=request.user)
+    count = 0
+
+    if action == 'approve':
+        deadline_days = int(data.get('deadline_days', 10))
+        from datetime import timedelta
+        for app in apps:
+            if app.status in ('submitted', 'under_review', 'documents_verified', 'payment_verified'):
+                app.deadline = timezone.now() + timedelta(days=deadline_days)
+                hq_user = User.objects.filter(role='headquarters', status='active').first()
+                if hq_user:
+                    app.assigned_hq = hq_user
+                change_application_status(app, 'approved', request.user, note='Bulk approved by agent')
+                send_notification(
+                    app.user, 'Application Approved',
+                    f'Your application for {app.scholarship.name} has been approved.',
+                    link=f'/scholarships/application/{app.app_id}/'
+                )
+                if hq_user:
+                    send_notification(
+                        hq_user, 'New Application Assigned',
+                        f'Application #{app.app_id} for {app.scholarship.name} has been assigned to you.',
+                        link=f'/hq/applications/{app.app_id}/'
+                    )
+                count += 1
+        logger.info(f'Agent {request.user.username} bulk approved {count} applications')
+        return JsonResponse({'message': f'{count} application(s) approved.', 'count': count})
+
+    elif action == 'reject':
+        reason = data.get('reason', 'Rejected via bulk action')
+        for app in apps:
+            if app.status not in ('rejected', 'complete'):
+                app.rejection_reason = reason
+                change_application_status(app, 'rejected', request.user, note=f'Bulk rejected: {reason}')
+                send_notification(
+                    app.user, 'Application Rejected',
+                    f'Your application for {app.scholarship.name} has been rejected. Reason: {reason}',
+                    link=f'/scholarships/application/{app.app_id}/'
+                )
+                count += 1
+        logger.info(f'Agent {request.user.username} bulk rejected {count} applications')
+        return JsonResponse({'message': f'{count} application(s) rejected.', 'count': count})
+
+    return JsonResponse({'error': f'Unknown action: {action}'}, status=400)
+
+
+@role_required('agent', login_url_override='agent:login')
+def export_applications_csv(request):
+    """Export filtered agent applications as CSV"""
+    user = request.user
+    apps = Application.objects.filter(assigned_agent=user).select_related('user', 'scholarship').order_by('-applied_date')
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        apps = apps.filter(
+            Q(user__username__icontains=q) | Q(user__first_name__icontains=q) |
+            Q(user__last_name__icontains=q) | Q(scholarship__name__icontains=q) |
+            Q(app_id__icontains=q)
+        )
+    status_filter = request.GET.get('status', '').strip()
+    if status_filter:
+        apps = apps.filter(status=status_filter)
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    if date_from:
+        apps = apps.filter(applied_date__gte=date_from)
+    if date_to:
+        apps = apps.filter(applied_date__lte=date_to)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="agent_applications.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['App ID', 'Student', 'Email', 'Scholarship', 'Commission', 'Status', 'Applied Date', 'Deadline'])
+    for app in apps:
+        writer.writerow([
+            app.app_id,
+            app.user.get_full_name() or app.user.username,
+            app.user.email,
+            app.scholarship.name,
+            str(app.scholarship.agent_commission),
+            app.get_status_display(),
+            app.applied_date.strftime('%Y-%m-%d') if app.applied_date else '',
+            app.deadline.strftime('%Y-%m-%d') if app.deadline else '',
+        ])
+    return response
 
 
 # ——— Agent Notifications ————————————————————————————————————

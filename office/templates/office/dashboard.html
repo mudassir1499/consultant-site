@@ -1,4 +1,5 @@
 {% extends "office/base.html" %}
+{% load status_tags %}
 {% block title %}Office Dashboard{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -161,12 +162,7 @@
                                 <td>{{ app.app_id }}</td>
                                 <td>{{ app.user.get_full_name|default:app.user.username }}</td>
                                 <td class="text-truncate" style="max-width:200px">{{ app.scholarship.name }}</td>
-                                <td>
-                                    {% if app.status == 'submitted' %}<span class="badge bg-warning text-dark">Submitted</span>
-                                    {% elif app.status == 'under_review' %}<span class="badge bg-info">Under Review</span>
-                                    {% elif app.status == 'documents_verified' %}<span class="badge bg-primary">Docs Verified</span>
-                                    {% endif %}
-                                </td>
+                                <td>{% status_badge app.status %}</td>
                                 <td><a href="{% url 'office:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">Review</a></td>
                             </tr>
                             {% endfor %}
@@ -203,18 +199,7 @@
                         <td>{{ app.user.get_full_name|default:app.user.username }}</td>
                         <td>{{ app.scholarship.name }}</td>
                         <td>{{ app.applied_date|date:"M d, Y" }}</td>
-                        <td>
-                            {% if app.status == 'draft' %}<span class="badge bg-secondary">Draft</span>
-                            {% elif app.status == 'submitted' %}<span class="badge bg-warning text-dark">Submitted</span>
-                            {% elif app.status == 'under_review' %}<span class="badge bg-info">Under Review</span>
-                            {% elif app.status == 'documents_verified' %}<span class="badge bg-primary">Docs Verified</span>
-                            {% elif app.status == 'payment_verified' %}<span class="badge bg-primary">Payment Verified</span>
-                            {% elif app.status == 'approved' %}<span class="badge bg-success">Approved</span>
-                            {% elif app.status == 'rejected' %}<span class="badge bg-danger">Rejected</span>
-                            {% elif app.status == 'complete' %}<span class="badge bg-dark">Complete</span>
-                            {% else %}<span class="badge bg-secondary">{{ app.get_status_display }}</span>
-                            {% endif %}
-                        </td>
+                        <td>{% status_badge app.status %}</td>
                         <td><a href="{% url 'office:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">View</a></td>
                     </tr>
                     {% endfor %}

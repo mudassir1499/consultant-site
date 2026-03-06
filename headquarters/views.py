@@ -1,11 +1,16 @@
 ﻿import io
+import csv
+import json
+import logging
 import zipfile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.db.models import Q
+from django.core.paginator import Paginator
 from datetime import timedelta
 
 from users.decorators import role_required
@@ -18,6 +23,8 @@ from finance.services import (
     get_or_create_wallet,
     request_withdrawal as do_request_withdrawal,
 )
+
+logger = logging.getLogger('headquarters')
 
 
 # â”€â”€â”€ HQ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -496,6 +503,82 @@ def request_withdrawal(request):
 
     return redirect('headquarters:wallet')
 
+# ——— Bulk Actions & CSV Export —————————————————————————————
+@role_required('headquarters', login_url_override='headquarters:login')
+@require_POST
+def bulk_action(request):
+    """Handle bulk mark_applied for HQ applications"""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    action = data.get('action')
+    app_ids = data.get('ids', [])
+
+    if not app_ids:
+        return JsonResponse({'error': 'No applications selected.'}, status=400)
+
+    apps = Application.objects.filter(app_id__in=app_ids, assigned_hq=request.user)
+    count = 0
+
+    if action == 'mark_applied':
+        for app in apps:
+            if app.status == 'approved':
+                app.deadline = timezone.now() + timedelta(days=10)
+                change_application_status(app, 'in_progress', request.user, note='Bulk: Applied to university by HQ')
+                if app.assigned_agent:
+                    send_notification(
+                        app.assigned_agent, 'Application Applied to University',
+                        f'HQ has applied App #{app.app_id} to the university.',
+                        link=f'/agent/applications/{app.app_id}/'
+                    )
+                count += 1
+        logger.info(f'HQ {request.user.username} bulk marked {count} applications as applied')
+        return JsonResponse({'message': f'{count} application(s) marked as applied.', 'count': count})
+
+    return JsonResponse({'error': f'Unknown action: {action}'}, status=400)
+
+
+@role_required('headquarters', login_url_override='headquarters:login')
+def export_applications_csv(request):
+    """Export filtered HQ applications as CSV"""
+    user = request.user
+    apps = Application.objects.filter(assigned_hq=user).select_related('user', 'scholarship').order_by('-applied_date')
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        apps = apps.filter(
+            Q(user__username__icontains=q) | Q(user__first_name__icontains=q) |
+            Q(user__last_name__icontains=q) | Q(scholarship__name__icontains=q) |
+            Q(app_id__icontains=q)
+        )
+    status_filter = request.GET.get('status', '').strip()
+    if status_filter:
+        apps = apps.filter(status=status_filter)
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    if date_from:
+        apps = apps.filter(applied_date__gte=date_from)
+    if date_to:
+        apps = apps.filter(applied_date__lte=date_to)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="hq_applications.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['App ID', 'Student', 'Email', 'Scholarship', 'HQ Commission', 'Status', 'Applied Date', 'Deadline'])
+    for app in apps:
+        writer.writerow([
+            app.app_id,
+            app.user.get_full_name() or app.user.username,
+            app.user.email,
+            app.scholarship.name,
+            str(app.scholarship.hq_commission),
+            app.get_status_display(),
+            app.applied_date.strftime('%Y-%m-%d') if app.applied_date else '',
+            app.deadline.strftime('%Y-%m-%d') if app.deadline else '',
+        ])
+    return response
 
 # ——— HQ Notifications ——————————————————————————————————————
 @role_required('headquarters', login_url_override='headquarters:login')

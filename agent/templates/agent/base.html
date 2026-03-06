@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>{% block title %}Agent Dashboard{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dfs-shared.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <style>
         :root { --sidebar-width: 260px; }
         body { min-height: 100vh; background: #f0f2f5; }
@@ -112,7 +116,7 @@
             <div class="d-flex align-items-center gap-3">
                 <a href="{% url 'agent:notifications' %}" class="position-relative text-dark">
                     <i class="bi bi-bell fs-5"></i>
-                    {% if unread_notifications_count %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.55rem">{{ unread_notifications_count }}</span>{% endif %}
+                    {% if unread_notifications_count %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" data-notification-badge style="font-size:.55rem">{{ unread_notifications_count }}</span>{% else %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" data-notification-badge style="font-size:.55rem;display:none">0</span>{% endif %}
                 </a>
                 <div class="dropdown">
                     <a class="d-flex align-items-center text-decoration-none text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
@@ -180,6 +184,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% load static %}
+    <script src="{% static 'js/dfs-utils.js' %}"></script>
     <script>
     // Page loader
     window.addEventListener('load', function() {
@@ -247,6 +253,7 @@
         new bootstrap.Modal(document.getElementById('actionSuccessModal')).show();
     }
     </script>
+    <script>DFS.initNotificationPolling('{% url "users:unread_count_api" %}');</script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

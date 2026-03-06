@@ -1,84 +1,189 @@
 {% extends 'agent/base.html' %}
+{% load status_tags %}
 
 {% block title %}Applications - Agent{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3><i class="bi bi-file-earmark-text"></i> Applications</h3>
+<!-- Summary Row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center"><div class="card-body py-3">
+            <div class="display-6 fw-bold">{{ total_count }}</div>
+            <small class="text-muted">Total Assigned</small>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center border-start border-4 border-warning"><div class="card-body py-3">
+            <div class="display-6 fw-bold text-warning">{{ pending_count }}</div>
+            <small class="text-muted">Pending Review</small>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center border-start border-4 border-success"><div class="card-body py-3">
+            <div class="display-6 fw-bold text-success">{{ approved_count }}</div>
+            <small class="text-muted">Approved</small>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card text-center border-start border-4 border-dark"><div class="card-body py-3">
+            <div class="display-6 fw-bold">{{ completed_count }}</div>
+            <small class="text-muted">Completed</small>
+        </div></div>
+    </div>
 </div>
 
-<div class="card stat-card">
-    <div class="card-header bg-white">
-        <ul class="nav nav-tabs card-header-tabs" id="agentListTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="list-all-tab" data-bs-toggle="tab" data-bs-target="#list-tab-all" type="button" role="tab">
-                    All <span class="badge bg-primary ms-1">{{ total_count }}</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-pending-tab" data-bs-toggle="tab" data-bs-target="#list-tab-pending" type="button" role="tab">
-                    Pending Review <span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-review-tab" data-bs-toggle="tab" data-bs-target="#list-tab-review" type="button" role="tab">
-                    Under Review <span class="badge bg-info ms-1">{{ review_count }}</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-approved-tab" data-bs-toggle="tab" data-bs-target="#list-tab-approved" type="button" role="tab">
-                    Approved <span class="badge bg-success ms-1">{{ approved_count }}</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-letters-tab" data-bs-toggle="tab" data-bs-target="#list-tab-letters" type="button" role="tab">
-                    Letters <span class="badge bg-secondary ms-1">{{ letter_count }}</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-jw02-tab" data-bs-toggle="tab" data-bs-target="#list-tab-jw02" type="button" role="tab">
-                    JW02 <span class="badge bg-secondary ms-1">{{ jw02_count }}</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-completed-tab" data-bs-toggle="tab" data-bs-target="#list-tab-completed" type="button" role="tab">
-                    Completed <span class="badge bg-dark ms-1">{{ completed_count }}</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-rejected-tab" data-bs-toggle="tab" data-bs-target="#list-tab-rejected" type="button" role="tab">
-                    Rejected <span class="badge bg-danger ms-1">{{ rejected_count }}</span>
-                </button>
-            </li>
-        </ul>
-    </div>
+<!-- Filter / Search Bar -->
+<div class="card stat-card mb-4 filter-bar">
     <div class="card-body">
-        <div class="tab-content" id="agentListTabsContent">
-            <div class="tab-pane fade show active" id="list-tab-all" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=all_applications empty_msg="No applications assigned yet." %}
+        <form method="get" id="filterForm" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted">Search <span class="kbd-hint">Ctrl+K</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" id="searchInput" class="form-control" data-shortcut="search"
+                           placeholder="Name, app ID..." value="{{ search_query }}">
+                </div>
             </div>
-            <div class="tab-pane fade" id="list-tab-pending" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=pending_apps empty_msg="No pending applications." %}
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Status</label>
+                <select name="status" id="statusSelect" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
             </div>
-            <div class="tab-pane fade" id="list-tab-review" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=in_review_apps empty_msg="No applications under review." %}
+            <div class="col-md-2">
+                <label class="form-label small text-muted">From</label>
+                <input type="date" name="date_from" id="dateFrom" class="form-control" value="{{ date_from }}">
             </div>
-            <div class="tab-pane fade" id="list-tab-approved" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=approved_apps empty_msg="No approved applications." %}
+            <div class="col-md-2">
+                <label class="form-label small text-muted">To</label>
+                <input type="date" name="date_to" id="dateTo" class="form-control" value="{{ date_to }}">
             </div>
-            <div class="tab-pane fade" id="list-tab-letters" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=letter_apps empty_msg="No applications in letter stage." %}
+            <div class="col-md-3 d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filter</button>
+                <a href="{% url 'agent:application_list' %}" class="btn btn-outline-secondary">Clear</a>
+                <a href="{% url 'agent:export_applications_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success" data-action="export-csv" title="Export CSV (Ctrl+Shift+E)">
+                    <i class="bi bi-download"></i> CSV
+                </a>
             </div>
-            <div class="tab-pane fade" id="list-tab-jw02" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=jw02_apps empty_msg="No applications in JW02 stage." %}
+        </form>
+    </div>
+</div>
+
+<!-- Applications Table -->
+<div class="card stat-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Applications</h5>
+        <span class="badge bg-primary" id="resultCount">{{ applications|length }} result{{ applications|length|pluralize }}</span>
+    </div>
+    <div class="card-body" id="tableContainer">
+        {% include 'agent/_application_table.html' %}
+    </div>
+</div>
+
+<!-- Bulk Action Toolbar -->
+<div class="bulk-toolbar d-none" id="bulkToolbar">
+    <div class="bulk-count" id="bulkCount">0</div>
+    <span class="text-white-50 small">selected</span>
+    <div class="bulk-actions">
+        <button class="btn btn-success btn-sm" onclick="showApproveModal()" title="Approve selected applications">
+            <i class="bi bi-check-circle"></i> Approve
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="showRejectModal()" title="Reject selected applications">
+            <i class="bi bi-x-circle"></i> Reject
+        </button>
+    </div>
+    <button class="btn btn-deselect btn-sm" onclick="window.DFS._bulkManager.clearSelection()">
+        <i class="bi bi-x-lg"></i> Deselect
+    </button>
+</div>
+
+<!-- Bulk Approve Modal -->
+<div class="modal fade" id="bulkApproveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Bulk Approve</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p>Approve <strong><span id="approveCount">0</span></strong> application(s)?</p>
+                <label class="form-label">Deadline (days from now)</label>
+                <input type="number" id="bulkDeadlineDays" class="form-control" value="10" min="1" max="90">
             </div>
-            <div class="tab-pane fade" id="list-tab-completed" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=completed_apps empty_msg="No completed applications." %}
-            </div>
-            <div class="tab-pane fade" id="list-tab-rejected" role="tabpanel">
-                {% include 'agent/_app_table_full.html' with applications=rejected_apps empty_msg="No rejected applications." %}
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="doBulkApprove()"><i class="bi bi-check-circle"></i> Approve</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Bulk Reject Modal -->
+<div class="modal fade" id="bulkRejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Bulk Reject</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p>Reject <strong><span id="rejectCount">0</span></strong> application(s)?</p>
+                <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                <textarea id="bulkRejectReason" class="form-control" rows="3" placeholder="Enter reason for rejection..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="doBulkReject()"><i class="bi bi-x-circle"></i> Reject</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    DFS.initLiveSearch({
+        searchInput: '#searchInput',
+        statusSelect: '#statusSelect',
+        dateFrom: '#dateFrom',
+        dateTo: '#dateTo',
+        targetContainer: '#tableContainer',
+        url: '{% url "agent:application_list" %}',
+        onAfterLoad: function() {
+            if (DFS._bulkManager) DFS._bulkManager.rebind();
+        }
+    });
+
+    DFS._bulkManager = new DFS.BulkActionManager({
+        tableSelector: '#agentAppTable',
+        checkboxName: 'app_ids',
+        toolbarSelector: '#bulkToolbar',
+        countSelector: '#bulkCount',
+        selectAllSelector: '#selectAllAgent',
+        actionUrl: '{% url "agent:bulk_action" %}'
+    });
+});
+
+function showApproveModal() {
+    document.getElementById('approveCount').textContent = DFS._bulkManager.getSelectedIds().length;
+    new bootstrap.Modal(document.getElementById('bulkApproveModal')).show();
+}
+function showRejectModal() {
+    document.getElementById('rejectCount').textContent = DFS._bulkManager.getSelectedIds().length;
+    new bootstrap.Modal(document.getElementById('bulkRejectModal')).show();
+}
+function doBulkApprove() {
+    var days = document.getElementById('bulkDeadlineDays').value || '10';
+    bootstrap.Modal.getInstance(document.getElementById('bulkApproveModal')).hide();
+    DFS._bulkManager.executeAction('approve', { deadline_days: days }).then(function() {
+        document.querySelector('#searchInput').dispatchEvent(new Event('input'));
+    });
+}
+function doBulkReject() {
+    var reason = document.getElementById('bulkRejectReason').value.trim();
+    if (!reason) { DFS.showToast('Rejection reason is required.', 'warning'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('bulkRejectModal')).hide();
+    DFS._bulkManager.executeAction('reject', { reason: reason }).then(function() {
+        document.querySelector('#searchInput').dispatchEvent(new Event('input'));
+    });
+}
+</script>
 {% endblock %}

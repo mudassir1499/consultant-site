@@ -1,0 +1,75 @@
+{% load status_tags %}
+{% if applications %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 bulk-table" id="hqAppTable">
+        <thead class="table-light">
+            <tr>
+                <th class="col-check"><input type="checkbox" id="selectAllHQ" class="form-check-input"></th>
+                <th>App #</th>
+                <th>Student</th>
+                <th>Scholarship</th>
+                <th>HQ Commission</th>
+                <th>Deadline</th>
+                <th>Status</th>
+                <th class="col-actions">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td class="col-check">
+                    <input type="checkbox" name="app_ids" value="{{ app.app_id }}" class="form-check-input" data-status="{{ app.status }}">
+                </td>
+                <td><strong>#{{ app.app_id }}</strong></td>
+                <td>{{ app.user.get_full_name|default:app.user.username }}</td>
+                <td>{{ app.scholarship.name }}</td>
+                <td class="text-success fw-bold">${{ app.scholarship.hq_commission }}</td>
+                <td>
+                    {% if app.deadline %}
+                    <span class="{% if app.deadline_passed %}text-danger{% endif %}">{{ app.deadline|date:"M d, Y" }}</span>
+                    {% else %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>{% status_badge app.status %}</td>
+                <td>
+                    {% if app.status == 'letter_pending' or app.status == 'jw02_pending' %}
+                        <a href="{% url 'headquarters:revision_list' %}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil-square"></i> Fix
+                        </a>
+                    {% elif app.status == 'admission_letter_approved' %}
+                        <a href="{% url 'headquarters:upload_jw02' app.app_id %}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-upload"></i> JW02
+                        </a>
+                    {% else %}
+                        <a href="{% url 'headquarters:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if applications.has_other_pages %}
+<nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+        {% if applications.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ applications.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        {% for num in applications.paginator.page_range %}
+        <li class="page-item {% if applications.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+        {% endfor %}
+        {% if applications.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ applications.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+    <p>No applications found matching your criteria.</p>
+</div>
+{% endif %}

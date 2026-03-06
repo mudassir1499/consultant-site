@@ -38,15 +38,32 @@ def scholarship_list(request):
         'type_filter': scholarship_type,
         'degree_choices': scholarships.DEGREE_CHOICES,
         'type_choices': scholarships.SCHOLARSHIP_TYPE_CHOICES,
+        'page_title': 'Browse Scholarships in China \u2014 DFS Education',
+        'page_description': 'Explore guaranteed scholarship opportunities in China. Full, partial, and merit-based scholarships for Bachelor, Master, and PhD programs at top Chinese universities.',
     }
     return render(request, 'scholarships/scholarship_list.html', context)
 
 
-def scholarship_detail(request, scholarship_id):
-    """View details of a single scholarship"""
-    scholarship = get_object_or_404(scholarships, id=scholarship_id)
-    context = {'scholarship': scholarship}
+def scholarship_detail(request, slug):
+    """View details of a single scholarship (SEO-friendly slug URL)"""
+    scholarship = get_object_or_404(scholarships, slug=slug)
+    context = {
+        'scholarship': scholarship,
+        'page_title': f'{scholarship.name} \u2014 DFS Education',
+        'page_description': scholarship.description[:160] if scholarship.description else f'Apply for {scholarship.name} scholarship in {scholarship.city}, China. {scholarship.get_degree_display()} program in {scholarship.major}.',
+        'breadcrumb_items': [
+            ('Home', '/'),
+            ('Scholarships', '/scholarships/'),
+            (scholarship.name, None),
+        ],
+    }
     return render(request, 'scholarships/scholarship_detail.html', context)
+
+
+def scholarship_detail_redirect(request, scholarship_id):
+    """301 redirect from old /scholarships/<id>/ to /scholarships/<slug>/"""
+    scholarship = get_object_or_404(scholarships, id=scholarship_id)
+    return redirect(scholarship.get_absolute_url(), permanent=True)
 
 @login_required
 def apply_scholarship(request, scholarship_id):

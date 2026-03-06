@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}DevTools{% endblock %} — DFS Debug</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        :root {
+            --dt-bg: #0d1117;
+            --dt-surface: #161b22;
+            --dt-border: #30363d;
+            --dt-accent: #f85149;
+            --dt-accent2: #58a6ff;
+            --dt-green: #3fb950;
+            --dt-yellow: #d29922;
+        }
+        body { background: var(--dt-bg); color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .dt-sidebar {
+            width: 220px; min-height: 100vh; background: var(--dt-surface);
+            border-right: 1px solid var(--dt-border);
+            position: fixed; top: 0; left: 0; z-index: 1030;
+        }
+        .dt-sidebar .brand {
+            padding: 1rem; border-bottom: 1px solid var(--dt-border);
+            font-weight: 700; color: var(--dt-accent); font-size: 1.1rem;
+        }
+        .dt-sidebar .nav-link {
+            color: #8b949e; padding: .5rem 1rem; font-size: .85rem;
+            border-left: 3px solid transparent; transition: all .2s;
+        }
+        .dt-sidebar .nav-link:hover { color: #c9d1d9; background: rgba(255,255,255,.04); }
+        .dt-sidebar .nav-link.active {
+            color: var(--dt-accent2); background: rgba(88,166,255,.08);
+            border-left-color: var(--dt-accent2);
+        }
+        .dt-sidebar .nav-link i { width: 20px; margin-right: .5rem; }
+        .dt-main { margin-left: 220px; min-height: 100vh; }
+        .dt-topbar {
+            background: var(--dt-surface); border-bottom: 1px solid var(--dt-border);
+            padding: .75rem 1.5rem; position: sticky; top: 0; z-index: 1020;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .dt-card {
+            background: var(--dt-surface); border: 1px solid var(--dt-border);
+            border-radius: 8px; overflow: hidden;
+        }
+        .dt-card .card-header {
+            background: transparent; border-bottom: 1px solid var(--dt-border);
+            font-weight: 600; font-size: .9rem;
+        }
+        .dt-stat {
+            background: var(--dt-surface); border: 1px solid var(--dt-border);
+            border-radius: 8px; padding: 1rem; text-align: center;
+        }
+        .dt-stat .stat-value { font-size: 2rem; font-weight: 700; }
+        .dt-stat .stat-label { font-size: .75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+        .log-line { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,.03); line-height: 1.5; word-break: break-all; }
+        .log-line.error, .log-line.critical { color: var(--dt-accent); }
+        .log-line.warning { color: var(--dt-yellow); }
+        .log-line.info { color: var(--dt-green); }
+        .log-line.debug { color: #8b949e; }
+        .status-ok { color: var(--dt-green); }
+        .status-warning { color: var(--dt-yellow); }
+        .status-error { color: var(--dt-accent); }
+        .badge-accent { background: var(--dt-accent); }
+        .badge-accent2 { background: var(--dt-accent2); }
+        table { --bs-table-bg: transparent; --bs-table-hover-bg: rgba(255,255,255,.04); }
+        .table > :not(caption) > * > * { border-bottom-color: var(--dt-border); }
+        .form-control, .form-select { background: var(--dt-bg); border-color: var(--dt-border); color: #c9d1d9; }
+        .form-control:focus, .form-select:focus { background: var(--dt-bg); color: #c9d1d9; border-color: var(--dt-accent2); box-shadow: 0 0 0 .2rem rgba(88,166,255,.15); }
+        @media (max-width: 768px) {
+            .dt-sidebar { display: none; }
+            .dt-main { margin-left: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="dt-sidebar">
+        <div class="brand"><i class="bi bi-bug"></i> DFS DevTools</div>
+        <div class="py-3">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'devtools:dashboard' %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'log_viewer' %}active{% endif %}" href="{% url 'devtools:log_viewer' %}">
+                <i class="bi bi-terminal"></i> Logs
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'request_log' %}active{% endif %}" href="{% url 'devtools:request_log' %}">
+                <i class="bi bi-arrow-left-right"></i> Requests
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'submission_tracker' %}active{% endif %}" href="{% url 'devtools:submission_tracker' %}">
+                <i class="bi bi-clipboard-data"></i> Submissions
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'health_check' %}active{% endif %}" href="{% url 'devtools:health_check' %}">
+                <i class="bi bi-heart-pulse"></i> Health
+            </a>
+            <hr class="border-secondary mx-3">
+            <a class="nav-link" href="/admin/"><i class="bi bi-gear"></i> Admin</a>
+            <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
+        </div>
+    </nav>
+
+    <div class="dt-main">
+        <div class="dt-topbar">
+            <span class="text-muted small"><i class="bi bi-bug"></i> Developer Debug Portal</span>
+            <span class="text-muted small">{{ user.username }} | <span class="{% if debug_mode %}text-warning{% else %}text-success{% endif %}">DEBUG={{ debug_mode|default:"OFF" }}</span></span>
+        </div>
+        <div class="p-4">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

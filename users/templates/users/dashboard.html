@@ -1,4 +1,5 @@
 {% extends 'users/base.html' %}
+{% load status_tags %}
 
 {% block extra_css %}
 <style>
@@ -165,37 +166,7 @@
                             <!-- Status & Progress -->
                             <div class="col-md-4 my-2 my-md-0">
                                 <div class="d-flex align-items-center mb-2">
-                                    {% if app.status == 'draft' %}
-                                        <span class="badge bg-secondary me-2">Draft</span>
-                                    {% elif app.status == 'submitted' %}
-                                        <span class="badge bg-primary me-2">Submitted</span>
-                                    {% elif app.status == 'under_review' %}
-                                        <span class="badge bg-info me-2">Under Review</span>
-                                    {% elif app.status == 'documents_verified' %}
-                                        <span class="badge bg-success me-2">Docs Verified</span>
-                                    {% elif app.status == 'payment_verified' %}
-                                        <span class="badge bg-info me-2">Payment Verified</span>
-                                    {% elif app.status == 'approved' %}
-                                        <span class="badge bg-success me-2">Approved</span>
-                                    {% elif app.status == 'rejected' %}
-                                        <span class="badge bg-danger me-2">Rejected</span>
-                                    {% elif app.status == 'in_progress' %}
-                                        <span class="badge bg-warning text-dark me-2">In Progress</span>
-                                    {% elif app.status == 'admission_letter_uploaded' %}
-                                        <span class="badge bg-primary me-2">Letter Uploaded</span>
-                                    {% elif app.status == 'admission_letter_approved' %}
-                                        <span class="badge bg-success me-2">Letter Approved</span>
-                                    {% elif app.status == 'jw02_uploaded' %}
-                                        <span class="badge bg-primary me-2">JW02 Uploaded</span>
-                                    {% elif app.status == 'jw02_approved' %}
-                                        <span class="badge bg-success me-2">JW02 Approved</span>
-                                    {% elif app.status == 'letter_pending' %}
-                                        <span class="badge bg-warning text-dark me-2">Letter Revision</span>
-                                    {% elif app.status == 'complete' %}
-                                        <span class="badge bg-dark me-2">Complete</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary me-2">{{ app.get_status_display }}</span>
-                                    {% endif %}
+                                    {% status_badge app.status %}
 
                                     {% if app.action_info %}
                                         <span class="badge bg-danger action-badge"><i class="bi bi-exclamation-circle"></i> Action Required</span>
@@ -226,19 +197,7 @@
                                 {% if app.payment %}
                                 <div class="mb-2">
                                     <small class="text-muted">Payment:</small>
-                                    {% if app.payment.payment_status == 'pending' %}
-                                        <span class="badge bg-warning">Pending</span>
-                                    {% elif app.payment.payment_status == 'processing' %}
-                                        <span class="badge bg-info">Processing</span>
-                                    {% elif app.payment.payment_status == 'under_review' %}
-                                        <span class="badge bg-info">Under Review</span>
-                                    {% elif app.payment.payment_status == 'completed' %}
-                                        <span class="badge bg-success">Completed</span>
-                                    {% elif app.payment.payment_status == 'failed' %}
-                                        <span class="badge bg-danger">Failed</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">{{ app.payment.get_payment_status_display }}</span>
-                                    {% endif %}
+                                    {% payment_badge app.payment.payment_status %}
                                 </div>
                                 {% endif %}
 

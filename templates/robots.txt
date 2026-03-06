@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /office/
+Disallow: /agent/
+Disallow: /hq/
+Disallow: /devtools/
+Disallow: /admin/
+Disallow: /finance/
+Disallow: /users/dashboard/
+Disallow: /users/profile/
+Disallow: /users/notifications/
+Disallow: /scholarships/apply/
+Disallow: /scholarships/application/
+
+Sitemap: https://dfsscholarships.com/sitemap.xml

@@ -29,6 +29,14 @@ urlpatterns = [
     path('payments/<int:payment_id>/reject/', views.reject_payment, name='reject_payment'),
     path('applications/<int:app_id>/make-payment/', views.make_payment, name='make_payment'),
 
+    # Bulk Actions
+    path('applications/bulk-action/', views.bulk_action, name='bulk_action'),
+    path('payments/bulk-action/', views.bulk_payment_action, name='bulk_payment_action'),
+
+    # CSV Export
+    path('applications/export/', views.export_applications_csv, name='export_applications_csv'),
+    path('payments/export/', views.export_payments_csv, name='export_payments_csv'),
+
     # Users
     path('users/', views.user_list, name='user_list'),
 

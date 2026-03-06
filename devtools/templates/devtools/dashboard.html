@@ -1,0 +1,152 @@
+{% extends 'devtools/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-speedometer2"></i> DevTools Dashboard</h4>
+
+<!-- System Overview -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="dt-stat">
+            <div class="stat-value text-primary">{{ total_apps }}</div>
+            <div class="stat-label">Total Applications</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="dt-stat">
+            <div class="stat-value" style="color:var(--dt-green)">{{ apps_today }}</div>
+            <div class="stat-label">Today's Submissions</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="dt-stat">
+            <div class="stat-value" style="color:var(--dt-accent2)">{{ apps_this_week }}</div>
+            <div class="stat-label">This Week</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="dt-stat">
+            <div class="stat-value" style="color:var(--dt-accent)">{{ error_requests }}</div>
+            <div class="stat-label">Error Requests</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Application Status Pipeline -->
+    <div class="col-md-6">
+        <div class="dt-card">
+            <div class="card-header p-3"><i class="bi bi-funnel"></i> Status Pipeline</div>
+            <div class="card-body p-3">
+                {% for status, count in status_counts.items %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small">{{ status }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="width:120px;height:6px;">
+                            <div class="progress-bar bg-info" style="width:{% widthratio count total_apps 100 %}%"></div>
+                        </div>
+                        <span class="badge bg-secondary">{{ count }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted small mb-0">No applications yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Users & System -->
+    <div class="col-md-6">
+        <div class="dt-card mb-3">
+            <div class="card-header p-3"><i class="bi bi-people"></i> Users by Role</div>
+            <div class="card-body p-3">
+                <div class="row g-2">
+                    {% for role, count in users_by_role.items %}
+                    <div class="col-6">
+                        <div class="d-flex justify-content-between small">
+                            <span>{{ role }}</span>
+                            <span class="fw-bold">{{ count }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <hr class="border-secondary">
+                <div class="d-flex justify-content-between small">
+                    <span>Total Users</span><span class="fw-bold">{{ total_users }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="dt-card">
+            <div class="card-header p-3"><i class="bi bi-info-circle"></i> System Info</div>
+            <div class="card-body p-3">
+                <table class="table table-sm small mb-0">
+                    <tr><td class="text-muted">Python</td><td>{{ python_version }}</td></tr>
+                    <tr><td class="text-muted">Django</td><td>{{ django_version }}</td></tr>
+                    <tr><td class="text-muted">Database</td><td>{{ database_engine }}</td></tr>
+                    <tr><td class="text-muted">Debug</td><td><span class="{% if debug_mode %}text-warning{% else %}text-success{% endif %}">{{ debug_mode }}</span></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Stats & Request Overview -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="dt-card">
+            <div class="card-header p-3"><i class="bi bi-credit-card"></i> Payments ({{ total_payments }})</div>
+            <div class="card-body p-3">
+                {% for status, count in payment_status_counts.items %}
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>{{ status }}</span>
+                    <span class="badge {% if status == 'completed' %}bg-success{% elif status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">{{ count }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted small mb-0">No payments recorded.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="dt-card">
+            <div class="card-header p-3"><i class="bi bi-arrow-left-right"></i> Request Stats (last {{ total_requests }})</div>
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Total Captured</span><span class="badge bg-primary">{{ total_requests }}</span>
+                </div>
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Errors (4xx/5xx)</span><span class="badge bg-danger">{{ error_requests }}</span>
+                </div>
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Slow (&gt;500ms)</span><span class="badge bg-warning text-dark">{{ slow_requests }}</span>
+                </div>
+                <div class="mt-2">
+                    <a href="{% url 'devtools:request_log' %}" class="btn btn-sm btn-outline-light">View Request Log &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Files -->
+<div class="dt-card">
+    <div class="card-header p-3"><i class="bi bi-file-text"></i> Log Files</div>
+    <div class="card-body p-3">
+        {% if log_files %}
+        <table class="table table-sm small mb-0">
+            <thead><tr><th>File</th><th>Size</th><th></th></tr></thead>
+            <tbody>
+                {% for name, info in log_files.items %}
+                <tr>
+                    <td><code>{{ name }}</code></td>
+                    <td>{{ info.size_display }}</td>
+                    <td><a href="{% url 'devtools:log_viewer' %}?file={{ name }}" class="btn btn-sm btn-outline-light">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted small mb-0">No log files found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

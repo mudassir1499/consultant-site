@@ -1,5 +1,10 @@
 {% extends 'pages/base.html' %}
-{% block title %}Scholarships{% endblock %}
+{% block title %}{{ page_title|default:'Browse Scholarships in China — DFS Education' }}{% endblock %}
+{% block meta_description %}{{ page_description|default:'Explore guaranteed scholarship opportunities in China for international students.' }}{% endblock %}
+{% block og_title %}{{ page_title|default:'Browse Scholarships in China — DFS Education' }}{% endblock %}
+{% block og_description %}{{ page_description|default:'Explore guaranteed scholarship opportunities in China for international students.' }}{% endblock %}
+{% block twitter_title %}{{ page_title|default:'Browse Scholarships in China — DFS Education' }}{% endblock %}
+{% block twitter_description %}{{ page_description|default:'Explore guaranteed scholarship opportunities in China for international students.' }}{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -55,7 +60,7 @@
                     <p class="card-text text-muted small flex-grow-1">{{ s.description|truncatewords:25 }}</p>
                     <div class="d-flex justify-content-between align-items-center mt-auto">
                         <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>Deadline: {{ s.deadline|date:"M d, Y" }}</small>
-                        <a href="{% url 'scholarships:scholarship_detail' s.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                        <a href="{% url 'scholarships:scholarship_detail' s.slug %}" class="btn btn-outline-primary btn-sm">View Details</a>
                     </div>
                 </div>
             </div>

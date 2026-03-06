@@ -30,6 +30,10 @@ urlpatterns = [
     path('wallet/', views.wallet_page, name='wallet'),
     path('wallet/withdraw/', views.request_withdrawal, name='request_withdrawal'),
 
+    # Bulk Actions & Export
+    path('applications/bulk-action/', views.bulk_action, name='bulk_action'),
+    path('applications/export/', views.export_applications_csv, name='export_applications_csv'),
+
     # Notifications
     path('notifications/', views.hq_notifications, name='notifications'),
     path('notifications/<int:notification_id>/read/', views.hq_mark_notification_read, name='mark_notification_read'),

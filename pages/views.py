@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from scholarships.models import scholarships, Application
 from users.models import User
 
@@ -19,11 +21,17 @@ def home(request):
     context = {
         'scholarships': scholarships_list,
         'applied_scholarship_ids': applied_scholarship_ids,
+        'page_title': 'Guaranteed Scholarships in China | DFS Education',
+        'page_description': 'DFS Education provides guaranteed scholarships in China for international students. Expert guidance from application to admission at top Chinese universities.',
     }
     return render(request, 'pages/home.html', context) 
 
 def about(request):
-    return render(request, 'pages/about.html')
+    context = {
+        'page_title': 'About Us \u2014 DFS Education',
+        'page_description': 'Learn about DFS Education, a trusted consultancy providing guaranteed scholarships in China. 10+ years experience, 1000+ students helped, 95% success rate.',
+    }
+    return render(request, 'pages/about.html', context)
 
 
 def contact(request):
@@ -55,4 +63,13 @@ def contact(request):
         messages.success(request, 'Thank you for your message! We will get back to you soon.')
         return redirect('pages:contact')
 
-    return render(request, 'pages/contact.html')    
+    return render(request, 'pages/contact.html', {
+        'page_title': 'Contact Us \u2014 DFS Education',
+        'page_description': 'Get in touch with DFS Education for scholarship enquiries, application support, and consultancy services for studying in China.',
+    })
+
+
+def robots_txt(request):
+    """Serve robots.txt as plain text."""
+    content = render_to_string('robots.txt')
+    return HttpResponse(content, content_type='text/plain')

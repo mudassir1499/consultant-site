@@ -1,0 +1,78 @@
+{% extends 'devtools/base.html' %}
+{% block title %}Health Check{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><i class="bi bi-heart-pulse"></i> System Health</h4>
+    <button class="btn btn-sm btn-outline-light" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+</div>
+
+<div class="row g-3 mb-4">
+    {% for check in checks %}
+    <div class="col-md-4">
+        <div class="dt-card h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0">{{ check.name }}</h6>
+                    {% if check.status == 'ok' %}
+                    <span class="badge status-ok"><i class="bi bi-check-circle"></i> OK</span>
+                    {% elif check.status == 'warning' %}
+                    <span class="badge status-warning"><i class="bi bi-exclamation-triangle"></i> Warning</span>
+                    {% else %}
+                    <span class="badge status-error"><i class="bi bi-x-circle"></i> Error</span>
+                    {% endif %}
+                </div>
+                <p class="text-muted small mb-0">{{ check.message }}</p>
+                {% if check.detail %}
+                <code class="d-block mt-2 small" style="color:var(--dt-muted)">{{ check.detail }}</code>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- System Info -->
+<div class="dt-card mb-4">
+    <div class="card-header p-3"><i class="bi bi-cpu"></i> System Information</div>
+    <div class="card-body p-0">
+        <table class="table table-sm small mb-0">
+            <tbody>
+                <tr><td style="width:200px" class="text-muted">Python Version</td><td><code>{{ sys_info.python }}</code></td></tr>
+                <tr><td class="text-muted">Django Version</td><td><code>{{ sys_info.django }}</code></td></tr>
+                <tr><td class="text-muted">Database</td><td><code>{{ sys_info.database }}</code></td></tr>
+                <tr><td class="text-muted">Debug Mode</td><td>{% if sys_info.debug %}<span class="badge status-warning">ON</span>{% else %}<span class="badge status-ok">OFF</span>{% endif %}</td></tr>
+                <tr><td class="text-muted">Installed Apps</td><td>{{ sys_info.installed_apps }}</td></tr>
+                <tr><td class="text-muted">Middleware Count</td><td>{{ sys_info.middleware_count }}</td></tr>
+                <tr><td class="text-muted">Server Time</td><td><code>{{ sys_info.server_time }}</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Health API -->
+<div class="dt-card">
+    <div class="card-header p-3"><i class="bi bi-braces"></i> Health API (JSON)</div>
+    <div class="card-body p-3">
+        <p class="small text-muted mb-2">API endpoint for monitoring integrations:</p>
+        <code class="d-block p-2 rounded" style="background:var(--dt-bg);">GET /devtools/api/health/</code>
+        <div class="mt-3">
+            <button class="btn btn-sm btn-outline-info" id="testApiBtn">
+                <i class="bi bi-play"></i> Test API
+            </button>
+            <pre id="apiResultPre" class="mt-3 p-3 rounded small d-none" style="background:var(--dt-bg);max-height:300px;overflow-y:auto;"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('testApiBtn').addEventListener('click', function(){
+    const pre = document.getElementById('apiResultPre');
+    pre.classList.remove('d-none');
+    pre.textContent = 'Loading...';
+    fetch('/devtools/api/health/')
+        .then(r => r.json())
+        .then(data => { pre.textContent = JSON.stringify(data, null, 2); })
+        .catch(err => { pre.textContent = 'Error: ' + err.message; pre.style.color = 'var(--dt-accent)'; });
+});
+</script>
+{% endblock %}

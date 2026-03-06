@@ -18,9 +18,17 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.sitemaps.views import sitemap
+from pages.sitemaps import StaticViewSitemap, ScholarshipSitemap
+
+sitemaps = {
+    'static': StaticViewSitemap,
+    'scholarships': ScholarshipSitemap,
+}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('', include('pages.urls')),
     path('users/', include('users.urls')),
     path('scholarships/', include('scholarships.urls')),
@@ -28,6 +36,7 @@ urlpatterns = [
     path('office/', include('office.urls')),
     path('agent/', include('agent.urls')),
     path('hq/', include('headquarters.urls')),
+    path('devtools/', include('devtools.urls')),
 ]
 
 # Serve media & static files

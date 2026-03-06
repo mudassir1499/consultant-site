@@ -1,5 +1,10 @@
 {% extends 'pages/base.html' %}
-{% block title %}Contact Us{% endblock %}
+{% block title %}{{ page_title|default:'Contact Us — DFS Education' }}{% endblock %}
+{% block meta_description %}{{ page_description|default:'Get in touch with DFS Education for scholarship inquiries.' }}{% endblock %}
+{% block og_title %}{{ page_title|default:'Contact Us — DFS Education' }}{% endblock %}
+{% block og_description %}{{ page_description|default:'Get in touch with DFS Education for scholarship inquiries.' }}{% endblock %}
+{% block twitter_title %}{{ page_title|default:'Contact Us — DFS Education' }}{% endblock %}
+{% block twitter_description %}{{ page_description|default:'Get in touch with DFS Education for scholarship inquiries.' }}{% endblock %}
 
 {% block content %}
 <div class="container my-5">

@@ -271,3 +271,12 @@ def mark_all_notifications_read(request):
     if request.method == 'POST':
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return redirect('users:notifications')
+
+
+@login_required
+def unread_count_api(request):
+    """AJAX API: Return unread notification count as JSON"""
+    from django.http import JsonResponse
+    from .models import Notification
+    count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return JsonResponse({'count': count})

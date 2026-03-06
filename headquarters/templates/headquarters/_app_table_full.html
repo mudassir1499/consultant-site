@@ -1,3 +1,4 @@
+{% load status_tags %}
 {% if applications %}
 <div class="table-responsive">
     <table class="table table-hover align-middle">
@@ -26,19 +27,7 @@
                     <span class="text-muted">—</span>
                     {% endif %}
                 </td>
-                <td>
-                    <span class="badge
-                        {% if app.status == 'approved' %}bg-success
-                        {% elif app.status == 'in_progress' %}bg-info
-                        {% elif app.status == 'admission_letter_uploaded' or app.status == 'jw02_uploaded' %}bg-primary
-                        {% elif app.status == 'admission_letter_approved' or app.status == 'jw02_approved' %}bg-success
-                        {% elif app.status == 'letter_pending' or app.status == 'jw02_pending' %}bg-warning text-dark
-                        {% elif app.status == 'complete' %}bg-dark
-                        {% elif app.status == 'rejected' %}bg-danger
-                        {% else %}bg-secondary{% endif %}">
-                        {{ app.get_status_display }}
-                    </span>
-                </td>
+                <td>{% status_badge app.status %}</td>
                 <td>
                     {% if app.status == 'letter_pending' or app.status == 'jw02_pending' %}
                         <a href="{% url 'headquarters:revision_list' %}" class="btn btn-sm btn-outline-warning">

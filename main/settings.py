@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     'pages',
     'users',
     'scholarships',
@@ -55,7 +57,10 @@ INSTALLED_APPS = [
     'office',
     'agent',
     'headquarters',
+    'devtools',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -65,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'devtools.middleware.DevToolsRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -212,6 +218,10 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
+        'detailed': {
+            'format': '{levelname} {asctime} {name} {module}:{lineno} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
@@ -219,9 +229,25 @@ LOGGING = {
             'formatter': 'verbose',
         },
         'file': {
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOG_DIR / 'django.log',
-            'formatter': 'verbose',
+            'formatter': 'detailed',
+            'maxBytes': 5 * 1024 * 1024,   # 5 MB
+            'backupCount': 5,
+        },
+        'app_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'app.log',
+            'formatter': 'detailed',
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 5,
+        },
+        'request_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'requests.log',
+            'formatter': 'detailed',
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 3,
         },
     },
     'root': {
@@ -234,5 +260,51 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
+        'django.request': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        # App-specific loggers at INFO level
+        'scholarships': {
+            'handlers': ['console', 'app_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'office': {
+            'handlers': ['console', 'app_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'agent': {
+            'handlers': ['console', 'app_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'headquarters': {
+            'handlers': ['console', 'app_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'finance': {
+            'handlers': ['console', 'app_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'devtools': {
+            'handlers': ['console', 'app_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'devtools.requests': {
+            'handlers': ['request_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
+
+# ─── DevTools Configuration ──────────────────────────────────────────
+DEVTOOLS_ENABLED = os.environ.get('DEVTOOLS_ENABLED', str(DEBUG)).lower() in ('true', '1', 'yes')
+DEVTOOLS_LOG_REQUESTS = os.environ.get('DEVTOOLS_LOG_REQUESTS', 'True').lower() in ('true', '1', 'yes')
+DEVTOOLS_QUERY_LOG = os.environ.get('DEVTOOLS_QUERY_LOG', str(DEBUG)).lower() in ('true', '1', 'yes')

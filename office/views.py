@@ -8,9 +8,15 @@ from scholarships.models import Application, scholarships, ApplicationStatusHist
 from scholarships.utils import change_application_status
 from main.utils import validate_uploaded_file
 from users.notifications import send_notification
+from django.http import JsonResponse
+from django.db import transaction
 
+import csv
+import logging
 
 from django.views.decorators.http import require_POST
+
+logger = logging.getLogger('office')
 
 
 def is_office_staff(user):
@@ -149,10 +155,24 @@ def application_list(request):
             Q(app_id__icontains=query)
         )
 
+    # Date range filter
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    if date_from:
+        applications = applications.filter(applied_date__gte=date_from)
+    if date_to:
+        applications = applications.filter(applied_date__lte=date_to)
+
     applications = applications.order_by('-applied_date')
     paginator = Paginator(applications, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    # AJAX: return partial HTML
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'office/_application_table.html', {
+            'applications': page_obj,
+        })
 
     office_apps = Application.objects.filter(office=office) if office else Application.objects.none()
     payments_qs = application_payment.objects.filter(application__office=office) if office else application_payment.objects.none()
@@ -161,6 +181,8 @@ def application_list(request):
         'applications': page_obj,
         'status_filter': status_filter or '',
         'search_query': query or '',
+        'date_from': date_from or '',
+        'date_to': date_to or '',
         'status_choices': Application.STATUS_CHOICES,
         'total_applications': office_apps.count(),
         'submitted_count': office_apps.filter(status='submitted').count(),
@@ -415,13 +437,41 @@ def payment_list(request):
     if status_filter:
         payments = payments.filter(payment_status=status_filter)
 
+    # Date range filter
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    if date_from:
+        payments = payments.filter(payment_date__gte=date_from)
+    if date_to:
+        payments = payments.filter(payment_date__lte=date_to)
+
+    # Search
+    query = request.GET.get('q', '').strip()
+    if query:
+        payments = payments.filter(
+            Q(application__user__username__icontains=query) |
+            Q(application__user__first_name__icontains=query) |
+            Q(application__user__last_name__icontains=query) |
+            Q(application__scholarship__name__icontains=query) |
+            Q(application__app_id__icontains=query)
+        )
+
     paginator = Paginator(payments, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # AJAX: return partial HTML
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'office/_payment_table.html', {
+            'payments': page_obj,
+        })
+
     context = {
         'payments': page_obj,
         'status_filter': status_filter,
+        'search_query': query,
+        'date_from': date_from or '',
+        'date_to': date_to or '',
     }
     return render(request, 'office/payments.html', context)
 
@@ -711,3 +761,273 @@ def office_mark_all_read(request):
     if request.method == 'POST':
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return redirect('office:notifications')
+
+
+# ─── Bulk Actions ────────────────────────────────────────────────────
+@user_passes_test(is_office_staff, login_url='office:login')
+@require_POST
+def bulk_action(request):
+    """Handle bulk actions on applications via AJAX JSON"""
+    import json
+    office = _get_office(request.user)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': 0, 'failed': 0, 'message': 'Invalid request data.'}, status=400)
+
+    action = data.get('action')
+    app_ids = data.get('app_ids', [])
+
+    if not action or not app_ids:
+        return JsonResponse({'success': 0, 'failed': 0, 'message': 'Missing action or app_ids.'}, status=400)
+
+    VALID_ACTIONS = {
+        'start_review': ('submitted', 'under_review', 'Review started by office (bulk)'),
+        'verify_documents': ('under_review', 'documents_verified', 'Documents verified by office (bulk)'),
+        'verify_payment': ('documents_verified', 'payment_verified', 'Payment verified by office (bulk)'),
+    }
+
+    if action == 'forward_to_agent':
+        return _bulk_forward_to_agent(request, office, app_ids, data)
+
+    if action not in VALID_ACTIONS:
+        return JsonResponse({'success': 0, 'failed': 0, 'message': f'Invalid action: {action}'}, status=400)
+
+    required_status, new_status, note = VALID_ACTIONS[action]
+    success = 0
+    failed = 0
+    errors = []
+
+    apps = Application.objects.filter(app_id__in=app_ids, office=office)
+    for app in apps:
+        if app.status != required_status:
+            failed += 1
+            errors.append(f'App #{app.app_id}: wrong status ({app.get_status_display()})')
+            continue
+
+        # For verify_payment, check receipt exists
+        if action == 'verify_payment':
+            from finance.models import application_payment as PaymentModel
+            payment = PaymentModel.objects.filter(application=app).first()
+            if not payment or not payment.receipt_pdf:
+                failed += 1
+                errors.append(f'App #{app.app_id}: no payment receipt uploaded')
+                continue
+
+        change_application_status(app, new_status, request.user, note)
+        success += 1
+
+        # Notification map
+        NOTIF = {
+            'start_review': ('Application Under Review', 'is now under review.'),
+            'verify_documents': ('Documents Verified', 'documents have been verified.'),
+            'verify_payment': ('Payment Verified', 'payment has been verified.'),
+        }
+        title, msg_suffix = NOTIF.get(action, ('Status Updated', 'status has been updated.'))
+        send_notification(
+            app.user, title,
+            f'Your application #{app.app_id} for {app.scholarship.name} {msg_suffix}',
+            f'/scholarships/application/{app.app_id}/'
+        )
+
+    logger.info(f'Bulk {action}: {success} success, {failed} failed by {request.user.username}')
+    return JsonResponse({
+        'success': success,
+        'failed': failed,
+        'errors': errors,
+        'message': f'{success} application(s) processed successfully.' + (f' {failed} failed.' if failed else ''),
+    })
+
+
+def _bulk_forward_to_agent(request, office, app_ids, data):
+    """Handle bulk forward-to-agent action"""
+    agent_id = data.get('agent_id')
+    if not agent_id:
+        return JsonResponse({'success': 0, 'failed': 0, 'message': 'Please select an agent.'}, status=400)
+
+    try:
+        agent = User.objects.get(id=agent_id, role='agent', is_active=True, office=office)
+    except User.DoesNotExist:
+        return JsonResponse({'success': 0, 'failed': 0, 'message': 'Invalid agent selected.'}, status=400)
+
+    success = 0
+    failed = 0
+    errors = []
+
+    apps = Application.objects.filter(app_id__in=app_ids, office=office)
+    for app in apps:
+        if app.status != 'payment_verified':
+            failed += 1
+            errors.append(f'App #{app.app_id}: wrong status ({app.get_status_display()})')
+            continue
+
+        app.assigned_agent = agent
+        app.save()
+        ApplicationStatusHistory.objects.create(
+            application=app, old_status=app.status, new_status=app.status,
+            changed_by=request.user, note=f'Bulk forwarded to agent {agent.username}',
+        )
+        send_notification(
+            agent, 'New Application Assigned',
+            f'Application #{app.app_id} for {app.scholarship.name} has been forwarded to you.',
+            f'/agent/applications/{app.app_id}/'
+        )
+        send_notification(
+            app.user, 'Application Forwarded',
+            f'Your application #{app.app_id} has been forwarded to an agent for approval.',
+            f'/scholarships/application/{app.app_id}/'
+        )
+        success += 1
+
+    logger.info(f'Bulk forward_to_agent ({agent.username}): {success} success, {failed} failed by {request.user.username}')
+    return JsonResponse({
+        'success': success, 'failed': failed, 'errors': errors,
+        'message': f'{success} application(s) forwarded to {agent.get_full_name() or agent.username}.',
+    })
+
+
+# ─── Bulk Payment Actions ───────────────────────────────────────────
+@user_passes_test(is_office_staff, login_url='office:login')
+@require_POST
+def bulk_payment_action(request):
+    """Handle bulk approve/reject payments via AJAX JSON"""
+    import json
+    from finance.models import application_payment
+    from django.utils import timezone
+
+    office = _get_office(request.user)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': 0, 'failed': 0, 'message': 'Invalid request data.'}, status=400)
+
+    action = data.get('action')
+    payment_ids = data.get('payment_ids', [])
+
+    if action not in ('approve', 'reject') or not payment_ids:
+        return JsonResponse({'success': 0, 'failed': 0, 'message': 'Invalid action or payment_ids.'}, status=400)
+
+    success = 0
+    failed = 0
+    errors = []
+    reviewable_statuses = ('pending', 'under_review', 'processing')
+
+    payments = application_payment.objects.filter(
+        application_payment_id__in=payment_ids, application__office=office
+    ).select_related('application__user', 'application__scholarship')
+
+    for payment in payments:
+        if payment.payment_status not in reviewable_statuses:
+            failed += 1
+            errors.append(f'Payment #{payment.application_payment_id}: already {payment.payment_status}')
+            continue
+
+        if action == 'approve':
+            payment.payment_status = 'completed'
+            payment.review_note = 'Approved by office (bulk)'
+            notif_msg = f'Your payment of ${payment.amount} for application #{payment.application.app_id} has been approved.'
+        else:
+            payment.payment_status = 'failed'
+            payment.review_note = data.get('reason', 'Rejected by office (bulk)')
+            notif_msg = f'Your payment of ${payment.amount} for application #{payment.application.app_id} has been rejected.'
+
+        payment.reviewed_by = request.user
+        payment.reviewed_at = timezone.now()
+        payment.save()
+        send_notification(
+            payment.application.user,
+            'Payment Approved' if action == 'approve' else 'Payment Rejected',
+            notif_msg,
+            f'/scholarships/application/{payment.application.app_id}/'
+        )
+        success += 1
+
+    logger.info(f'Bulk payment {action}: {success} success, {failed} failed by {request.user.username}')
+    return JsonResponse({
+        'success': success, 'failed': failed, 'errors': errors,
+        'message': f'{success} payment(s) {action}d successfully.',
+    })
+
+
+# ─── CSV Export ──────────────────────────────────────────────────────
+@user_passes_test(is_office_staff, login_url='office:login')
+def export_applications_csv(request):
+    """Export filtered applications as CSV"""
+    import csv
+    from django.http import HttpResponse
+
+    office = _get_office(request.user)
+    applications = _office_applications(request.user)
+
+    status_filter = request.GET.get('status')
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+    query = request.GET.get('q')
+    if query:
+        applications = applications.filter(
+            Q(user__username__icontains=query) | Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) | Q(scholarship__name__icontains=query) |
+            Q(app_id__icontains=query)
+        )
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    if date_from:
+        applications = applications.filter(applied_date__gte=date_from)
+    if date_to:
+        applications = applications.filter(applied_date__lte=date_to)
+    applications = applications.order_by('-applied_date')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="applications_export.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['App ID', 'Applicant', 'Email', 'Scholarship', 'Status', 'Applied Date', 'Agent', 'HQ'])
+    for app in applications:
+        writer.writerow([
+            app.app_id,
+            app.user.get_full_name() or app.user.username,
+            app.user.email,
+            app.scholarship.name,
+            app.get_status_display(),
+            app.applied_date.strftime('%Y-%m-%d') if app.applied_date else '',
+            app.assigned_agent.username if app.assigned_agent else '-',
+            app.assigned_hq.username if app.assigned_hq else '-',
+        ])
+
+    logger.info(f'CSV export: {applications.count()} applications by {request.user.username}')
+    return response
+
+
+@user_passes_test(is_office_staff, login_url='office:login')
+def export_payments_csv(request):
+    """Export filtered payments as CSV"""
+    import csv
+    from django.http import HttpResponse
+    from finance.models import application_payment
+
+    office = _get_office(request.user)
+    payments = application_payment.objects.select_related(
+        'application__user', 'application__scholarship'
+    ).filter(application__office=office).order_by('-payment_date') if office else application_payment.objects.none()
+
+    status_filter = request.GET.get('status')
+    if status_filter:
+        payments = payments.filter(payment_status=status_filter)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="payments_export.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Payment ID', 'Student', 'Scholarship', 'Amount', 'Status', 'Date', 'App ID'])
+    for p in payments:
+        writer.writerow([
+            p.application_payment_id,
+            p.application.user.get_full_name() or p.application.user.username,
+            p.application.scholarship.name,
+            str(p.amount),
+            p.get_payment_status_display(),
+            p.payment_date.strftime('%Y-%m-%d') if p.payment_date else '',
+            p.application.app_id,
+        ])
+
+    return response

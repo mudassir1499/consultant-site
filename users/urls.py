@@ -14,6 +14,9 @@ urlpatterns = [
     path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
     path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_read'),
 
+    # API
+    path('api/unread-count/', views.unread_count_api, name='unread_count_api'),
+
     # Password Reset
     path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='users/password_reset.html',

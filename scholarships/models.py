@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 def get_upload_path(instance, filename):
     """
@@ -40,6 +41,10 @@ class scholarships(models.Model):
     ]
     
     name = models.CharField(max_length=100)
+    slug = models.SlugField(
+        max_length=200, unique=True, blank=True,
+        help_text='URL-friendly name (auto-generated from name).',
+    )
     description = models.TextField()
     city = models.CharField(max_length=100)
     major = models.CharField(max_length=100)
@@ -64,6 +69,21 @@ class scholarships(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 2
+            while scholarships.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base_slug}-{counter}'
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('scholarships:scholarship_detail', kwargs={'slug': self.slug})
 
     class Meta:
         verbose_name_plural = "scholarships"

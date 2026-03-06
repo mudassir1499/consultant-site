@@ -1,0 +1,174 @@
+/* DFS Education - Shared Styles */
+
+/* ═══════════════════════════════════════════════════════════════════
+   BULK ACTION TOOLBAR
+   ═══════════════════════════════════════════════════════════════════ */
+.bulk-toolbar {
+    position: fixed;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    background: #1a1d21;
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: bottom .3s cubic-bezier(.4,0,.2,1);
+    min-width: 400px;
+    max-width: 90vw;
+}
+.bulk-toolbar.show {
+    bottom: 24px;
+}
+.bulk-toolbar .bulk-count {
+    background: #0d6efd;
+    color: #fff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+.bulk-toolbar .bulk-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.bulk-toolbar .btn {
+    font-size: .8rem;
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+.bulk-toolbar .btn-deselect {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.3);
+    color: rgba(255,255,255,.7);
+}
+.bulk-toolbar .btn-deselect:hover {
+    border-color: #fff;
+    color: #fff;
+}
+
+/* Checkbox styling in tables */
+.bulk-table th.col-check,
+.bulk-table td.col-check {
+    width: 40px;
+    text-align: center;
+}
+.bulk-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Row highlight on checkbox select */
+.bulk-table tr.selected {
+    background: rgba(13,110,253,.06) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIVE SEARCH INDICATOR
+   ═══════════════════════════════════════════════════════════════════ */
+.search-loading {
+    position: relative;
+}
+.search-loading::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #0d6efd, transparent);
+    animation: searchSlide 1s infinite;
+}
+@keyframes searchSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOAST ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════ */
+#dfs-toast-container .toast {
+    min-width: 300px;
+    backdrop-filter: blur(10px);
+    animation: toastSlideIn .3s cubic-bezier(.4,0,.2,1);
+}
+@keyframes toastSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EMPTY STATES
+   ═══════════════════════════════════════════════════════════════════ */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+.empty-state .empty-icon {
+    font-size: 3.5rem;
+    opacity: .4;
+    margin-bottom: .75rem;
+}
+.empty-state p {
+    font-size: .95rem;
+    margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILTER BAR ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════ */
+.filter-bar .form-control:focus,
+.filter-bar .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 .15rem rgba(13,110,253,.15);
+}
+.filter-bar .input-group-text {
+    background: transparent;
+    border-right: none;
+}
+.filter-bar .input-group .form-control {
+    border-left: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   KEYBOARD SHORTCUT HINTS
+   ═══════════════════════════════════════════════════════════════════ */
+.kbd-hint {
+    display: inline-block;
+    padding: 1px 5px;
+    font-size: .7rem;
+    font-family: monospace;
+    background: rgba(0,0,0,.08);
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,.12);
+    color: #6c757d;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATUS BADGE ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════ */
+.badge i.bi {
+    font-size: .75em;
+}
+.badge-status {
+    font-size: .7rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DATE FILTER INPUT
+   ═══════════════════════════════════════════════════════════════════ */
+input[type="date"].form-control {
+    min-width: 130px;
+}

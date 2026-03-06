@@ -1,4 +1,5 @@
 {% extends 'office/base.html' %}
+{% load status_tags %}
 {% block title %}Application #{{ application.app_id }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
@@ -60,19 +61,7 @@
                 <div class="card stat-card h-100">
                     <div class="card-body text-center">
                         <h6 class="text-muted">Current Status</h6>
-                        <span class="badge fs-5 mb-3
-                            {% if application.status == 'draft' %}bg-secondary
-                            {% elif application.status == 'submitted' %}bg-warning text-dark
-                            {% elif application.status == 'under_review' %}bg-info
-                            {% elif application.status == 'documents_verified' %}bg-primary
-                            {% elif application.status == 'payment_verified' %}bg-primary
-                            {% elif application.status == 'approved' %}bg-success
-                            {% elif application.status == 'rejected' %}bg-danger
-                            {% elif application.status == 'in_progress' %}bg-info
-                            {% elif application.status == 'complete' %}bg-dark
-                            {% else %}bg-secondary{% endif %}">
-                            {{ application.get_status_display }}
-                        </span>
+                        {% status_badge application.status %}
 
                         <!-- Progress Steps -->
                         <div class="text-start mt-3">
@@ -261,9 +250,7 @@
                                 <td class="fw-bold">${{ p.amount }}</td>
                                 <td>{{ p.payment_date|date:"M d, Y" }}</td>
                                 <td>
-                                    <span class="badge {% if p.payment_status == 'completed' %}bg-success{% elif p.payment_status == 'pending' %}bg-warning text-dark{% elif p.payment_status == 'under_review' %}bg-info{% else %}bg-danger{% endif %}">
-                                        {{ p.get_payment_status_display }}
-                                    </span>
+                                    {% payment_badge p.payment_status %}
                                 </td>
                                 <td><a href="{% url 'office:payment_detail' p.application_payment_id %}" class="btn btn-sm btn-outline-secondary">Detail</a></td>
                             </tr>
