@@ -1,4 +1,6 @@
 {% extends 'pages/base.html' %}
+{% load static %}
+
 {% block title %}{{ page_title|default:'Contact Us — DFS Education' }}{% endblock %}
 {% block meta_description %}{{ page_description|default:'Get in touch with DFS Education for scholarship inquiries.' }}{% endblock %}
 {% block og_title %}{{ page_title|default:'Contact Us — DFS Education' }}{% endblock %}
@@ -7,102 +9,163 @@
 {% block twitter_description %}{{ page_description|default:'Get in touch with DFS Education for scholarship inquiries.' }}{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <h2 class="fw-bold mb-2"><i class="bi bi-envelope me-2"></i>Contact Us</h2>
-            <p class="text-muted mb-4">Have a question or need assistance? Send us a message and we'll get back to you as soon as possible.</p>
+<!-- ═══ Page Hero ═══ -->
+<section class="dfs-hero" style="padding:4rem 0 5rem;">
+    <div class="container text-center">
+        <span class="dfs-hero-badge mb-3"><i class="bi bi-chat-dots me-1"></i> Get in Touch</span>
+        <h1 class="display-5 fw-800 text-white mb-3">Contact Us</h1>
+        <p class="lead mx-auto" style="max-width:550px;color:rgba(255,255,255,0.7);">
+            Have a question or need assistance? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+        </p>
+    </div>
+</section>
 
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
-            {% endif %}
-
-            <div class="row g-4">
-                <!-- Contact Form -->
-                <div class="col-md-7">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body p-4">
-                            <form method="post" action="{% url 'pages:contact' %}">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="name" name="name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="email" name="email" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="subject" class="form-label">Subject</label>
-                                    <input type="text" class="form-control" id="subject" name="subject">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-send me-1"></i>Send Message
-                                </button>
-                            </form>
-                        </div>
+<!-- ═══ Contact Cards ═══ -->
+<section style="margin-top:-3rem;position:relative;z-index:2;">
+    <div class="container">
+        <div class="row g-3 justify-content-center mb-5">
+            {% if site_settings.contact_email %}
+            <div class="col-md-4">
+                <div class="dfs-card-glass text-center p-4 h-100">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(43,125,233,0.1);--icon-color:var(--dfs-blue);">
+                        <i class="bi bi-envelope"></i>
                     </div>
+                    <h6 class="fw-bold mb-1">Email Us</h6>
+                    <a href="mailto:{{ site_settings.contact_email }}" class="text-muted small text-decoration-none">{{ site_settings.contact_email }}</a>
                 </div>
-
-                <!-- Contact Info -->
-                <div class="col-md-5">
-                    <div class="card shadow-sm border-0 mb-3">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold mb-3">Get in Touch</h5>
-                            {% if site_settings.email %}
-                            <p class="mb-2">
-                                <i class="bi bi-envelope text-primary me-2"></i>
-                                <a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
-                            </p>
-                            {% endif %}
-                            {% if site_settings.phone %}
-                            <p class="mb-2">
-                                <i class="bi bi-telephone text-primary me-2"></i>
-                                <a href="tel:{{ site_settings.phone }}">{{ site_settings.phone }}</a>
-                            </p>
-                            {% endif %}
-                            {% if site_settings.address %}
-                            <p class="mb-0">
-                                <i class="bi bi-geo-alt text-primary me-2"></i>
-                                {{ site_settings.address }}
-                            </p>
-                            {% endif %}
-                        </div>
+            </div>
+            {% endif %}
+            {% if site_settings.contact_phone %}
+            <div class="col-md-4">
+                <div class="dfs-card-glass text-center p-4 h-100">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(212,168,67,0.12);--icon-color:var(--dfs-gold);">
+                        <i class="bi bi-telephone"></i>
                     </div>
+                    <h6 class="fw-bold mb-1">Call Us</h6>
+                    <a href="tel:{{ site_settings.contact_phone }}" class="text-muted small text-decoration-none">{{ site_settings.contact_phone }}</a>
+                </div>
+            </div>
+            {% endif %}
+            {% if site_settings.address %}
+            <div class="col-md-4">
+                <div class="dfs-card-glass text-center p-4 h-100">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(15,42,74,0.08);--icon-color:var(--dfs-navy);">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">Visit Us</h6>
+                    <span class="text-muted small">{{ site_settings.address }}</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
 
-                    {% if site_settings.facebook or site_settings.twitter or site_settings.instagram or site_settings.linkedin %}
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold mb-3">Follow Us</h5>
-                            <div class="d-flex gap-3">
-                                {% if site_settings.facebook %}
-                                <a href="{{ site_settings.facebook }}" target="_blank" class="text-primary fs-4"><i class="bi bi-facebook"></i></a>
-                                {% endif %}
-                                {% if site_settings.twitter %}
-                                <a href="{{ site_settings.twitter }}" target="_blank" class="text-info fs-4"><i class="bi bi-twitter-x"></i></a>
-                                {% endif %}
-                                {% if site_settings.instagram %}
-                                <a href="{{ site_settings.instagram }}" target="_blank" class="text-danger fs-4"><i class="bi bi-instagram"></i></a>
-                                {% endif %}
-                                {% if site_settings.linkedin %}
-                                <a href="{{ site_settings.linkedin }}" target="_blank" class="text-primary fs-4"><i class="bi bi-linkedin"></i></a>
-                                {% endif %}
+<!-- ═══ Contact Form ═══ -->
+<section class="dfs-section pt-0">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <!-- Form -->
+            <div class="col-lg-7">
+                <div class="dfs-card p-4 p-md-5">
+                    <h4 class="fw-bold mb-1">Send Us a Message</h4>
+                    <p class="text-muted small mb-4">Fill in the form below and we'll get back to you within 24 hours.</p>
+
+                    <form method="post" action="{% url 'pages:contact' %}" data-loading="Sending message...">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="dfs-form-floating">
+                                    <label for="name" class="form-label fw-medium small">Full Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control rounded-3" id="name" name="name" placeholder="Your name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="dfs-form-floating">
+                                    <label for="email" class="form-label fw-medium small">Email Address <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control rounded-3" id="email" name="email" placeholder="your@email.com" required>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label for="subject" class="form-label fw-medium small">Subject</label>
+                                <input type="text" class="form-control rounded-3" id="subject" name="subject" placeholder="How can we help?">
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label fw-medium small">Message <span class="text-danger">*</span></label>
+                                <textarea class="form-control rounded-3" id="message" name="message" rows="5" placeholder="Write your message here..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-dfs-primary px-4">
+                                    <i class="bi bi-send me-2"></i>Send Message
+                                </button>
                             </div>
                         </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-5">
+                <!-- Social Media -->
+                {% if site_settings.facebook_url or site_settings.twitter_url or site_settings.instagram_url or site_settings.linkedin_url or site_settings.whatsapp_number %}
+                <div class="dfs-card p-4 mb-4">
+                    <h5 class="fw-bold mb-3">Follow Us</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if site_settings.facebook_url %}
+                        <a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener" class="btn btn-dfs-outline btn-sm"><i class="bi bi-facebook me-1"></i>Facebook</a>
+                        {% endif %}
+                        {% if site_settings.instagram_url %}
+                        <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" class="btn btn-dfs-outline btn-sm"><i class="bi bi-instagram me-1"></i>Instagram</a>
+                        {% endif %}
+                        {% if site_settings.twitter_url %}
+                        <a href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener" class="btn btn-dfs-outline btn-sm"><i class="bi bi-twitter-x me-1"></i>Twitter</a>
+                        {% endif %}
+                        {% if site_settings.linkedin_url %}
+                        <a href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener" class="btn btn-dfs-outline btn-sm"><i class="bi bi-linkedin me-1"></i>LinkedIn</a>
+                        {% endif %}
+                        {% if site_settings.youtube_url %}
+                        <a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener" class="btn btn-dfs-outline btn-sm"><i class="bi bi-youtube me-1"></i>YouTube</a>
+                        {% endif %}
+                        {% if site_settings.whatsapp_number %}
+                        <a href="https://wa.me/{{ site_settings.whatsapp_number }}" target="_blank" rel="noopener" class="btn btn-sm" style="background:rgba(37,211,102,0.1);color:#25d366;border:1px solid rgba(37,211,102,0.2);"><i class="bi bi-whatsapp me-1"></i>WhatsApp</a>
+                        {% endif %}
                     </div>
-                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Quick Info -->
+                <div class="dfs-card p-4" style="background:var(--dfs-light);">
+                    <h5 class="fw-bold mb-3">Quick Info</h5>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="dfs-icon-box me-3" style="width:36px;height:36px;--icon-bg:rgba(43,125,233,0.1);--icon-color:var(--dfs-blue);font-size:0.85rem;flex-shrink:0;">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                        <div>
+                            <small class="fw-bold d-block">Response Time</small>
+                            <small class="text-muted">We typically respond within 24 hours</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="dfs-icon-box me-3" style="width:36px;height:36px;--icon-bg:rgba(212,168,67,0.12);--icon-color:var(--dfs-gold);font-size:0.85rem;flex-shrink:0;">
+                            <i class="bi bi-globe2"></i>
+                        </div>
+                        <div>
+                            <small class="fw-bold d-block">Languages</small>
+                            <small class="text-muted">English, Arabic, Chinese</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start">
+                        <div class="dfs-icon-box me-3" style="width:36px;height:36px;--icon-bg:rgba(25,135,84,0.1);--icon-color:#198754;font-size:0.85rem;flex-shrink:0;">
+                            <i class="bi bi-headset"></i>
+                        </div>
+                        <div>
+                            <small class="fw-bold d-block">Support</small>
+                            <small class="text-muted">Available Monday - Saturday</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

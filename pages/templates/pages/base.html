@@ -1,3 +1,5 @@
+{% load static %}
+{% load seo_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +26,6 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     {% else %}
-    {% load static %}
     <meta property="og:image" content="https://dfsscholarships.com{% static 'images/og-default.png' %}">
     {% endif %}
 
@@ -46,66 +47,18 @@
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% endif %}
 
-    {# Extra head content (JSON-LD, per-page tags) #}
-    {% load seo_tags %}
+    {# JSON-LD structured data #}
     {% jsonld_organization %}
     {% jsonld_website %}
     {% block extra_head %}{% endblock %}
 
+    {# Fonts + Frameworks #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #2B7DE9 0%, #1a5bb5 100%);
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        main { flex: 1; }
-        footer {
-            background-color: var(--site-footer-bg, #0a0a0a);
-            color: #a0a0b0;
-            border-top: 1px solid rgba(192,192,192,0.1);
-        }
-        footer a { color: #c0c0d0; text-decoration: none; }
-        footer a:hover { color: #2B7DE9; }
-
-        /* ─── Page Loading Overlay ─── */
-        #pageLoader {
-            position: fixed;
-            inset: 0;
-            background: rgba(255,255,255,0.85);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            transition: opacity 0.3s;
-        }
-        #pageLoader.fade-out { opacity: 0; pointer-events: none; }
-        .loader-spinner {
-            width: 48px; height: 48px;
-            border: 4px solid #e9ecef;
-            border-top-color: var(--bs-primary, #2B7DE9);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ─── Upload progress ─── */
-        .upload-progress-wrapper { display: none; margin-top: 0.5rem; }
-        .upload-progress-wrapper.active { display: block; }
-
-        /* ─── Smooth card hover ─── */
-        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important; }
-
-        /* ─── Navbar ─── */
-        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    </style>
+    <link href="{% static 'css/dfs-theme.css' %}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 
     {# Google Analytics #}
@@ -126,48 +79,70 @@
         <span class="text-muted small">Loading...</span>
     </div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: var(--site-navbar-bg, #111111); border-bottom: 1px solid rgba(192,192,192,0.1);">
+    <!-- ═══ Navbar ═══ -->
+    <nav class="dfs-navbar navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-bold" href="/">
+            <a class="navbar-brand d-flex align-items-center" href="/">
                 {% if site_settings.logo %}
-                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="max-height:36px;" class="me-2">
+                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="height:40px;" class="me-2">
                 {% else %}
-                <i class="bi bi-mortarboard-fill me-2 fs-4"></i>
+                <div class="d-flex align-items-center">
+                    <div style="width:38px;height:38px;background:var(--dfs-navy);border-radius:8px;display:flex;align-items:center;justify-content:center;" class="me-2">
+                        <i class="bi bi-mortarboard-fill text-white"></i>
+                    </div>
+                    <span class="fw-bold" style="color:var(--dfs-navy);font-size:1.15rem;">{{ site_settings.site_name|default:'DFS Education' }}</span>
+                </div>
                 {% endif %}
-                {{ site_settings.site_name|default:'DFS Education' }}
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-4" style="color:var(--dfs-navy);"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house me-1"></i>Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'scholarships:scholarship_list' %}"><i class="bi bi-mortarboard me-1"></i>Scholarships</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/about"><i class="bi bi-info-circle me-1"></i>About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'pages:contact' %}"><i class="bi bi-envelope me-1"></i>Contact</a></li>
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'scholarships:scholarship_list' %}">Scholarships</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'blog:post_list' %}">Blog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'pages:about' %}">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'pages:contact' %}">Contact</a></li>
                     {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'users:dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="{% url 'users:notifications' %}">
-                            <i class="bi bi-bell"></i>
-                            {% if unread_notifications_count %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;">{{ unread_notifications_count }}</span>{% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <div style="width:30px;height:30px;background:var(--dfs-blue);border-radius:50%;display:flex;align-items:center;justify-content:center;" class="me-1">
+                                <i class="bi bi-person-fill text-white" style="font-size:0.85rem;"></i>
+                            </div>
+                            <span class="d-lg-none ms-2">Account</span>
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item" href="{% url 'users:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'users:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li>
+                                <a class="dropdown-item position-relative" href="{% url 'users:notifications' %}">
+                                    <i class="bi bi-bell me-2"></i>Notifications
+                                    {% if unread_notifications_count %}<span class="badge rounded-pill bg-danger ms-2" style="font-size:0.65rem;">{{ unread_notifications_count }}</span>{% endif %}
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure you want to logout?')"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                                </form>
+                            </li>
+                        </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'users:profile' %}"><i class="bi bi-person me-1"></i>Profile</a></li>
-                    <li class="nav-item"><form method="post" action="{% url 'users:logout' %}" class="d-inline">{% csrf_token %}<button type="submit" class="nav-link text-danger btn btn-link p-0 border-0" onclick="return confirm('Are you sure you want to logout?')"><i class="bi bi-box-arrow-right me-1"></i>Logout</button></form></li>
                     {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'users:login' %}"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-outline-light btn-sm ms-2 px-3" href="{% url 'users:register' %}">Register</a></li>
+                    <li class="nav-item ms-lg-2"><a class="nav-link" href="{% url 'users:login' %}">Login</a></li>
+                    <li class="nav-item ms-lg-1"><a class="btn btn-dfs-primary btn-sm px-3 py-1" href="{% url 'users:register' %}">Get Started</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
+    <!-- ═══ Flash Messages ═══ -->
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm" role="alert">
             {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
             {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
             {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
@@ -179,205 +154,129 @@
     </div>
     {% endif %}
 
+    <!-- ═══ Main Content ═══ -->
     <main>
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Success Modal (reusable) -->
+    <!-- ═══ Success Modal ═══ -->
     <div class="modal fade" id="actionSuccessModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
                 <div class="modal-body text-center py-5">
                     <div class="mb-3">
-                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        <div style="width:80px;height:80px;margin:0 auto;background:rgba(25,135,84,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size:2.5rem;"></i>
+                        </div>
                     </div>
-                    <h4 class="mb-2" id="successModalTitle">Action Completed!</h4>
+                    <h4 class="mb-2 fw-bold" id="successModalTitle">Action Completed!</h4>
                     <p class="text-muted" id="successModalMessage">Your request has been processed successfully.</p>
-                    <button type="button" class="btn btn-primary px-4 mt-2" data-bs-dismiss="modal">OK</button>
+                    <button type="button" class="btn btn-dfs-primary px-4 mt-2" data-bs-dismiss="modal">OK</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Loading Modal (for form submissions) -->
+    <!-- ═══ Loading Modal ═══ -->
     <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content border-0 shadow">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
                 <div class="modal-body text-center py-4">
-                    <div class="spinner-border text-primary mb-3" role="status" style="width:3rem;height:3rem;">
+                    <div class="spinner-border mb-3" role="status" style="width:3rem;height:3rem;color:var(--dfs-blue);">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <p class="mb-0 fw-semibold" id="loadingModalMessage">Processing...</p>
-                    <div class="progress mt-3" style="height:6px;" id="loadingModalProgress">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+                    <div class="progress mt-3" style="height:5px;border-radius:10px;" id="loadingModalProgress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%;background:var(--dfs-blue);"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="py-5 mt-5">
+    <!-- ═══ Footer ═══ -->
+    <footer class="dfs-footer">
         <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4 mb-3">
-                    <h5 class="text-white mb-3">
+            <div class="row g-4 mb-4">
+                <!-- Brand Column -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center mb-3">
                         {% if site_settings.logo %}
-                        <img src="{{ site_settings.logo.url }}" alt="" style="max-height:30px;" class="me-2">
-                        {% endif %}
-                        {{ site_settings.site_name|default:'DFS Education' }}
-                    </h5>
-                    <p class="small">{{ site_settings.tagline|default:'Your Gateway to International Education' }}</p>
-                </div>
-                <div class="col-lg-4 mb-3">
-                    <h6 class="text-white mb-3">Quick Links</h6>
-                    <ul class="list-unstyled small">
-                        <li class="mb-1"><a href="/"><i class="bi bi-chevron-right me-1"></i>Home</a></li>
-                        <li class="mb-1"><a href="/about"><i class="bi bi-chevron-right me-1"></i>About Us</a></li>
-                        {% if user.is_authenticated %}
-                        <li class="mb-1"><a href="{% url 'users:dashboard' %}"><i class="bi bi-chevron-right me-1"></i>Dashboard</a></li>
+                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="height:40px;" class="me-2">
                         {% else %}
-                        <li class="mb-1"><a href="{% url 'users:login' %}"><i class="bi bi-chevron-right me-1"></i>Login</a></li>
+                        <div style="width:38px;height:38px;background:var(--dfs-gold);border-radius:8px;display:flex;align-items:center;justify-content:center;" class="me-2">
+                            <i class="bi bi-mortarboard-fill" style="color:var(--dfs-navy);"></i>
+                        </div>
+                        <span class="text-white fw-bold fs-5">{{ site_settings.site_name|default:'DFS Education' }}</span>
                         {% endif %}
-                    </ul>
-                </div>
-                <div class="col-lg-4 mb-3">
-                    <h6 class="text-white mb-3">Contact</h6>
-                    {% if site_settings.contact_email %}
-                    <p class="small mb-1"><i class="bi bi-envelope me-2"></i>{{ site_settings.contact_email }}</p>
-                    {% endif %}
-                    {% if site_settings.contact_phone %}
-                    <p class="small mb-1"><i class="bi bi-telephone me-2"></i>{{ site_settings.contact_phone }}</p>
-                    {% endif %}
-                    {% if site_settings.address %}
-                    <p class="small mb-1"><i class="bi bi-geo-alt me-2"></i>{{ site_settings.address }}</p>
-                    {% endif %}
+                    </div>
+                    <p class="small mb-3" style="color:rgba(255,255,255,0.6);">{{ site_settings.tagline|default:'Your Gateway to International Education — Guarantee-Based Scholarships in China' }}</p>
                     {% if site_settings %}
-                    <div class="d-flex gap-3 mt-3">
-                        {% if site_settings.facebook_url %}<a href="{{ site_settings.facebook_url }}" target="_blank"><i class="bi bi-facebook fs-5"></i></a>{% endif %}
-                        {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank"><i class="bi bi-instagram fs-5"></i></a>{% endif %}
-                        {% if site_settings.twitter_url %}<a href="{{ site_settings.twitter_url }}" target="_blank"><i class="bi bi-twitter-x fs-5"></i></a>{% endif %}
-                        {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank"><i class="bi bi-linkedin fs-5"></i></a>{% endif %}
-                        {% if site_settings.youtube_url %}<a href="{{ site_settings.youtube_url }}" target="_blank"><i class="bi bi-youtube fs-5"></i></a>{% endif %}
-                        {% if site_settings.whatsapp_number %}<a href="https://wa.me/{{ site_settings.whatsapp_number }}" target="_blank"><i class="bi bi-whatsapp fs-5"></i></a>{% endif %}
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% if site_settings.facebook_url %}<a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener" class="dfs-footer-social"><i class="bi bi-facebook"></i></a>{% endif %}
+                        {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" class="dfs-footer-social"><i class="bi bi-instagram"></i></a>{% endif %}
+                        {% if site_settings.twitter_url %}<a href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener" class="dfs-footer-social"><i class="bi bi-twitter-x"></i></a>{% endif %}
+                        {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener" class="dfs-footer-social"><i class="bi bi-linkedin"></i></a>{% endif %}
+                        {% if site_settings.youtube_url %}<a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener" class="dfs-footer-social"><i class="bi bi-youtube"></i></a>{% endif %}
+                        {% if site_settings.whatsapp_number %}<a href="https://wa.me/{{ site_settings.whatsapp_number }}" target="_blank" rel="noopener" class="dfs-footer-social"><i class="bi bi-whatsapp"></i></a>{% endif %}
                     </div>
                     {% endif %}
                 </div>
+
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="text-white fw-semibold mb-3">Quick Links</h6>
+                    <ul class="list-unstyled small dfs-footer-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="{% url 'pages:about' %}">About Us</a></li>
+                        <li><a href="{% url 'pages:contact' %}">Contact</a></li>
+                        {% if user.is_authenticated %}
+                        <li><a href="{% url 'users:dashboard' %}">Dashboard</a></li>
+                        {% else %}
+                        <li><a href="{% url 'users:login' %}">Login</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- Scholarships + Blog -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6 class="text-white fw-semibold mb-3">Resources</h6>
+                    <ul class="list-unstyled small dfs-footer-links">
+                        <li><a href="{% url 'scholarships:scholarship_list' %}">Scholarships</a></li>
+                        <li><a href="{% url 'blog:post_list' %}">Blog &amp; Articles</a></li>
+                        {% if not user.is_authenticated %}
+                        <li><a href="{% url 'users:register' %}">Apply Now</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-semibold mb-3">Contact Us</h6>
+                    <ul class="list-unstyled small dfs-footer-links">
+                        {% if site_settings.contact_email %}
+                        <li><a href="mailto:{{ site_settings.contact_email }}"><i class="bi bi-envelope me-2"></i>{{ site_settings.contact_email }}</a></li>
+                        {% endif %}
+                        {% if site_settings.contact_phone %}
+                        <li><a href="tel:{{ site_settings.contact_phone }}"><i class="bi bi-telephone me-2"></i>{{ site_settings.contact_phone }}</a></li>
+                        {% endif %}
+                        {% if site_settings.address %}
+                        <li><span style="color:rgba(255,255,255,0.5);"><i class="bi bi-geo-alt me-2"></i>{{ site_settings.address }}</span></li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
-            <hr class="border-secondary my-4">
-            <p class="text-center small mb-0">{{ site_settings.footer_text|default:'\u00a9 2026 DFS Education. All rights reserved.' }}</p>
+
+            <hr style="border-color:rgba(255,255,255,0.1);" class="my-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                <p class="small mb-0" style="color:rgba(255,255,255,0.4);">{{ site_settings.footer_text|default:'&copy; 2026 DFS Education. All rights reserved.' }}</p>
+                <p class="small mb-0 mt-2 mt-md-0" style="color:rgba(255,255,255,0.3);">Guarantee-Based Scholarships in China</p>
+            </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    /* ─── Page Loader ─── */
-    window.addEventListener('load', function() {
-        var loader = document.getElementById('pageLoader');
-        if (loader) {
-            loader.classList.add('fade-out');
-            setTimeout(function() { loader.remove(); }, 300);
-        }
-    });
-
-    /* ─── Show Loading Modal on form submit ─── */
-    document.addEventListener('DOMContentLoaded', function() {
-        // Auto-show loading modal for forms with data-loading attribute
-        document.querySelectorAll('form[data-loading]').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                var msg = form.getAttribute('data-loading') || 'Processing...';
-                showLoadingModal(msg);
-            });
-        });
-
-        // File upload progress bars
-        document.querySelectorAll('input[type="file"]').forEach(function(input) {
-            var wrapper = document.createElement('div');
-            wrapper.className = 'upload-progress-wrapper';
-            wrapper.innerHTML = '<div class="progress" style="height:6px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width:0%"></div></div><small class="text-muted upload-status"></small>';
-            input.parentNode.appendChild(wrapper);
-
-            input.addEventListener('change', function() {
-                if (input.files.length > 0) {
-                    var file = input.files[0];
-                    var sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                    wrapper.classList.add('active');
-                    wrapper.querySelector('.progress-bar').style.width = '100%';
-                    wrapper.querySelector('.upload-status').textContent = file.name + ' (' + sizeMB + ' MB) — Ready';
-                } else {
-                    wrapper.classList.remove('active');
-                }
-            });
-        });
-
-        // Forms with file uploads: show upload progress via XHR
-        document.querySelectorAll('form[enctype="multipart/form-data"]').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                var hasFiles = false;
-                form.querySelectorAll('input[type="file"]').forEach(function(inp) {
-                    if (inp.files.length > 0) hasFiles = true;
-                });
-                if (!hasFiles) return; // let normal submit happen
-
-                e.preventDefault();
-                showLoadingModal('Uploading files...');
-                var progressBar = document.querySelector('#loadingModalProgress .progress-bar');
-
-                var xhr = new XMLHttpRequest();
-                xhr.open(form.method || 'POST', form.action || window.location.href, true);
-
-                xhr.upload.addEventListener('progress', function(ev) {
-                    if (ev.lengthComputable) {
-                        var pct = Math.round((ev.loaded / ev.total) * 100);
-                        progressBar.style.width = pct + '%';
-                        document.getElementById('loadingModalMessage').textContent = 'Uploading... ' + pct + '%';
-                    }
-                });
-
-                xhr.addEventListener('load', function() {
-                    // Follow redirect or replace page content
-                    if (xhr.status >= 200 && xhr.status < 400) {
-                        // Server responded — reload to show messages
-                        if (xhr.responseURL) {
-                            window.location.href = xhr.responseURL;
-                        } else {
-                            window.location.reload();
-                        }
-                    } else {
-                        hideLoadingModal();
-                        alert('Upload failed. Please try again.');
-                    }
-                });
-
-                xhr.addEventListener('error', function() {
-                    hideLoadingModal();
-                    alert('Network error. Please try again.');
-                });
-
-                var formData = new FormData(form);
-                xhr.send(formData);
-            });
-        });
-    });
-
-    /* ─── Modal Helpers ─── */
-    function showLoadingModal(message) {
-        document.getElementById('loadingModalMessage').textContent = message || 'Processing...';
-        document.querySelector('#loadingModalProgress .progress-bar').style.width = '0%';
-        var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
-        modal.show();
-    }
-    function hideLoadingModal() {
-        var el = document.getElementById('loadingModal');
-        var modal = bootstrap.Modal.getInstance(el);
-        if (modal) modal.hide();
-    }
-    function showSuccessModal(title, message) {
-        document.getElementById('successModalTitle').textContent = title || 'Success!';
-        document.getElementById('successModalMessage').textContent = message || 'Action completed successfully.';
-        var modal = new bootstrap.Modal(document.getElementById('actionSuccessModal'));
-        modal.show();
-    }
-    </script>
+    <script src="{% static 'js/dfs-core.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

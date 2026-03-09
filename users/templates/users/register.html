@@ -1,131 +1,127 @@
-{% extends 'users/base.html' %}
+{% extends 'pages/base.html' %}
+{% load static %}
 
 {% block title %}Create Account — DFS Education{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-7 col-lg-6">
-            <div class="text-center mb-4">
-                <div class="bg-primary bg-opacity-10 d-inline-flex rounded-circle p-3 mb-3">
-                    <i class="bi bi-person-plus-fill text-primary fs-2"></i>
-                </div>
-                <h2 class="fw-bold">Create Account</h2>
-                <p class="text-muted">Start your education journey today</p>
+<div class="dfs-auth-split">
+    <!-- Brand Panel -->
+    <div class="dfs-auth-brand d-none d-lg-flex">
+        <div class="text-center">
+            {% if site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="height:80px;" class="mb-4">
+            {% else %}
+            <div style="width:70px;height:70px;margin:0 auto;background:var(--dfs-gold);border-radius:16px;display:flex;align-items:center;justify-content:center;" class="mb-4">
+                <i class="bi bi-mortarboard-fill" style="font-size:2rem;color:var(--dfs-navy);"></i>
             </div>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            {% endif %}
+            <h2 class="text-white fw-bold mb-2">Start Your Journey</h2>
+            <p class="mb-4" style="color:rgba(255,255,255,0.7);max-width:320px;margin:0 auto;">
+                Create your free account and apply for guaranteed scholarships in China today.
+            </p>
+            <div class="text-start mx-auto" style="max-width:280px;">
+                <div class="d-flex align-items-center mb-3">
+                    <div style="width:32px;height:32px;background:rgba(212,168,67,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                        <i class="bi bi-check-lg" style="color:var(--dfs-gold);"></i>
                     </div>
-                    {% endfor %}
-                    {% endif %}
-
-                    <form method="post" data-loading="Creating your account..." novalidate>
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="first_name" class="form-label">First Name</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                    <input type="text" class="form-control" id="first_name" 
-                                           name="first_name" placeholder="First name">
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="last_name" class="form-label">Last Name</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                    <input type="text" class="form-control" id="last_name" 
-                                           name="last_name" placeholder="Last name">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-at"></i></span>
-                                <input type="text" class="form-control" id="username" 
-                                       name="username" placeholder="Choose a username" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control" id="email" 
-                                       name="email" placeholder="Enter your email" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Phone</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                <input type="tel" class="form-control" id="phone" 
-                                       name="phone" placeholder="Your phone number">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="country" class="form-label">Country</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-globe"></i></span>
-                                    <input type="text" class="form-control" id="country" 
-                                           name="country" placeholder="e.g. Turkey">
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="city" class="form-label">City</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                    <input type="text" class="form-control" id="city" 
-                                           name="city" placeholder="e.g. Istanbul">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" 
-                                           name="password" placeholder="Min 6 characters" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="password_confirm" class="form-label">Confirm <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                                    <input type="password" class="form-control" id="password_confirm" 
-                                           name="password_confirm" placeholder="Confirm password" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-grid mt-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-person-check me-2"></i>Create Account
-                            </button>
-                        </div>
-                    </form>
-
-                    <hr class="my-4">
-
-                    <p class="text-center mb-0">
-                        Already have an account? <a href="{% url 'users:login' %}" class="text-decoration-none fw-bold">Login here</a>
-                    </p>
+                    <small style="color:rgba(255,255,255,0.7);">Free account, no credit card required</small>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div style="width:32px;height:32px;background:rgba(212,168,67,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                        <i class="bi bi-check-lg" style="color:var(--dfs-gold);"></i>
+                    </div>
+                    <small style="color:rgba(255,255,255,0.7);">Browse 50+ scholarship programs</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width:32px;height:32px;background:rgba(212,168,67,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                        <i class="bi bi-check-lg" style="color:var(--dfs-gold);"></i>
+                    </div>
+                    <small style="color:rgba(255,255,255,0.7);">Track your application in real time</small>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Form Panel -->
+    <div class="dfs-auth-form">
+        <div style="max-width:500px;width:100%;">
+            <div class="text-center mb-4 d-lg-none">
+                {% if site_settings.logo %}
+                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="height:50px;" class="mb-3">
+                {% endif %}
+            </div>
+            <h3 class="fw-bold mb-1">Create Account</h3>
+            <p class="text-muted mb-4">Start your education journey today</p>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" data-loading="Creating your account..." novalidate>
+                {% csrf_token %}
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="first_name" class="form-label fw-medium small">First Name</label>
+                        <input type="text" class="form-control rounded-3" id="first_name"
+                               name="first_name" placeholder="First name" style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="last_name" class="form-label fw-medium small">Last Name</label>
+                        <input type="text" class="form-control rounded-3" id="last_name"
+                               name="last_name" placeholder="Last name" style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-12">
+                        <label for="username" class="form-label fw-medium small">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control rounded-3" id="username"
+                               name="username" placeholder="Choose a username" required style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-12">
+                        <label for="email" class="form-label fw-medium small">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control rounded-3" id="email"
+                               name="email" placeholder="your@email.com" required style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-12">
+                        <label for="phone" class="form-label fw-medium small">Phone</label>
+                        <input type="tel" class="form-control rounded-3" id="phone"
+                               name="phone" placeholder="e.g. +90 555 123 4567" style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="country" class="form-label fw-medium small">Country</label>
+                        <input type="text" class="form-control rounded-3" id="country"
+                               name="country" placeholder="e.g. Turkey" style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="city" class="form-label fw-medium small">City</label>
+                        <input type="text" class="form-control rounded-3" id="city"
+                               name="city" placeholder="e.g. Istanbul" style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="password" class="form-label fw-medium small">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control rounded-3" id="password"
+                               name="password" placeholder="Min 6 characters" required style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="password_confirm" class="form-label fw-medium small">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control rounded-3" id="password_confirm"
+                               name="password_confirm" placeholder="Confirm password" required style="border-color:#e0e5ec;">
+                    </div>
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-dfs-primary btn-lg w-100">
+                            <i class="bi bi-rocket-takeoff me-2"></i>Create Account
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <p class="text-center text-muted small mt-4 mb-0">
+                Already have an account? <a href="{% url 'users:login' %}" class="fw-semibold text-decoration-none" style="color:var(--dfs-blue);">Sign In</a>
+            </p>
         </div>
     </div>
 </div>

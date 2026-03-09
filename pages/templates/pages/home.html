@@ -1,4 +1,5 @@
 {% extends "pages/base.html" %}
+{% load static %}
 
 {% block title %}{{ page_title|default:'Guaranteed Scholarships in China | DFS Education' }}{% endblock %}
 {% block meta_description %}{{ page_description|default:'DFS Education provides guaranteed scholarships in China for international students. Full, partial, and merit-based scholarships at top Chinese universities.' }}{% endblock %}
@@ -7,179 +8,112 @@
 {% block twitter_title %}{{ page_title|default:'Guaranteed Scholarships in China | DFS Education' }}{% endblock %}
 {% block twitter_description %}{{ page_description|default:'DFS Education provides guaranteed scholarships in China for international students.' }}{% endblock %}
 
-{% block extra_css %}
-<style>
-    .hero-section {
-        background: linear-gradient(135deg, var(--site-hero-start, #0a0a0a) 0%, #0d1117 40%, var(--site-hero-end, #1a1a2e) 100%);
-        color: #fff;
-        padding: 6rem 0;
-        position: relative;
-        overflow: hidden;
-    }
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: -30%;
-        right: -10%;
-        width: 700px;
-        height: 700px;
-        background: radial-gradient(circle, rgba(43,125,233,0.12) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .hero-section::after {
-        content: '';
-        position: absolute;
-        bottom: -40%;
-        left: -15%;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(43,125,233,0.08) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .hero-section .lead { color: rgba(255,255,255,0.75); }
-    .hero-badge {
-        background: rgba(43,125,233,0.15);
-        border: 1px solid rgba(43,125,233,0.3);
-        color: #7cb8ff;
-    }
-    .hero-logo-card {
-        background: linear-gradient(145deg, #111 0%, #1a1a1a 100%);
-        border: 2px solid rgba(192,192,192,0.3);
-        border-radius: 20px;
-        padding: 2.5rem;
-        box-shadow: 0 0 40px rgba(43,125,233,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
-    }
-    .hero-logo-card .dfs-icon {
-        font-size: 6rem;
-        background: linear-gradient(135deg, #2B7DE9, #7cb8ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .chrome-line {
-        height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(192,192,192,0.5), transparent);
-        margin: 1rem 0;
-    }
-    .feature-icon {
-        width: 64px; height: 64px;
-        border-radius: 16px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem;
-    }
-    .scholarship-card {
-        border: none;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: transform 0.25s, box-shadow 0.25s;
-    }
-    .scholarship-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important;
-    }
-    .scholarship-card .card-header {
-        background: linear-gradient(135deg, var(--bs-primary, #2B7DE9) 0%, #1a5bb5 100%);
-        padding: 1rem 1.25rem;
-    }
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--bs-primary, #2B7DE9);
-    }
-    .cta-section {
-        background: linear-gradient(135deg, #0a0a0a 0%, #111827 50%, var(--bs-primary, #2B7DE9) 100%);
-        border-radius: 16px;
-        color: #fff;
-        border: 1px solid rgba(192,192,192,0.15);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section">
+<!-- ═══ Hero Section ═══ -->
+<section class="dfs-hero">
     <div class="container">
-        <div class="row align-items-center">
+        <div class="row align-items-center min-vh-75">
             <div class="col-lg-7">
-                <span class="badge hero-badge px-3 py-2 mb-3 fs-6 rounded-pill">
-                    <i class="bi bi-mortarboard-fill me-1"></i> {{ site_settings.tagline|default:'Your Gateway to International Education' }}
+                <span class="dfs-hero-badge mb-3">
+                    <i class="bi bi-stars me-1"></i> Guarantee-Based Scholarships in China
                 </span>
-                <h1 class="display-4 fw-bold mb-3">
-                    Welcome to<br>
-                    <span style="color: var(--bs-primary, #2B7DE9);">{{ site_settings.site_name|default:'DFS Education' }}</span>
+                <h1 class="display-4 fw-800 text-white mb-3" style="line-height:1.15;">
+                    Your Future in China<br>
+                    <span class="dfs-text-gradient">Starts Here</span>
                 </h1>
-                <div class="chrome-line" style="max-width: 200px;"></div>
-                <p class="lead mb-4 pe-lg-5">
-                    We connect ambitious students with world-class scholarship opportunities. 
+                <p class="lead mb-4 pe-lg-5" style="color:rgba(255,255,255,0.75);font-size:1.15rem;">
+                    We connect ambitious students with world-class scholarship opportunities at top Chinese universities.
                     Expert guidance from application to admission — every step of the way.
                 </p>
-                <div class="d-flex flex-wrap gap-3">
+                <div class="d-flex flex-wrap gap-3 mb-4">
                     {% if not request.user.is_authenticated %}
-                    <a href="{% url 'users:register' %}" class="btn btn-primary btn-lg px-4">
-                        <i class="bi bi-person-plus me-2"></i>Get Started
+                    <a href="{% url 'users:register' %}" class="btn btn-dfs-gold btn-lg px-4">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Get Started Free
                     </a>
-                    <a href="{% url 'users:login' %}" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-search me-2"></i>Browse Scholarships
                     </a>
                     {% else %}
-                    <a href="{% url 'users:dashboard' %}" class="btn btn-primary btn-lg px-4">
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-dfs-gold btn-lg px-4">
                         <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
                     </a>
-                    {% endif %}
-                    <a href="/about" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-info-circle me-2"></i>About Us
+                    <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-search me-2"></i>Browse Scholarships
                     </a>
+                    {% endif %}
+                </div>
+                <!-- Trust Indicators -->
+                <div class="d-flex flex-wrap gap-4 mt-2">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-patch-check-fill me-2" style="color:var(--dfs-gold);"></i>
+                        <small class="text-white-50">Guaranteed Admission</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-check me-2" style="color:var(--dfs-gold);"></i>
+                        <small class="text-white-50">Verified Universities</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-headset me-2" style="color:var(--dfs-gold);"></i>
+                        <small class="text-white-50">24/7 Support</small>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-5 text-center mt-5 mt-lg-0 d-none d-lg-block">
-                <div class="hero-logo-card text-center">
+                <div class="dfs-logo-card">
                     {% if site_settings.logo %}
-                    <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="max-height: 120px;" class="mb-3">
+                    <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="max-height:140px;" class="mb-3">
                     {% else %}
-                    <i class="bi bi-mortarboard-fill dfs-icon"></i>
+                    <div style="width:100px;height:100px;margin:0 auto;background:linear-gradient(135deg,var(--dfs-gold),#e8c76a);border-radius:20px;display:flex;align-items:center;justify-content:center;" class="mb-3">
+                        <i class="bi bi-mortarboard-fill" style="font-size:3rem;color:var(--dfs-navy);"></i>
+                    </div>
                     {% endif %}
-                    <div class="chrome-line"></div>
-                    <p class="text-white mt-2 mb-0 fw-semibold fs-5">{{ site_settings.site_name|default:'DFS Education' }}</p>
-                    <small class="text-muted">Start Your Journey Today</small>
+                    <h4 class="text-white fw-bold mb-1">{{ site_settings.site_name|default:'DFS Education' }}</h4>
+                    <p class="mb-3" style="color:rgba(255,255,255,0.5);font-size:0.9rem;">منصة دي إف إس للتعليم</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <div class="text-center">
+                            <div class="fw-bold text-white" data-count="500" data-suffix="+">0+</div>
+                            <small style="color:rgba(255,255,255,0.5);">Students</small>
+                        </div>
+                        <div style="width:1px;background:rgba(255,255,255,0.15);"></div>
+                        <div class="text-center">
+                            <div class="fw-bold text-white" data-count="50" data-suffix="+">0+</div>
+                            <small style="color:rgba(255,255,255,0.5);">Universities</small>
+                        </div>
+                        <div style="width:1px;background:rgba(255,255,255,0.15);"></div>
+                        <div class="text-center">
+                            <div class="fw-bold text-white" data-count="98" data-suffix="%">0%</div>
+                            <small style="color:rgba(255,255,255,0.5);">Success</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Features Row -->
-<section class="py-5 bg-light">
+<!-- ═══ Stats Bar (mobile-friendly) ═══ -->
+<section style="background:var(--dfs-light);margin-top:-2rem;position:relative;z-index:2;">
     <div class="container">
-        <div class="row g-4 text-center">
-            <div class="col-md-4">
-                <div class="card border-0 bg-transparent">
-                    <div class="card-body">
-                        <div class="feature-icon bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                            <i class="bi bi-search"></i>
+        <div class="row g-0">
+            <div class="col-12">
+                <div class="bg-white rounded-4 shadow-lg p-4">
+                    <div class="row g-4 text-center">
+                        <div class="col-6 col-md-3">
+                            <div class="dfs-stat-number" data-count="500" data-suffix="+">0+</div>
+                            <small class="text-muted fw-medium">Students Placed</small>
                         </div>
-                        <h5 class="fw-bold">Find Scholarships</h5>
-                        <p class="text-muted small">Browse curated scholarship opportunities matched to your qualifications and ambitions.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 bg-transparent">
-                    <div class="card-body">
-                        <div class="feature-icon bg-success bg-opacity-10 text-success mx-auto mb-3">
-                            <i class="bi bi-file-earmark-check"></i>
+                        <div class="col-6 col-md-3">
+                            <div class="dfs-stat-number" data-count="50" data-suffix="+">0+</div>
+                            <small class="text-muted fw-medium">Partner Universities</small>
                         </div>
-                        <h5 class="fw-bold">Easy Application</h5>
-                        <p class="text-muted small">Upload your documents once and apply seamlessly. Track your progress in real time.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 bg-transparent">
-                    <div class="card-body">
-                        <div class="feature-icon bg-warning bg-opacity-10 text-warning mx-auto mb-3">
-                            <i class="bi bi-people"></i>
+                        <div class="col-6 col-md-3">
+                            <div class="dfs-stat-number" data-count="98" data-suffix="%">0%</div>
+                            <small class="text-muted fw-medium">Success Rate</small>
                         </div>
-                        <h5 class="fw-bold">Expert Support</h5>
-                        <p class="text-muted small">Our agents and advisors guide you from submission to admission letter approval.</p>
+                        <div class="col-6 col-md-3">
+                            <div class="dfs-stat-number" data-count="15" data-suffix="+">0+</div>
+                            <small class="text-muted fw-medium">Countries Served</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -187,76 +121,129 @@
     </div>
 </section>
 
-<!-- Available Scholarships -->
-<section class="py-5">
+<!-- ═══ How It Works ═══ -->
+<section class="dfs-section">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold">Available Scholarships</h2>
-            <p class="text-muted">Explore our latest scholarship opportunities</p>
+            <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(15,42,74,0.08);color:var(--dfs-navy);font-weight:600;">How It Works</span>
+            <h2 class="fw-bold">Your Path to a Scholarship in <span class="dfs-text-gradient">3 Simple Steps</span></h2>
+            <p class="text-muted mx-auto" style="max-width:550px;">We've streamlined the entire process so you can focus on what matters — your education.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="dfs-card h-100 text-center p-4">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(43,125,233,0.1);--icon-color:var(--dfs-blue);">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <div class="badge rounded-pill mb-2" style="background:var(--dfs-blue);font-size:0.7rem;">Step 1</div>
+                    <h5 class="fw-bold">Find Your Scholarship</h5>
+                    <p class="text-muted small mb-0">Browse curated scholarship opportunities matched to your qualifications, degree level, and preferred major.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dfs-card h-100 text-center p-4">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(212,168,67,0.12);--icon-color:var(--dfs-gold);">
+                        <i class="bi bi-file-earmark-arrow-up"></i>
+                    </div>
+                    <div class="badge rounded-pill mb-2" style="background:var(--dfs-gold);color:var(--dfs-navy);font-size:0.7rem;">Step 2</div>
+                    <h5 class="fw-bold">Submit Your Application</h5>
+                    <p class="text-muted small mb-0">Upload your documents once. Our system handles the rest — pay the service fee and we take care of the paperwork.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dfs-card h-100 text-center p-4">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(25,135,84,0.1);--icon-color:#198754;">
+                        <i class="bi bi-mortarboard"></i>
+                    </div>
+                    <div class="badge rounded-pill mb-2 bg-success" style="font-size:0.7rem;">Step 3</div>
+                    <h5 class="fw-bold">Get Your Admission</h5>
+                    <p class="text-muted small mb-0">Receive your guaranteed admission letter and prepare for an incredible educational journey in China.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Available Scholarships ═══ -->
+<section class="dfs-section" style="background:var(--dfs-light);">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5">
+            <div>
+                <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(15,42,74,0.08);color:var(--dfs-navy);font-weight:600;">Scholarships</span>
+                <h2 class="fw-bold mb-1">Available Scholarships</h2>
+                <p class="text-muted mb-0">Explore our latest scholarship opportunities at top Chinese universities</p>
+            </div>
+            <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-dfs-outline mt-3 mt-md-0">
+                View All <i class="bi bi-arrow-right ms-1"></i>
+            </a>
         </div>
 
         {% if scholarships %}
         <div class="row g-4">
             {% for scholarship in scholarships %}
             <div class="col-md-6 col-lg-4">
-                <div class="card scholarship-card shadow-sm h-100">
-                    <div class="card-header text-white">
-                        <h5 class="mb-1 fw-bold">{{ scholarship.name }}</h5>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-white bg-opacity-25">{{ scholarship.get_degree_display }}</span>
-                            <span class="badge bg-white bg-opacity-25">{{ scholarship.get_scholarship_type_display }}</span>
+                <div class="scholarship-card h-100">
+                    <div class="card-header-bar"></div>
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ scholarship.name }}</h5>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span class="dfs-badge-blue">{{ scholarship.get_degree_display }}</span>
+                                    <span class="dfs-badge-gold">{{ scholarship.get_scholarship_type_display }}</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body p-4">
-                        <p class="text-muted small mb-3">{{ scholarship.description|truncatewords:20 }}</p>
+                        <p class="text-muted small mb-3">{{ scholarship.description|truncatewords:18 }}</p>
 
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="bi bi-book text-primary me-2"></i>
+                                    <i class="bi bi-book me-2" style="color:var(--dfs-blue);"></i>
                                     <small>{{ scholarship.major }}</small>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="bi bi-geo-alt text-primary me-2"></i>
+                                    <i class="bi bi-geo-alt me-2" style="color:var(--dfs-blue);"></i>
                                     <small>{{ scholarship.city }}</small>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="bi bi-translate text-primary me-2"></i>
+                                    <i class="bi bi-translate me-2" style="color:var(--dfs-blue);"></i>
                                     <small>{{ scholarship.language }}</small>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="d-flex align-items-center">
-                                    <i class="bi bi-calendar3 text-primary me-2"></i>
+                                    <i class="bi bi-calendar3 me-2" style="color:var(--dfs-blue);"></i>
                                     <small>{{ scholarship.get_semester_display }}</small>
                                 </div>
                             </div>
                         </div>
 
+                        <hr class="my-3" style="border-color:var(--dfs-light);">
+
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="fs-5 fw-bold text-success">${{ scholarship.price }}</span>
+                            <span class="fs-5 fw-bold" style="color:var(--dfs-navy);">${{ scholarship.price }}</span>
                             <span class="text-danger small">
-                                <i class="bi bi-clock me-1"></i>Deadline: {{ scholarship.deadline|date:"M d, Y" }}
+                                <i class="bi bi-clock me-1"></i>{{ scholarship.deadline|date:"M d, Y" }}
                             </span>
                         </div>
-                    </div>
-                    <div class="card-footer bg-white border-0 p-4 pt-0">
+
                         {% if request.user.is_authenticated %}
                             {% if scholarship.id in applied_scholarship_ids %}
-                            <button type="button" class="btn btn-success w-100" disabled>
+                            <button type="button" class="btn btn-success w-100 rounded-3" disabled>
                                 <i class="bi bi-check-circle-fill me-1"></i> Already Applied
                             </button>
                             {% else %}
-                            <a href="{% url 'scholarships:apply' scholarship.id %}" class="btn btn-primary w-100">
+                            <a href="{% url 'scholarships:apply' scholarship.id %}" class="btn btn-dfs-primary w-100 rounded-3">
                                 <i class="bi bi-send me-1"></i> Apply Now
                             </a>
                             {% endif %}
                         {% else %}
-                        <a href="{% url 'users:login' %}" class="btn btn-outline-primary w-100">
+                        <a href="{% url 'users:login' %}" class="btn btn-dfs-outline w-100 rounded-3">
                             <i class="bi bi-box-arrow-in-right me-1"></i> Login to Apply
                         </a>
                         {% endif %}
@@ -267,31 +254,94 @@
         </div>
         {% else %}
         <div class="text-center py-5">
-            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
-            <h4 class="mt-3 text-muted">No Scholarships Available</h4>
+            <div class="dfs-icon-box mx-auto mb-3" style="width:80px;height:80px;--icon-bg:var(--dfs-light);--icon-color:var(--dfs-blue);font-size:2rem;">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h4 class="fw-bold text-muted">No Scholarships Available Yet</h4>
             <p class="text-muted">Check back soon for new opportunities!</p>
         </div>
         {% endif %}
     </div>
 </section>
 
-<!-- CTA Section -->
+<!-- ═══ Why Choose Us ═══ -->
+<section class="dfs-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(212,168,67,0.12);color:var(--dfs-gold);font-weight:600;">Why DFS Education</span>
+            <h2 class="fw-bold">Why Students <span class="dfs-text-gradient">Trust Us</span></h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="dfs-card-glass h-100 text-center p-4">
+                    <div class="mb-3">
+                        <div style="width:56px;height:56px;margin:0 auto;background:linear-gradient(135deg,var(--dfs-navy),#1a3d6b);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-shield-check text-white fs-4"></i>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold">Guaranteed Admission</h6>
+                    <p class="text-muted small mb-0">We guarantee your university admission or provide a full refund. Your success is our priority.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="dfs-card-glass h-100 text-center p-4">
+                    <div class="mb-3">
+                        <div style="width:56px;height:56px;margin:0 auto;background:linear-gradient(135deg,var(--dfs-gold),#e8c76a);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-translate fs-4" style="color:var(--dfs-navy);"></i>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold">English & Chinese Programs</h6>
+                    <p class="text-muted small mb-0">Choose from English or Chinese-taught programs across all major disciplines.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="dfs-card-glass h-100 text-center p-4">
+                    <div class="mb-3">
+                        <div style="width:56px;height:56px;margin:0 auto;background:linear-gradient(135deg,var(--dfs-blue),#5a9cf0);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-headset text-white fs-4"></i>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold">Full Support</h6>
+                    <p class="text-muted small mb-0">From application to arrival, we handle visa guidance, document preparation, and airport pickup.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="dfs-card-glass h-100 text-center p-4">
+                    <div class="mb-3">
+                        <div style="width:56px;height:56px;margin:0 auto;background:linear-gradient(135deg,#198754,#28a745);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-cash-stack text-white fs-4"></i>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold">Affordable Fees</h6>
+                    <p class="text-muted small mb-0">Transparent pricing with no hidden charges. Scholarships that cover tuition, accommodation, and stipend.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CTA Section ═══ -->
 {% if not request.user.is_authenticated %}
 <section class="py-5">
     <div class="container">
-        <div class="cta-section p-5 text-center">
-            <h2 class="fw-bold mb-3">Ready to Start Your Journey?</h2>
-            <p class="lead mb-4 opacity-75">Create your free account and apply for scholarships in minutes.</p>
+        <div class="dfs-cta text-center">
+            <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(212,168,67,0.2);color:var(--dfs-gold);font-weight:600;">
+                <i class="bi bi-stars me-1"></i> Start Today
+            </span>
+            <h2 class="fw-bold text-white mb-3">Ready to Start Your Journey?</h2>
+            <p class="mb-4" style="color:rgba(255,255,255,0.7);max-width:500px;margin:0 auto;">
+                Create your free account and apply for guaranteed scholarships in China. Join hundreds of students who already got their admission.
+            </p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="{% url 'users:register' %}" class="btn btn-light btn-lg px-5 fw-semibold">
-                    <i class="bi bi-person-plus me-2"></i>Create Free Account
+                <a href="{% url 'users:register' %}" class="btn btn-dfs-gold btn-lg px-5">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Create Free Account
                 </a>
-                <a href="{% url 'users:login' %}" class="btn btn-outline-light btn-lg px-5">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                <a href="{% url 'pages:contact' %}" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-chat-dots me-2"></i>Talk to Us
                 </a>
             </div>
         </div>
     </div>
 </section>
 {% endif %}
-{% endblock %}  
+{% endblock %}

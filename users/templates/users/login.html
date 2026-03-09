@@ -1,69 +1,90 @@
-{% extends 'users/base.html' %}
+{% extends 'pages/base.html' %}
+{% load static %}
 
 {% block title %}Login — DFS Education{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="text-center mb-4">
-                <div class="bg-primary bg-opacity-10 d-inline-flex rounded-circle p-3 mb-3">
-                    <i class="bi bi-box-arrow-in-right text-primary fs-2"></i>
-                </div>
-                <h2 class="fw-bold">Welcome Back</h2>
-                <p class="text-muted">Sign in to your account</p>
+<div class="dfs-auth-split">
+    <!-- Brand Panel -->
+    <div class="dfs-auth-brand d-none d-lg-flex">
+        <div class="text-center">
+            {% if site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="height:80px;" class="mb-4">
+            {% else %}
+            <div style="width:70px;height:70px;margin:0 auto;background:var(--dfs-gold);border-radius:16px;display:flex;align-items:center;justify-content:center;" class="mb-4">
+                <i class="bi bi-mortarboard-fill" style="font-size:2rem;color:var(--dfs-navy);"></i>
             </div>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-
-                    <form method="post" data-loading="Signing in..." novalidate>
-                        {% csrf_token %}
-
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                <input type="text" class="form-control form-control-lg" id="username" 
-                                       name="username" placeholder="Enter your username" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input type="password" class="form-control form-control-lg" id="password" 
-                                       name="password" placeholder="Enter your password" required>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-end mb-3">
-                            <a href="{% url 'users:password_reset' %}" class="text-decoration-none small">Forgot password?</a>
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                            </button>
-                        </div>
-                    </form>
-
-                    <hr class="my-4">
-
-                    <p class="text-center mb-0">
-                        Don't have an account? <a href="{% url 'users:register' %}" class="text-decoration-none fw-bold">Register here</a>
-                    </p>
+            {% endif %}
+            <h2 class="text-white fw-bold mb-2">Welcome Back!</h2>
+            <p class="mb-4" style="color:rgba(255,255,255,0.7);max-width:320px;margin:0 auto;">
+                Sign in to continue your journey towards a guaranteed scholarship in China.
+            </p>
+            <div class="d-flex justify-content-center gap-4 mt-4">
+                <div class="text-center">
+                    <div class="fw-bold text-white fs-5">500+</div>
+                    <small style="color:rgba(255,255,255,0.5);">Students</small>
+                </div>
+                <div style="width:1px;background:rgba(255,255,255,0.15);"></div>
+                <div class="text-center">
+                    <div class="fw-bold text-white fs-5">98%</div>
+                    <small style="color:rgba(255,255,255,0.5);">Success</small>
+                </div>
+                <div style="width:1px;background:rgba(255,255,255,0.15);"></div>
+                <div class="text-center">
+                    <div class="fw-bold text-white fs-5">50+</div>
+                    <small style="color:rgba(255,255,255,0.5);">Universities</small>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Form Panel -->
+    <div class="dfs-auth-form">
+        <div style="max-width:420px;width:100%;">
+            <div class="text-center mb-4 d-lg-none">
+                {% if site_settings.logo %}
+                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="height:50px;" class="mb-3">
+                {% endif %}
+            </div>
+            <h3 class="fw-bold mb-1">Sign In</h3>
+            <p class="text-muted mb-4">Enter your credentials to access your account</p>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" data-loading="Signing in..." novalidate>
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-medium small">Username</label>
+                    <input type="text" class="form-control form-control-lg rounded-3" id="username"
+                           name="username" placeholder="Enter your username" required style="border-color:#e0e5ec;">
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-medium small">Password</label>
+                    <input type="password" class="form-control form-control-lg rounded-3" id="password"
+                           name="password" placeholder="Enter your password" required style="border-color:#e0e5ec;">
+                </div>
+
+                <div class="d-flex justify-content-end mb-4">
+                    <a href="{% url 'users:password_reset' %}" class="text-decoration-none small" style="color:var(--dfs-blue);">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-dfs-primary btn-lg w-100 mb-3">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+            </form>
+
+            <p class="text-center text-muted small mt-4 mb-0">
+                Don't have an account? <a href="{% url 'users:register' %}" class="fw-semibold text-decoration-none" style="color:var(--dfs-blue);">Create Account</a>
+            </p>
         </div>
     </div>
 </div>

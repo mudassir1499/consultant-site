@@ -1,4 +1,6 @@
 {% extends 'pages/base.html' %}
+{% load static %}
+
 {% block title %}{{ page_title|default:scholarship.name }}{% endblock %}
 {% block meta_description %}{{ page_description }}{% endblock %}
 {% block og_title %}{{ page_title|default:scholarship.name }}{% endblock %}
@@ -15,76 +17,94 @@
 {% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'scholarships:scholarship_list' %}">Scholarships</a></li>
-            <li class="breadcrumb-item active">{{ scholarship.name }}</li>
-        </ol>
-    </nav>
+<!-- ═══ Hero Banner ═══ -->
+<section class="dfs-hero" style="padding:3rem 0 4.5rem;">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color:rgba(255,255,255,0.4);">
+                <li class="breadcrumb-item"><a href="{% url 'scholarships:scholarship_list' %}" style="color:rgba(255,255,255,0.6);text-decoration:none;">Scholarships</a></li>
+                <li class="breadcrumb-item active" style="color:rgba(255,255,255,0.8);">{{ scholarship.name }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="dfs-badge-blue">{{ scholarship.get_degree_display }}</span>
+            <span class="dfs-badge-gold">{{ scholarship.get_scholarship_type_display }}</span>
+            <span class="badge rounded-pill" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);">{{ scholarship.get_semester_display }} Semester</span>
+        </div>
+        <h1 class="display-6 fw-800 text-white mb-2">{{ scholarship.name }}</h1>
+        <p style="color:rgba(255,255,255,0.65);">
+            <i class="bi bi-geo-alt me-1"></i>{{ scholarship.city }}
+            <span class="mx-2">|</span>
+            <i class="bi bi-book me-1"></i>{{ scholarship.major }}
+            <span class="mx-2">|</span>
+            <i class="bi bi-translate me-1"></i>{{ scholarship.language }}
+        </p>
+    </div>
+</section>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <div class="d-flex gap-2 mb-3">
-                        <span class="badge bg-primary">{{ scholarship.get_degree_display }}</span>
-                        <span class="badge bg-info text-dark">{{ scholarship.get_scholarship_type_display }}</span>
-                        <span class="badge bg-secondary">{{ scholarship.get_semester_display }} Semester</span>
-                    </div>
-                    <h2 class="fw-bold">{{ scholarship.name }}</h2>
-                    <p class="text-muted">
-                        <i class="bi bi-geo-alt me-1"></i>{{ scholarship.city }}
-                        <span class="mx-2">|</span>
-                        <i class="bi bi-book me-1"></i>{{ scholarship.major }}
-                        <span class="mx-2">|</span>
-                        <i class="bi bi-translate me-1"></i>{{ scholarship.language }}
-                    </p>
+<!-- ═══ Content ═══ -->
+<section style="margin-top:-2rem;position:relative;z-index:2;">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="dfs-card p-4 p-md-5">
+                    <h4 class="fw-bold mb-3">Description</h4>
+                    <div class="text-muted">{{ scholarship.description|linebreaks }}</div>
 
-                    <hr>
-                    <h5 class="fw-bold">Description</h5>
-                    <p>{{ scholarship.description|linebreaks }}</p>
-
-                    <h5 class="fw-bold mt-4">Eligibility</h5>
-                    <p>{{ scholarship.eligibility|linebreaks }}</p>
+                    <hr class="my-4" style="border-color:var(--dfs-light);">
+                    <h4 class="fw-bold mb-3">Eligibility</h4>
+                    <div class="text-muted">{{ scholarship.eligibility|linebreaks }}</div>
 
                     {% if scholarship.note %}
-                    <h5 class="fw-bold mt-4">Additional Notes</h5>
-                    <p>{{ scholarship.note|linebreaks }}</p>
+                    <hr class="my-4" style="border-color:var(--dfs-light);">
+                    <h4 class="fw-bold mb-3">Additional Notes</h4>
+                    <div class="text-muted">{{ scholarship.note|linebreaks }}</div>
                     {% endif %}
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body text-center p-4">
-                    <h3 class="fw-bold text-primary mb-1">${{ scholarship.price }}</h3>
-                    <p class="text-muted small">Application Fee</p>
-                    <hr>
-                    <div class="text-start small">
-                        <p class="mb-2"><strong>Deadline:</strong> {{ scholarship.deadline|date:"F d, Y" }}</p>
-                        <p class="mb-2"><strong>Degree:</strong> {{ scholarship.get_degree_display }}</p>
-                        <p class="mb-2"><strong>Semester:</strong> {{ scholarship.get_semester_display }}</p>
-                        <p class="mb-0"><strong>Language:</strong> {{ scholarship.language }}</p>
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="dfs-card p-4 text-center mb-4" style="position:sticky;top:80px;">
+                    <div class="mb-3">
+                        <span class="fw-800" style="font-size:2.2rem;color:var(--dfs-navy);">${{ scholarship.price }}</span>
+                        <p class="text-muted small mb-0">Application Fee</p>
                     </div>
-                    <hr>
+                    <hr style="border-color:var(--dfs-light);">
+                    <div class="text-start small mb-3">
+                        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--dfs-light);">
+                            <span class="text-muted">Deadline</span>
+                            <span class="fw-semibold text-danger">{{ scholarship.deadline|date:"F d, Y" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--dfs-light);">
+                            <span class="text-muted">Degree</span>
+                            <span class="fw-semibold">{{ scholarship.get_degree_display }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--dfs-light);">
+                            <span class="text-muted">Semester</span>
+                            <span class="fw-semibold">{{ scholarship.get_semester_display }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2">
+                            <span class="text-muted">Language</span>
+                            <span class="fw-semibold">{{ scholarship.language }}</span>
+                        </div>
+                    </div>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'scholarships:apply' scholarship.id %}" class="btn btn-primary w-100">
+                    <a href="{% url 'scholarships:apply' scholarship.id %}" class="btn btn-dfs-primary w-100 mb-2">
                         <i class="bi bi-send me-1"></i>Apply Now
                     </a>
                     {% else %}
-                    <a href="{% url 'users:login' %}?next={% url 'scholarships:apply' scholarship.id %}" class="btn btn-primary w-100">
+                    <a href="{% url 'users:login' %}?next={% url 'scholarships:apply' scholarship.id %}" class="btn btn-dfs-primary w-100 mb-2">
                         <i class="bi bi-box-arrow-in-right me-1"></i>Login to Apply
                     </a>
                     {% endif %}
+                    <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-dfs-outline w-100">
+                        <i class="bi bi-arrow-left me-1"></i>All Scholarships
+                    </a>
                 </div>
             </div>
-
-            <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-outline-secondary w-100">
-                <i class="bi bi-arrow-left me-1"></i>Back to Scholarships
-            </a>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

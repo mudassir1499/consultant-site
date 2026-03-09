@@ -1,0 +1,254 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}{% if active_category %}{{ active_category.name }} - {% endif %}{% if query %}Search: {{ query }} - {% endif %}Blog - {{ site_settings.site_name|default:'DFS Education' }}{% endblock %}
+{% block meta_description %}{% if active_category %}{{ active_category.description }}{% else %}Read the latest articles about studying in China, scholarships, university guides, and student life tips from DFS Education.{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="dfs-hero py-5" style="min-height: 320px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center text-white">
+                <span class="badge rounded-pill px-3 py-2 mb-3" style="background: var(--dfs-gold); color: var(--dfs-navy); font-weight: 600;">
+                    <i class="bi bi-journal-richtext me-1"></i> Blog & Articles
+                </span>
+                <h1 class="display-5 fw-bold mb-3">
+                    {% if active_category %}
+                        {{ active_category.name }}
+                    {% elif query %}
+                        Search Results
+                    {% else %}
+                        Insights & Guides
+                    {% endif %}
+                </h1>
+                <p class="lead opacity-75 mb-0">
+                    {% if active_category %}
+                        {{ active_category.description|default:'Explore articles in this category.' }}
+                    {% elif query %}
+                        Showing results for "<strong>{{ query }}</strong>"
+                    {% else %}
+                        Expert advice on studying in China, scholarship opportunities, and student life
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search & Filter Bar -->
+<div class="container" style="margin-top: -40px; position: relative; z-index: 10;">
+    <div class="card border-0 shadow-lg rounded-4 p-4">
+        <form method="get" action="{% url 'blog:post_list' %}" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label text-muted small fw-semibold text-uppercase">Search Articles</label>
+                <div class="input-group">
+                    <span class="input-group-text border-0 bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control border-0 bg-light" placeholder="Search blog posts..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-semibold text-uppercase">Category</label>
+                <select name="category" class="form-select border-0 bg-light">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if active_category and active_category.slug == cat.slug %}selected{% endif %}>
+                        {{ cat.name }} ({{ cat.published_post_count }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dfs-primary w-100 rounded-pill">
+                    <i class="bi bi-funnel me-1"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<section class="dfs-section">
+    <div class="container">
+
+        {% if featured and not active_category %}
+        <!-- Featured Post -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 blog-featured">
+            <div class="row g-0">
+                <div class="col-lg-6">
+                    {% if featured.featured_image %}
+                    <img src="{{ featured.featured_image.url }}" class="w-100 h-100" style="object-fit: cover; min-height: 300px;" alt="{{ featured.title }}">
+                    {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, var(--dfs-navy) 0%, var(--dfs-blue) 100%); min-height: 300px;">
+                        <i class="bi bi-journal-richtext text-white" style="font-size: 5rem; opacity: 0.3;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-lg-6 d-flex align-items-center">
+                    <div class="p-4 p-lg-5">
+                        <span class="dfs-badge-gold mb-3 d-inline-block">
+                            <i class="bi bi-star-fill me-1"></i> Featured
+                        </span>
+                        {% if featured.category %}
+                        <span class="dfs-badge-blue mb-3 d-inline-block">{{ featured.category.name }}</span>
+                        {% endif %}
+                        <h2 class="fw-bold mb-3">
+                            <a href="{{ featured.get_absolute_url }}" class="text-decoration-none" style="color: var(--dfs-navy);">{{ featured.title }}</a>
+                        </h2>
+                        <p class="text-muted mb-3">{{ featured.excerpt|truncatewords:40 }}</p>
+                        <div class="d-flex align-items-center gap-3 mb-3 small text-muted">
+                            <span><i class="bi bi-person me-1"></i>{{ featured.author.first_name|default:featured.author.username }}</span>
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ featured.published_date|date:"M d, Y" }}</span>
+                            <span><i class="bi bi-clock me-1"></i>{{ featured.reading_time }} min read</span>
+                        </div>
+                        <a href="{{ featured.get_absolute_url }}" class="btn btn-dfs-primary rounded-pill px-4">
+                            Read Article <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if query or active_category %}
+        <div class="mb-4 d-flex align-items-center justify-content-between">
+            <p class="text-muted mb-0">
+                <strong>{{ posts.paginator.count }}</strong> article{{ posts.paginator.count|pluralize }} found
+            </p>
+            {% if query or active_category %}
+            <a href="{% url 'blog:post_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                <i class="bi bi-x-lg me-1"></i> Clear filters
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if posts %}
+        <!-- Posts Grid -->
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden blog-card h-100">
+                    <a href="{{ post.get_absolute_url }}">
+                        {% if post.featured_image %}
+                        <img src="{{ post.featured_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ post.title }}">
+                        {% else %}
+                        <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, var(--dfs-navy) 0%, var(--dfs-blue) 100%);">
+                            <i class="bi bi-journal-text text-white" style="font-size: 3rem; opacity: 0.4;"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex gap-2 mb-2">
+                            {% if post.category %}
+                            <span class="dfs-badge-blue small">{{ post.category.name }}</span>
+                            {% endif %}
+                            <span class="badge bg-light text-muted small"><i class="bi bi-clock me-1"></i>{{ post.reading_time }} min</span>
+                        </div>
+                        <h5 class="fw-bold mb-2">
+                            <a href="{{ post.get_absolute_url }}" class="text-decoration-none" style="color: var(--dfs-navy);">{{ post.title }}</a>
+                        </h5>
+                        <p class="text-muted small flex-grow-1 mb-3">{{ post.excerpt|truncatewords:25 }}</p>
+                        <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; background: var(--dfs-light);">
+                                    <i class="bi bi-person-fill small" style="color: var(--dfs-navy);"></i>
+                                </div>
+                                <small class="text-muted">{{ post.author.first_name|default:post.author.username }}</small>
+                            </div>
+                            <small class="text-muted">{{ post.published_date|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if posts.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center gap-2">
+                {% if posts.has_previous %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 shadow-sm px-4" href="?page={{ posts.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in posts.paginator.page_range %}
+                    {% if posts.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link rounded-pill border-0 px-3" style="background: var(--dfs-navy);">{{ num }}</span>
+                    </li>
+                    {% elif num > posts.number|add:'-3' and num < posts.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link rounded-pill border-0 shadow-sm px-3" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if posts.has_next %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 shadow-sm px-4" href="?page={{ posts.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <!-- No Posts -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-journal-x" style="font-size: 4rem; color: var(--dfs-blue); opacity: 0.3;"></i>
+            </div>
+            <h4 class="fw-bold mb-2" style="color: var(--dfs-navy);">No articles found</h4>
+            <p class="text-muted mb-4">
+                {% if query %}No articles match your search "<strong>{{ query }}</strong>". Try a different keyword.
+                {% elif active_category %}No articles in this category yet. Check back soon!
+                {% else %}Blog posts are coming soon. Stay tuned!{% endif %}
+            </p>
+            {% if query or active_category %}
+            <a href="{% url 'blog:post_list' %}" class="btn btn-dfs-outline rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i> View All Articles
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="py-5" style="background: var(--dfs-light);">
+    <div class="container">
+        <h3 class="fw-bold text-center mb-4" style="color: var(--dfs-navy);">Browse by Category</h3>
+        <div class="row g-3 justify-content-center">
+            {% for cat in categories %}
+            <div class="col-auto">
+                <a href="{% url 'blog:category_posts' slug=cat.slug %}"
+                   class="btn {% if active_category and active_category.slug == cat.slug %}btn-dfs-primary{% else %}btn-dfs-outline{% endif %} rounded-pill px-4">
+                    <i class="{{ cat.icon }} me-1"></i> {{ cat.name }}
+                    <span class="badge bg-white text-dark ms-1">{{ cat.published_post_count }}</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="dfs-cta py-5">
+    <div class="container text-center">
+        <h3 class="fw-bold text-white mb-3">Ready to Start Your Scholarship Journey?</h3>
+        <p class="text-white opacity-75 mb-4">Apply for guaranteed scholarships in China today</p>
+        <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-dfs-gold btn-lg rounded-pill px-5 shadow">
+            <i class="bi bi-mortarboard me-2"></i>Browse Scholarships
+        </a>
+    </div>
+</section>
+{% endblock %}

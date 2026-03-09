@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'agent',
     'headquarters',
     'devtools',
+    'blog',
 ]
 
 SITE_ID = 1

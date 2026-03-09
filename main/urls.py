@@ -20,10 +20,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from pages.sitemaps import StaticViewSitemap, ScholarshipSitemap
+from blog.sitemaps import BlogPostSitemap
 
 sitemaps = {
     'static': StaticViewSitemap,
     'scholarships': ScholarshipSitemap,
+    'blog': BlogPostSitemap,
 }
 
 urlpatterns = [
@@ -37,6 +39,7 @@ urlpatterns = [
     path('agent/', include('agent.urls')),
     path('hq/', include('headquarters.urls')),
     path('devtools/', include('devtools.urls')),
+    path('blog/', include('blog.urls')),
 ]
 
 # Serve media & static files

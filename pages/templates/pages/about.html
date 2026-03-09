@@ -1,4 +1,5 @@
 {% extends "pages/base.html" %}
+{% load static %}
 
 {% block title %}{{ page_title|default:'About Us — DFS Education' }}{% endblock %}
 {% block meta_description %}{{ page_description|default:'Learn about DFS Education, your trusted partner for guaranteed scholarships in China.' }}{% endblock %}
@@ -7,128 +8,131 @@
 {% block twitter_title %}{{ page_title|default:'About Us — DFS Education' }}{% endblock %}
 {% block twitter_description %}{{ page_description|default:'Learn about DFS Education, your trusted partner for guaranteed scholarships in China.' }}{% endblock %}
 
-{% block extra_css %}
-<style>
-    .about-hero {
-        background: linear-gradient(135deg, var(--site-hero-start, #0a0a0a) 0%, #0d1117 50%, var(--site-hero-end, #1a1a2e) 100%);
-        color: #fff;
-        padding: 4rem 0;
-        position: relative;
-        overflow: hidden;
-    }
-    .about-hero::before {
-        content: '';
-        position: absolute;
-        top: -40%;
-        right: -15%;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(43,125,233,0.1) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .chrome-divider {
-        height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(192,192,192,0.4), transparent);
-        max-width: 300px;
-        margin: 1.5rem auto;
-    }
-    .value-card {
-        border: none;
-        border-radius: 12px;
-        transition: transform 0.25s, box-shadow 0.25s;
-    }
-    .value-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
-    }
-    .process-step {
-        position: relative;
-        padding-left: 3.5rem;
-    }
-    .process-step::before {
-        content: '';
-        position: absolute;
-        left: 18px;
-        top: 40px;
-        bottom: -20px;
-        width: 2px;
-        background: #dee2e6;
-    }
-    .process-step:last-child::before { display: none; }
-    .step-number {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<!-- Hero -->
-<section class="about-hero">
+<!-- ═══ Page Hero ═══ -->
+<section class="dfs-hero" style="padding:4rem 0 5rem;">
     <div class="container text-center">
-        <h1 class="display-5 fw-bold mb-3">About {{ site_settings.site_name|default:'DFS Education' }}</h1>
-        <div class="chrome-divider"></div>
-        <p class="lead opacity-75 col-lg-8 mx-auto">
-            We are dedicated to helping students around the world achieve their dreams of studying abroad 
+        <span class="dfs-hero-badge mb-3"><i class="bi bi-building me-1"></i> About Us</span>
+        <h1 class="display-5 fw-800 text-white mb-3">About {{ site_settings.site_name|default:'DFS Education' }}</h1>
+        <p class="lead mx-auto" style="max-width:650px;color:rgba(255,255,255,0.7);">
+            We are dedicated to helping students around the world achieve their dreams of studying abroad
             through expert guidance, scholarship matching, and end-to-end application support.
         </p>
     </div>
 </section>
 
-<!-- Mission & Vision -->
-<section class="py-5">
+<!-- ═══ Stats Cards ═══ -->
+<section style="margin-top:-3rem;position:relative;z-index:2;">
+    <div class="container">
+        <div class="row g-3 justify-content-center">
+            <div class="col-6 col-md-3">
+                <div class="dfs-card-glass text-center p-4">
+                    <div class="dfs-stat-number" data-count="50" data-suffix="+">0+</div>
+                    <small class="text-muted fw-medium">Partner Universities</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dfs-card-glass text-center p-4">
+                    <div class="dfs-stat-number" data-count="1000" data-suffix="+">0+</div>
+                    <small class="text-muted fw-medium">Students Helped</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dfs-card-glass text-center p-4">
+                    <div class="dfs-stat-number" data-count="98" data-suffix="%">0%</div>
+                    <small class="text-muted fw-medium">Success Rate</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dfs-card-glass text-center p-4">
+                    <div class="dfs-stat-number" data-count="10" data-suffix="+">0+</div>
+                    <small class="text-muted fw-medium">Years Experience</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Mission Section ═══ -->
+<section class="dfs-section">
     <div class="container">
         <div class="row g-5 align-items-center">
             <div class="col-lg-6">
-                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">Our Mission</span>
-                <h2 class="fw-bold mb-3">Empowering Students to Reach Their Full Potential</h2>
+                <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(15,42,74,0.08);color:var(--dfs-navy);font-weight:600;">Our Mission</span>
+                <h2 class="fw-bold mb-3">Empowering Students to Reach Their <span class="dfs-text-gradient">Full Potential</span></h2>
                 <p class="text-muted">
-                    With years of experience in the education sector, our team of consultants is committed to helping students 
-                    navigate the complexities of the admissions process. We work closely with students to understand their unique 
+                    With years of experience in the education sector, our team of consultants is committed to helping students
+                    navigate the complexities of the admissions process. We work closely with students to understand their unique
                     needs and aspirations, ensuring that they receive tailored advice and support throughout their educational journey.
                 </p>
-                <p class="text-muted">
-                    Whether you're looking for assistance with scholarship applications, university selection, or visa processing, 
+                <p class="text-muted mb-4">
+                    Whether you're looking for assistance with scholarship applications, university selection, or visa processing,
                     our consultants are here to help you succeed every step of the way.
                 </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <div class="dfs-icon-box me-2" style="width:36px;height:36px;--icon-bg:rgba(43,125,233,0.1);--icon-color:var(--dfs-blue);font-size:0.85rem;">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <small class="fw-medium">Guaranteed Results</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="dfs-icon-box me-2" style="width:36px;height:36px;--icon-bg:rgba(212,168,67,0.12);--icon-color:var(--dfs-gold);font-size:0.85rem;">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <small class="fw-medium">No Hidden Fees</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="dfs-icon-box me-2" style="width:36px;height:36px;--icon-bg:rgba(25,135,84,0.1);--icon-color:#198754;font-size:0.85rem;">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <small class="fw-medium">24/7 Support</small>
+                    </div>
+                </div>
             </div>
             <div class="col-lg-6">
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="card value-card shadow-sm text-center p-4">
-                            <div class="text-primary mb-2"><i class="bi bi-globe2 fs-1"></i></div>
-                            <h3 class="fw-bold text-primary mb-0">50+</h3>
-                            <small class="text-muted">Universities</small>
-                        </div>
+                <div class="dfs-card p-4" style="background:var(--dfs-light);">
+                    {% if site_settings.logo %}
+                    <div class="text-center mb-4">
+                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" style="max-height:120px;">
                     </div>
-                    <div class="col-6 mt-4">
-                        <div class="card value-card shadow-sm text-center p-4">
-                            <div class="text-success mb-2"><i class="bi bi-people-fill fs-1"></i></div>
-                            <h3 class="fw-bold text-success mb-0">1000+</h3>
-                            <small class="text-muted">Students Helped</small>
+                    {% endif %}
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="bg-white rounded-3 p-3 text-center shadow-sm">
+                                <div style="width:44px;height:44px;margin:0 auto;background:linear-gradient(135deg,var(--dfs-navy),#1a3d6b);border-radius:12px;display:flex;align-items:center;justify-content:center;" class="mb-2">
+                                    <i class="bi bi-globe2 text-white"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0" style="color:var(--dfs-navy);" data-count="50" data-suffix="+">0+</h5>
+                                <small class="text-muted">Universities</small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="card value-card shadow-sm text-center p-4">
-                            <div class="text-warning mb-2"><i class="bi bi-trophy-fill fs-1"></i></div>
-                            <h3 class="fw-bold text-warning mb-0">95%</h3>
-                            <small class="text-muted">Success Rate</small>
+                        <div class="col-6">
+                            <div class="bg-white rounded-3 p-3 text-center shadow-sm">
+                                <div style="width:44px;height:44px;margin:0 auto;background:linear-gradient(135deg,var(--dfs-gold),#e8c76a);border-radius:12px;display:flex;align-items:center;justify-content:center;" class="mb-2">
+                                    <i class="bi bi-people-fill" style="color:var(--dfs-navy);"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0" style="color:var(--dfs-navy);" data-count="1000" data-suffix="+">0+</h5>
+                                <small class="text-muted">Students</small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-6 mt-4">
-                        <div class="card value-card shadow-sm text-center p-4">
-                            <div class="text-info mb-2"><i class="bi bi-award-fill fs-1"></i></div>
-                            <h3 class="fw-bold text-info mb-0">10+</h3>
-                            <small class="text-muted">Years Experience</small>
+                        <div class="col-6">
+                            <div class="bg-white rounded-3 p-3 text-center shadow-sm">
+                                <div style="width:44px;height:44px;margin:0 auto;background:linear-gradient(135deg,var(--dfs-blue),#5a9cf0);border-radius:12px;display:flex;align-items:center;justify-content:center;" class="mb-2">
+                                    <i class="bi bi-trophy-fill text-white"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0" style="color:var(--dfs-navy);" data-count="98" data-suffix="%">0%</h5>
+                                <small class="text-muted">Success Rate</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-white rounded-3 p-3 text-center shadow-sm">
+                                <div style="width:44px;height:44px;margin:0 auto;background:linear-gradient(135deg,#198754,#28a745);border-radius:12px;display:flex;align-items:center;justify-content:center;" class="mb-2">
+                                    <i class="bi bi-award-fill text-white"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0" style="color:var(--dfs-navy);" data-count="15" data-suffix="+">0+</h5>
+                                <small class="text-muted">Countries</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -137,70 +141,106 @@
     </div>
 </section>
 
-<!-- How It Works -->
-<section class="py-5 bg-light">
+<!-- ═══ How It Works ═══ -->
+<section class="dfs-section" style="background:var(--dfs-light);">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold">How It Works</h2>
-            <p class="text-muted">Simple steps to your international education journey</p>
+            <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(15,42,74,0.08);color:var(--dfs-navy);font-weight:600;">Process</span>
+            <h2 class="fw-bold">How It <span class="dfs-text-gradient">Works</span></h2>
+            <p class="text-muted mx-auto" style="max-width:500px;">Simple steps to your international education journey</p>
         </div>
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="process-step mb-4">
-                    <div class="step-number bg-primary text-white">1</div>
-                    <h5 class="fw-bold">Create Your Account</h5>
-                    <p class="text-muted mb-0">Sign up for free and complete your profile with your academic information.</p>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="dfs-card h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div style="width:42px;height:42px;background:var(--dfs-navy);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                            <span class="text-white fw-bold">1</span>
+                        </div>
+                        <h6 class="fw-bold mb-0">Create Your Account</h6>
+                    </div>
+                    <p class="text-muted small mb-0">Sign up for free and complete your profile with your academic information and documents.</p>
                 </div>
-                <div class="process-step mb-4">
-                    <div class="step-number bg-success text-white">2</div>
-                    <h5 class="fw-bold">Browse & Apply for Scholarships</h5>
-                    <p class="text-muted mb-0">Explore available scholarships and submit your application with required documents.</p>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="dfs-card h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div style="width:42px;height:42px;background:var(--dfs-blue);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                            <span class="text-white fw-bold">2</span>
+                        </div>
+                        <h6 class="fw-bold mb-0">Browse & Apply</h6>
+                    </div>
+                    <p class="text-muted small mb-0">Explore available scholarships and submit your application with required documents.</p>
                 </div>
-                <div class="process-step mb-4">
-                    <div class="step-number bg-warning text-dark">3</div>
-                    <h5 class="fw-bold">Document Review & Verification</h5>
-                    <p class="text-muted mb-0">Our office team reviews and verifies your documents, ensuring everything is in order.</p>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="dfs-card h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div style="width:42px;height:42px;background:var(--dfs-gold);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                            <span class="fw-bold" style="color:var(--dfs-navy);">3</span>
+                        </div>
+                        <h6 class="fw-bold mb-0">Document Verification</h6>
+                    </div>
+                    <p class="text-muted small mb-0">Our office team reviews and verifies your documents, ensuring everything is in order.</p>
                 </div>
-                <div class="process-step mb-4">
-                    <div class="step-number bg-info text-white">4</div>
-                    <h5 class="fw-bold">Application Processing</h5>
-                    <p class="text-muted mb-0">Your application is forwarded to our agents who liaise with universities on your behalf.</p>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="dfs-card h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div style="width:42px;height:42px;background:#198754;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                            <span class="text-white fw-bold">4</span>
+                        </div>
+                        <h6 class="fw-bold mb-0">Application Processing</h6>
+                    </div>
+                    <p class="text-muted small mb-0">Your application is forwarded to our agents who liaise with universities on your behalf.</p>
                 </div>
-                <div class="process-step">
-                    <div class="step-number bg-dark text-white">5</div>
-                    <h5 class="fw-bold">Admission & Enrollment</h5>
-                    <p class="text-muted mb-0">Receive your admission letter, JW02 form, and complete your enrollment — we handle it all.</p>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="dfs-card h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div style="width:42px;height:42px;background:var(--dfs-navy);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" class="me-3">
+                            <span class="text-white fw-bold">5</span>
+                        </div>
+                        <h6 class="fw-bold mb-0">Admission & Enrollment</h6>
+                    </div>
+                    <p class="text-muted small mb-0">Receive your admission letter, JW202 form, and complete enrollment — we handle it all.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Our Values -->
-<section class="py-5">
+<!-- ═══ Why Choose Us ═══ -->
+<section class="dfs-section">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold">Why Choose Us</h2>
-            <p class="text-muted">What sets us apart from the rest</p>
+            <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(212,168,67,0.12);color:var(--dfs-gold);font-weight:600;">Why DFS</span>
+            <h2 class="fw-bold">Why Choose <span class="dfs-text-gradient">Us</span></h2>
         </div>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card value-card shadow-sm h-100 p-4">
-                    <div class="text-primary mb-3"><i class="bi bi-shield-check fs-2"></i></div>
+                <div class="dfs-card h-100 p-4 text-center">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(15,42,74,0.08);--icon-color:var(--dfs-navy);">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
                     <h5 class="fw-bold">Trusted & Transparent</h5>
                     <p class="text-muted small mb-0">Every step of your application is tracked and visible. No hidden fees, no surprises.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card value-card shadow-sm h-100 p-4">
-                    <div class="text-success mb-3"><i class="bi bi-headset fs-2"></i></div>
+                <div class="dfs-card h-100 p-4 text-center">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(212,168,67,0.12);--icon-color:var(--dfs-gold);">
+                        <i class="bi bi-headset"></i>
+                    </div>
                     <h5 class="fw-bold">Dedicated Support</h5>
                     <p class="text-muted small mb-0">Get real-time notifications and personalized guidance from our experienced team.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card value-card shadow-sm h-100 p-4">
-                    <div class="text-warning mb-3"><i class="bi bi-lightning-charge fs-2"></i></div>
+                <div class="dfs-card h-100 p-4 text-center">
+                    <div class="dfs-icon-box mx-auto mb-3" style="--icon-bg:rgba(43,125,233,0.1);--icon-color:var(--dfs-blue);">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
                     <h5 class="fw-bold">Fast Processing</h5>
                     <p class="text-muted small mb-0">Our streamlined digital workflow ensures your application moves quickly through every stage.</p>
                 </div>
@@ -209,19 +249,21 @@
     </div>
 </section>
 
-<!-- CTA -->
+<!-- ═══ CTA ═══ -->
 {% if not request.user.is_authenticated %}
-<section class="py-5 bg-light">
-    <div class="container text-center">
-        <h3 class="fw-bold mb-3">Ready to Begin?</h3>
-        <p class="text-muted mb-4">Join thousands of students who have achieved their dreams with our help.</p>
-        <div class="d-flex justify-content-center gap-3">
-            <a href="{% url 'users:register' %}" class="btn btn-primary btn-lg px-5">
-                <i class="bi bi-person-plus me-2"></i>Get Started
-            </a>
-            <a href="/" class="btn btn-outline-primary btn-lg px-5">
-                <i class="bi bi-search me-2"></i>View Scholarships
-            </a>
+<section class="py-5">
+    <div class="container">
+        <div class="dfs-cta text-center">
+            <h3 class="fw-bold text-white mb-3">Ready to Begin Your Journey?</h3>
+            <p class="mb-4" style="color:rgba(255,255,255,0.7);max-width:500px;margin:0 auto;">Join thousands of students who have achieved their dreams with our help.</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{% url 'users:register' %}" class="btn btn-dfs-gold btn-lg px-5">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Get Started
+                </a>
+                <a href="{% url 'scholarships:scholarship_list' %}" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-search me-2"></i>View Scholarships
+                </a>
+            </div>
         </div>
     </div>
 </section>
