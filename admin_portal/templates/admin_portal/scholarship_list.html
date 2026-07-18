@@ -1,0 +1,124 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}Scholarships{% endblock %}
+{% block page_title %}All Scholarships{% endblock %}
+
+{% block content %}
+<div class="table-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-mortarboard me-2"></i>Scholarships</span>
+        <div class="d-flex gap-2">
+            <a href="{% url 'admin_portal:scholarship_create' %}" class="btn btn-sm btn-success">
+                <i class="bi bi-plus-lg me-1"></i>Add New Scholarship
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-3">
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Search..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <select name="degree" class="form-select form-select-sm">
+                    <option value="">All Degrees</option>
+                    {% for value, label in degree_choices %}
+                    <option value="{{ value }}" {% if degree_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">All Types</option>
+                    {% for value, label in type_choices %}
+                    <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-sm btn-admin w-100"><i class="bi bi-funnel"></i></button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>City</th>
+                        <th>Major</th>
+                        <th>Degree</th>
+                        <th>Type</th>
+                        <th>Price</th>
+                        <th>Deadline</th>
+                        <th>Apps</th>
+                        <th>Completed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in scholarships %}
+                    <tr>
+                        <td>{{ s.id }}</td>
+                        <td>
+                            <a href="{% url 'admin_portal:scholarship_detail' s.id %}" class="fw-semibold text-decoration-none">{{ s.name }}</a>
+                        </td>
+                        <td>{{ s.city }}</td>
+                        <td>{{ s.major }}</td>
+                        <td><span class="badge bg-secondary">{{ s.get_degree_display }}</span></td>
+                        <td><span class="badge bg-info">{{ s.get_scholarship_type_display }}</span></td>
+                        <td class="fw-bold">${{ s.price }}</td>
+                        <td>{{ s.deadline|date:"M d, Y" }}</td>
+                        <td><span class="badge bg-primary">{{ s.app_count }}</span></td>
+                        <td><span class="badge bg-success">{{ s.completed_count }}</span></td>
+                        <td>
+                            <a href="{% url 'admin_portal:scholarship_edit' s.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ s.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="11" class="text-center text-muted py-4">No scholarships found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if scholarships.has_other_pages %}
+        <nav class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if scholarships.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ scholarships.previous_page_number }}">Previous</a></li>{% endif %}
+                <li class="page-item active"><span class="page-link">Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}</span></li>
+                {% if scholarships.has_next %}<li class="page-item"><a class="page-link" href="?page={{ scholarships.next_page_number }}">Next</a></li>{% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+{% for s in scholarships %}
+<div class="modal fade" id="deleteModal{{ s.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'admin_portal:scholarship_delete' s.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Scholarship</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>"{{ s.name }}"</strong>?</p>
+                    <p class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i>This will also delete {{ s.app_count }} associated application(s). This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

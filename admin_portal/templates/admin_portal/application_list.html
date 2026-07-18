@@ -1,0 +1,117 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}Applications{% endblock %}
+{% block page_title %}All Applications{% endblock %}
+
+{% block content %}
+<div class="table-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-file-earmark-text me-2"></i>Applications</span>
+        <div class="d-flex gap-2">
+            <a href="{% url 'admin_portal:export_applications_csv' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-download me-1"></i>Export CSV
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-3">
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Search..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    {% for status, label in status_choices %}
+                    <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="office" class="form-select form-select-sm">
+                    <option value="">All Offices</option>
+                    {% for office in offices %}
+                    <option value="{{ office.id }}" {% if office_filter == office.id|stringformat:"s" %}selected{% endif %}>{{ office.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_from" class="form-control form-control-sm" placeholder="From" value="{{ date_from }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_to" class="form-control form-control-sm" placeholder="To" value="{{ date_to }}">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-sm btn-admin w-100"><i class="bi bi-funnel"></i></button>
+            </div>
+        </form>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" class="form-check-input" id="selectAll"></th>
+                        <th>App ID</th>
+                        <th>Student</th>
+                        <th>Scholarship</th>
+                        <th>Office</th>
+                        <th>Agent</th>
+                        <th>HQ</th>
+                        <th>Status</th>
+                        <th>Applied</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td><input type="checkbox" class="form-check-input app-checkbox" value="{{ app.app_id }}"></td>
+                        <td><strong>#{{ app.app_id }}</strong></td>
+                        <td>
+                            {{ app.user.get_full_name|default:app.user.username }}<br>
+                            <small class="text-muted">{{ app.user.email }}</small>
+                        </td>
+                        <td>{{ app.scholarship.name|truncatechars:30 }}</td>
+                        <td>{{ app.office.name|default:"—" }}</td>
+                        <td>{{ app.assigned_agent.username|default:"—" }}</td>
+                        <td>{{ app.assigned_hq.username|default:"—" }}</td>
+                        <td><span class="badge badge-status status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+                        <td class="text-muted small">{{ app.applied_date|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'admin_portal:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="10" class="text-center text-muted py-4">No applications found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if applications.has_other_pages %}
+        <nav class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if applications.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ applications.previous_page_number }}&{{ request.GET.urlencode|cut:"page="|cut:applications.number }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">Page {{ applications.number }} of {{ applications.paginator.num_pages }}</span></li>
+                {% if applications.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ applications.next_page_number }}&{{ request.GET.urlencode }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('selectAll')?.addEventListener('change', function() {
+        document.querySelectorAll('.app-checkbox').forEach(cb => cb.checked = this.checked);
+    });
+</script>
+{% endblock %}

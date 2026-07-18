@@ -88,6 +88,9 @@
             <a class="nav-link {% if 'application' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'agent:application_list' %}">
                 <i class="bi bi-file-earmark-text"></i> Applications
             </a>
+            <a class="nav-link {% if 'scholarship' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'agent:scholarship_list' %}">
+                <i class="bi bi-mortarboard"></i> Scholarships
+            </a>
             <a class="nav-link {% if request.resolver_match.url_name == 'wallet' %}active{% endif %}" href="{% url 'agent:wallet' %}">
                 <i class="bi bi-wallet2"></i> Wallet
             </a>

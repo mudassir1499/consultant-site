@@ -1,0 +1,111 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}{% if is_create %}Add Office{% else %}Edit {{ office.name }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_create %}Add New Office{% else %}Edit Office: {{ office.name }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-building me-2"></i>Office Details</div>
+            <div class="card-body">
+                <form method="post" action="{% if is_create %}{% url 'admin_portal:office_create' %}{% else %}{% url 'admin_portal:office_edit' office.id %}{% endif %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" value="{{ office.name }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Code <span class="text-danger">*</span></label>
+                            <input type="text" name="code" class="form-control" value="{{ office.code }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" value="{{ office.city }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Country</label>
+                            <input type="text" name="country" class="form-control" value="{{ office.country }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone" class="form-control" value="{{ office.phone }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ office.email }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <textarea name="address" class="form-control" rows="2">{{ office.address }}</textarea>
+                        </div>
+                        <div class="col-md-6 form-check ms-2">
+                            <input type="checkbox" name="is_default" class="form-check-input" id="is_default" {% if office.is_default %}checked{% endif %}>
+                            <label class="form-check-label" for="is_default">Default / fallback office</label>
+                        </div>
+                        <div class="col-md-6 form-check ms-2">
+                            <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {% if office.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">Active</label>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>{% if is_create %}Create Office{% else %}Save Changes{% endif %}</button>
+                            <a href="{% url 'admin_portal:office_list' %}" class="btn btn-secondary">Cancel</a>
+                            {% if not is_create %}
+                            <form method="post" action="{% url 'admin_portal:office_delete' office.id %}" class="d-inline float-end" onsubmit="return confirm('Delete this office? Applications will be unassigned.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if not is_create %}
+    <div class="col-lg-5">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-signpost-split me-2"></i>Routing Rules (Regions)</div>
+            <div class="card-body">
+                <form method="post" action="{% url 'admin_portal:office_region_add' office.id %}" class="row g-2 mb-3">
+                    {% csrf_token %}
+                    <div class="col-3"><input type="text" name="country_code" class="form-control form-control-sm" placeholder="TR" maxlength="3" required></div>
+                    <div class="col-4"><input type="text" name="country_name" class="form-control form-control-sm" placeholder="Turkey" required></div>
+                    <div class="col-3"><input type="text" name="city" class="form-control form-control-sm" placeholder="City (opt)"></div>
+                    <div class="col-2"><button type="submit" class="btn btn-sm btn-admin w-100"><i class="bi bi-plus"></i></button></div>
+                </form>
+                <ul class="list-group list-group-flush">
+                    {% for r in regions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span><code>{{ r.country_code }}</code> {{ r.country_name }}{% if r.city %} ({{ r.city }}){% endif %}</span>
+                        <form method="post" action="{% url 'admin_portal:office_region_delete' r.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger py-0"><i class="bi bi-x"></i></button>
+                        </form>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted px-0">No routing rules yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-people me-2"></i>Assigned Staff ({{ staff.count }})</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for s in staff %}
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span>{{ s.get_full_name|default:s.username }}</span>
+                        <span class="badge bg-secondary">{{ s.get_role_display }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted px-0">No staff assigned.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

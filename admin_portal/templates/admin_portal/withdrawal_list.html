@@ -1,0 +1,109 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}Withdrawals{% endblock %}
+{% block page_title %}Withdrawal Requests{% endblock %}
+
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-wallet2 me-2"></i>Withdrawal Requests</span>
+        <div class="d-flex gap-2">
+            <span class="badge bg-warning">{{ pending_count }} pending</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-sm btn-admin w-100"><i class="bi bi-funnel"></i></button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr><th>ID</th><th>User</th><th>Role</th><th>Amount</th><th>Status</th><th>Requested</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for withdrawal in withdrawals %}
+                    <tr>
+                        <td>#{{ withdrawal.id }}</td>
+                        <td>{{ withdrawal.wallet.user.get_full_name|default:withdrawal.wallet.user.username }}</td>
+                        <td><span class="badge bg-info">{{ withdrawal.wallet.user.get_role_display }}</span></td>
+                        <td class="fw-bold">${{ withdrawal.amount }}</td>
+                        <td>
+                            {% if withdrawal.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif withdrawal.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% else %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ withdrawal.requested_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if withdrawal.status == 'pending' %}
+                            <div class="d-flex gap-1">
+                                <form method="post" action="{% url 'admin_portal:approve_withdrawal' withdrawal.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve withdrawal of ${{ withdrawal.amount }}?')"><i class="bi bi-check-lg"></i></button>
+                                </form>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectWithdrawalModal{{ withdrawal.id }}"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">{{ withdrawal.processed_at|date:"M d, Y"|default:"—" }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No withdrawal requests found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if withdrawals.has_other_pages %}
+        <nav class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if withdrawals.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ withdrawals.previous_page_number }}">Previous</a></li>{% endif %}
+                <li class="page-item active"><span class="page-link">Page {{ withdrawals.number }} of {{ withdrawals.paginator.num_pages }}</span></li>
+                {% if withdrawals.has_next %}<li class="page-item"><a class="page-link" href="?page={{ withdrawals.next_page_number }}">Next</a></li>{% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+{% for withdrawal in withdrawals %}
+{% if withdrawal.status == 'pending' %}
+<div class="modal fade" id="rejectWithdrawalModal{{ withdrawal.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'admin_portal:reject_withdrawal' withdrawal.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Withdrawal #{{ withdrawal.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Reject withdrawal of <strong>${{ withdrawal.amount }}</strong> by <strong>{{ withdrawal.wallet.user.username }}</strong>?</p>
+                    <div class="mb-3">
+                        <label class="form-label">Reason</label>
+                        <textarea name="reason" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

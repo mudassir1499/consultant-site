@@ -1,0 +1,127 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}{% if is_create %}Add User{% else %}Edit {{ target.username }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_create %}Add New User{% else %}Edit User: {{ target.username }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-person-plus me-2"></i>Account Details</div>
+            <div class="card-body">
+                <form method="post" action="{% if is_create %}{% url 'admin_portal:user_create' %}{% else %}{% url 'admin_portal:user_edit' target.id %}{% endif %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Username <span class="text-danger">*</span></label>
+                            {% if is_create %}
+                            <input type="text" name="username" class="form-control" value="{{ target.username }}" required>
+                            {% else %}
+                            <input type="text" class="form-control" value="{{ target.username }}" disabled>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ target.email }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ target.first_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ target.last_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone" class="form-control" value="{{ target.phone }}">
+                        </div>
+                        {% if is_create %}
+                        <div class="col-md-6">
+                            <label class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="text" name="password" class="form-control" required>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-4">
+                            <label class="form-label">Role <span class="text-danger">*</span></label>
+                            <select name="role" class="form-select" required>
+                                {% for value, label in role_choices %}
+                                <option value="{{ value }}" {% if target.role == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if target.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Office (for office staff / agents)</label>
+                            <select name="office" class="form-select">
+                                <option value="">— None —</option>
+                                {% for o in offices %}
+                                <option value="{{ o.id }}" {% if target.office_id == o.id %}selected{% endif %}>{{ o.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" value="{{ target.city }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Country</label>
+                            <input type="text" name="country" class="form-control" value="{{ target.country }}">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>{% if is_create %}Create User{% else %}Save Changes{% endif %}</button>
+                            <a href="{% url 'admin_portal:student_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if not is_create %}
+    <div class="col-lg-4">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-key me-2"></i>Reset Password</div>
+            <div class="card-body">
+                <form method="post" action="{% url 'admin_portal:user_reset_password' target.id %}">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" name="new_password" class="form-control" placeholder="New password (min 8 chars)" required>
+                        <button type="submit" class="btn btn-warning">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-toggle-on me-2"></i>Account Status</div>
+            <div class="card-body">
+                <p class="mb-2">Current: <span class="badge {% if target.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ target.get_status_display }}</span></p>
+                <form method="post" action="{% url 'admin_portal:user_toggle_status' target.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-{% if target.status == 'active' %}warning{% else %}success{% endif %} w-100">
+                        {% if target.status == 'active' %}Suspend Account{% else %}Activate Account{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% if not target.is_superuser %}
+        <div class="table-card border-danger">
+            <div class="card-header text-danger"><i class="bi bi-trash me-2"></i>Danger Zone</div>
+            <div class="card-body">
+                <form method="post" action="{% url 'admin_portal:user_delete' target.id %}" onsubmit="return confirm('Delete this user permanently? This cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger w-100">Delete User</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

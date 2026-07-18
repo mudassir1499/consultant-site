@@ -1,0 +1,334 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}Application #{{ application.app_id }}{% endblock %}
+{% block page_title %}Application #{{ application.app_id }}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Student Info -->
+    <div class="col-lg-4">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-person me-2"></i>Student Information</div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ application.user.get_full_name|default:application.user.username }}</p>
+                <p><strong>Email:</strong> {{ application.user.email }}</p>
+                <p><strong>Phone:</strong> {{ application.user.phone|default:"—" }}</p>
+                <p><strong>Country:</strong> {{ application.user.country|default:"—" }}</p>
+                <p><strong>City:</strong> {{ application.user.city|default:"—" }}</p>
+                <p><strong>Office:</strong> {{ application.office.name|default:"Not assigned" }}</p>
+                <p><strong>Registered:</strong> {{ application.user.date_joined|date:"M d, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-mortarboard me-2"></i>Scholarship Details</div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ application.scholarship.name }}</p>
+                <p><strong>Degree:</strong> {{ application.scholarship.get_degree_display }}</p>
+                <p><strong>Major:</strong> {{ application.scholarship.major }}</p>
+                <p><strong>City:</strong> {{ application.scholarship.city }}</p>
+                <p><strong>Language:</strong> {{ application.scholarship.language }}</p>
+                <p><strong>Type:</strong> {{ application.scholarship.get_scholarship_type_display }}</p>
+                <p><strong>Price:</strong> ${{ application.scholarship.price }}</p>
+                <p><strong>Deadline:</strong> {{ application.scholarship.deadline|date:"M d, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-gear me-2"></i>Actions</div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_portal:download_documents' application.app_id %}" class="btn btn-primary">
+                        <i class="bi bi-file-zip me-2"></i>Download All Documents (ZIP)
+                    </a>
+                    {% if application.status == 'under_review' %}
+                    <form method="post" action="{% url 'admin_portal:verify_documents' application.app_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle me-2"></i>Verify Documents
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if application.status == 'documents_verified' %}
+                    <form method="post" action="{% url 'admin_portal:verify_payment' application.app_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-credit-card me-2"></i>Verify Payment
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if application.status in 'submitted,under_review,documents_verified,payment_verified' %}
+                    <button class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#approveModal">
+                        <i class="bi bi-hand-thumbs-up me-2"></i>Approve Application
+                    </button>
+                    <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="bi bi-x-circle me-2"></i>Reject Application
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents & Status -->
+    <div class="col-lg-8">
+        <!-- Status Timeline -->
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-clock-history me-2"></i>Status Timeline</div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for history in status_history %}
+                    <div class="timeline-item">
+                        <strong>{{ history.get_new_status_display }}</strong>
+                        <span class="text-muted small">— {{ history.changed_by.username|default:"System" }}</span>
+                        <p class="text-muted small mb-0">{{ history.changed_at|date:"M d, Y H:i" }}</p>
+                        {% if history.note %}<p class="small fst-italic text-muted mb-0">{{ history.note }}</p>{% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No status history recorded.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="table-card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-folder me-2"></i>Documents</span>
+                <a href="{% url 'admin_portal:download_documents' application.app_id %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-download me-1"></i>Download ZIP
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    {% for label, file in documents.items %}
+                    <div class="col-md-6">
+                        <div class="border rounded p-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-file-earmark-text fs-4 text-primary"></i>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold small">{{ label }}</div>
+                                {% if file and file.name %}
+                                <div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>Uploaded</div>
+                                <a href="{{ file.url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                {% else %}
+                                <div class="text-danger small"><i class="bi bi-x-circle-fill me-1"></i>Missing</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-credit-card me-2"></i>Payment</div>
+            <div class="card-body">
+                {% if payments %}
+                <table class="table table-sm">
+                    <thead><tr><th>Amount</th><th>Status</th><th>Date</th><th>Transaction ID</th><th>Receipt</th></tr></thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>${{ payment.amount }}</td>
+                            <td><span class="badge badge-status status-{{ payment.payment_status }}">{{ payment.get_payment_status_display }}</span></td>
+                            <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                            <td>{{ payment.transaction_id|default:"—" }}</td>
+                            <td>
+                                {% if payment.receipt_pdf %}
+                                <a href="{{ payment.receipt_pdf.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View Receipt
+                                </a>
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No payment recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Admission Letters -->
+        <div class="table-card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-envelope-paper me-2"></i>Admission Letters</span>
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#uploadLetterModal">
+                    <i class="bi bi-upload me-1"></i>Upload Letter
+                </button>
+            </div>
+            <div class="card-body">
+                {% if admission_letters %}
+                <table class="table table-sm">
+                    <thead><tr><th>File</th><th>Status</th><th>Uploaded By</th><th>Date</th><th></th></tr></thead>
+                    <tbody>
+                        {% for letter in admission_letters %}
+                        <tr>
+                            <td><a href="{{ letter.file.url }}" target="_blank">{{ letter.file.name|cut:"admission_letters/" }}</a></td>
+                            <td><span class="badge badge-status status-{{ letter.status }}">{{ letter.get_status_display }}</span></td>
+                            <td>{{ letter.uploaded_by.username|default:"—" }}</td>
+                            <td>{{ letter.uploaded_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if letter.status == 'revision_requested' %}
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#reuploadLetterModal{{ letter.id }}">Re-upload</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No admission letters uploaded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- JW02 Forms -->
+        <div class="table-card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-earmark-ruled me-2"></i>JW02 Forms</span>
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#uploadJW02Modal">
+                    <i class="bi bi-upload me-1"></i>Upload JW02
+                </button>
+            </div>
+            <div class="card-body">
+                {% if jw02_forms %}
+                <table class="table table-sm">
+                    <thead><tr><th>File</th><th>Status</th><th>Uploaded By</th><th>Date</th><th></th></tr></thead>
+                    <tbody>
+                        {% for jw02 in jw02_forms %}
+                        <tr>
+                            <td><a href="{{ jw02.file.url }}" target="_blank">{{ jw02.file.name|cut:"jw02_forms/" }}</a></td>
+                            <td><span class="badge badge-status status-{{ jw02.status }}">{{ jw02.get_status_display }}</span></td>
+                            <td>{{ jw02.uploaded_by.username|default:"—" }}</td>
+                            <td>{{ jw02.uploaded_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if jw02.status == 'revision_requested' %}
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#reuploadJW02Modal{{ jw02.id }}">Re-upload</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No JW02 forms uploaded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'admin_portal:approve_application' application.app_id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Approve Application #{{ application.app_id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Deadline (days)</label>
+                        <input type="number" name="deadline_days" class="form-control" value="10" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assign to HQ</label>
+                        <select name="assigned_hq" class="form-select">
+                            <option value="">— Select HQ —</option>
+                            {% for hq in available_hq %}
+                            <option value="{{ hq.id }}">{{ hq.get_full_name|default:hq.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Approve</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'admin_portal:reject_application' application.app_id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Application #{{ application.app_id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea name="rejection_reason" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Letter Modal -->
+<div class="modal fade" id="uploadLetterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'admin_portal:upload_admission_letter' application.app_id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Admission Letter</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Admission Letter File (PDF/Image)</label>
+                        <input type="file" name="admission_letter" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload JW02 Modal -->
+<div class="modal fade" id="uploadJW02Modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'admin_portal:upload_jw02' application.app_id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload JW02 Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">JW02 Form File (PDF/Image)</label>
+                        <input type="file" name="jw02_form" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

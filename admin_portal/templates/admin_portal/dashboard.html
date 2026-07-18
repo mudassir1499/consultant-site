@@ -1,0 +1,201 @@
+{% extends 'admin_portal/base.html' %}
+{% load admin_extras %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_apps }}</div>
+            <div class="stat-label">Total Applications</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #0d6efd;">
+            <div class="stat-value" style="color: #0d6efd;">{{ apps_today }}</div>
+            <div class="stat-label">Today</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #198754;">
+            <div class="stat-value" style="color: #198754;">{{ apps_this_week }}</div>
+            <div class="stat-label">This Week</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #dc3545;">
+            <div class="stat-value" style="color: #dc3545;">${{ total_revenue }}</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #6f42c1;">
+            <div class="stat-value" style="color: #6f42c1;">{{ total_users }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #fd7e14;">
+            <div class="stat-value" style="color: #fd7e14;">{{ pending_reviews }}</div>
+            <div class="stat-label">Pending Reviews</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #20c997;">
+            <div class="stat-value" style="color: #20c997;">{{ pending_payments }}</div>
+            <div class="stat-label">Pending Payments</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: #6610f2;">
+            <div class="stat-value" style="color: #6610f2;">{{ pending_withdrawals }}</div>
+            <div class="stat-label">Pending Withdrawals</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Status Breakdown -->
+    <div class="col-lg-6">
+        <div class="table-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-pie-chart me-2"></i>Application Status Breakdown</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th class="text-end">Count</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for status, label in status_choices %}
+                        {% if status in status_counts %}
+                        <tr>
+                            <td><span class="badge badge-status status-{{ status }}">{{ label }}</span></td>
+                            <td class="text-end fw-bold">{{ status_counts|get:status }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'admin_portal:application_list' %}?status={{ status }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Breakdown -->
+    <div class="col-lg-6">
+        <div class="table-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-people-fill me-2"></i>Users by Role</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th class="text-end">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for role, count in users_by_role.items %}
+                        <tr>
+                            <td>{{ role|title }}</td>
+                            <td class="text-end fw-bold">{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-2">
+    <!-- Pending Actions -->
+    <div class="col-lg-8">
+        <div class="table-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2"></i>Recent Applications</span>
+                <a href="{% url 'admin_portal:application_list' %}" class="btn btn-sm btn-admin">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>App ID</th>
+                            <th>Student</th>
+                            <th>Scholarship</th>
+                            <th>Office</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in recent_applications %}
+                        <tr>
+                            <td>#{{ app.app_id }}</td>
+                            <td>{{ app.user.get_full_name|default:app.user.username }}</td>
+                            <td>{{ app.scholarship.name|truncatechars:30 }}</td>
+                            <td>{{ app.office.name|default:"—" }}</td>
+                            <td><span class="badge badge-status status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+                            <td class="text-muted small">{{ app.applied_date|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'admin_portal:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center text-muted py-4">No recent applications</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="table-card">
+            <div class="card-header">
+                <i class="bi bi-lightning-charge me-2"></i>Quick Actions
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_portal:scholarship_list' %}" class="btn btn-outline-dark">
+                        <i class="bi bi-mortarboard me-2"></i>Scholarships ({{ total_scholarships }})
+                    </a>
+                    <a href="{% url 'admin_portal:application_list' %}?status=submitted" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-2"></i>Review Submitted ({{ pending_reviews }})
+                    </a>
+                    <a href="{% url 'admin_portal:application_list' %}?status=documents_verified" class="btn btn-outline-success">
+                        <i class="bi bi-credit-card me-2"></i>Verify Payments ({{ pending_payments }})
+                    </a>
+                    <a href="{% url 'admin_portal:application_list' %}?status=admission_letter_uploaded" class="btn btn-outline-purple" style="color: #6f42c1; border-color: #6f42c1;">
+                        <i class="bi bi-envelope-paper me-2"></i>Review Letters ({{ pending_letters }})
+                    </a>
+                    <a href="{% url 'admin_portal:application_list' %}?status=jw02_uploaded" class="btn btn-outline-info">
+                        <i class="bi bi-file-earmark-ruled me-2"></i>Review JW02 ({{ pending_jw02s }})
+                    </a>
+                    <a href="{% url 'admin_portal:withdrawal_list' %}" class="btn btn-outline-warning">
+                        <i class="bi bi-wallet2 me-2"></i>Withdrawals ({{ pending_withdrawals }})
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dfs-utils.js' %}"></script>
+{% endblock %}

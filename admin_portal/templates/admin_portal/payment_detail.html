@@ -1,0 +1,71 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}Payment #{{ payment.application_payment_id }}{% endblock %}
+{% block page_title %}Payment #{{ payment.application_payment_id }}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-credit-card me-2"></i>Payment Details</div>
+            <div class="card-body">
+                <table class="table">
+                    <tr><th>Payment ID</th><td>#{{ payment.application_payment_id }}</td></tr>
+                    <tr><th>Application</th><td><a href="{% url 'admin_portal:application_detail' payment.application.app_id %}">#{{ payment.application.app_id }}</a> — {{ payment.application.scholarship.name }}</td></tr>
+                    <tr><th>Student</th><td>{{ payment.application.user.get_full_name|default:payment.application.user.username }} ({{ payment.application.user.email }})</td></tr>
+                    <tr><th>Amount</th><td class="fw-bold">${{ payment.amount }}</td></tr>
+                    <tr><th>Status</th><td><span class="badge badge-status status-{{ payment.payment_status }}">{{ payment.get_payment_status_display }}</span></td></tr>
+                    <tr><th>Transaction ID</th><td class="font-monospace">{{ payment.transaction_id|default:"—" }}</td></tr>
+                    <tr><th>Payment Date</th><td>{{ payment.payment_date|date:"M d, Y H:i" }}</td></tr>
+                    <tr><th>Reviewed By</th><td>{{ payment.reviewed_by.username|default:"—" }}</td></tr>
+                    <tr><th>Reviewed At</th><td>{{ payment.reviewed_at|date:"M d, Y H:i"|default:"—" }}</td></tr>
+                    <tr><th>Review Note</th><td>{{ payment.review_note|default:"—" }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-receipt me-2"></i>Receipt</div>
+            <div class="card-body text-center">
+                {% if payment.receipt_pdf %}
+                <p><a href="{{ payment.receipt_pdf.url }}" target="_blank" class="btn btn-primary">
+                    <i class="bi bi-eye me-2"></i>View Receipt
+                </a></p>
+                <p class="text-muted small">{{ payment.receipt_pdf.name }}</p>
+                {% else %}
+                <p class="text-muted">No receipt uploaded.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-gear me-2"></i>Actions</div>
+            <div class="card-body">
+                {% if can_review %}
+                <div class="d-grid gap-2">
+                    <form method="post" action="{% url 'admin_portal:approve_payment' payment.application_payment_id %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <input type="text" name="review_note" class="form-control form-control-sm" placeholder="Review note (optional)">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle me-2"></i>Approve Payment
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'admin_portal:reject_payment' payment.application_payment_id %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <input type="text" name="review_note" class="form-control form-control-sm" placeholder="Rejection reason (required)">
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bi bi-x-circle me-2"></i>Reject Payment
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <p class="text-muted">This payment has already been reviewed.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

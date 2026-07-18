@@ -1,0 +1,97 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}{% if is_create %}Add Scholarship{% else %}Edit {{ scholarship.name }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_create %}Add New Scholarship{% else %}Edit Scholarship{% endif %}{% endblock %}
+
+{% block content %}
+<div class="table-card">
+    <div class="card-header">
+        <i class="bi bi-mortarboard me-2"></i>{% if is_create %}Add Scholarship{% else %}Edit {{ scholarship.name }}{% endif %}
+    </div>
+    <div class="card-body">
+        <form method="post" {% if not is_create %}action="{% url 'admin_portal:scholarship_edit' scholarship.id %}"{% endif %}>
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Scholarship Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" value="{{ scholarship.name|default:'' }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Degree <span class="text-danger">*</span></label>
+                    <select name="degree" class="form-select" required>
+                        <option value="">Select...</option>
+                        {% for value, label in degree_choices %}
+                        <option value="{{ value }}" {% if scholarship.degree == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Scholarship Type <span class="text-danger">*</span></label>
+                    <select name="scholarship_type" class="form-select" required>
+                        <option value="">Select...</option>
+                        {% for value, label in type_choices %}
+                        <option value="{{ value }}" {% if scholarship.scholarship_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">City <span class="text-danger">*</span></label>
+                    <input type="text" name="city" class="form-control" value="{{ scholarship.city|default:'' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Major <span class="text-danger">*</span></label>
+                    <input type="text" name="major" class="form-control" value="{{ scholarship.major|default:'' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Language <span class="text-danger">*</span></label>
+                    <input type="text" name="language" class="form-control" value="{{ scholarship.language|default:'' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Semester <span class="text-danger">*</span></label>
+                    <select name="semester" class="form-select" required>
+                        <option value="">Select...</option>
+                        {% for value, label in semester_choices %}
+                        <option value="{{ value }}" {% if scholarship.semester == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Deadline <span class="text-danger">*</span></label>
+                    <input type="date" name="deadline" class="form-control" value="{{ scholarship.deadline|date:'Y-m-d'|default:'' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Price (USD) <span class="text-danger">*</span></label>
+                    <input type="number" name="price" class="form-control" step="0.01" min="0" value="{{ scholarship.price|default:'0' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Agent Commission (USD)</label>
+                    <input type="number" name="agent_commission" class="form-control" step="0.01" min="0" value="{{ scholarship.agent_commission|default:'0' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">HQ Commission (USD)</label>
+                    <input type="number" name="hq_commission" class="form-control" step="0.01" min="0" value="{{ scholarship.hq_commission|default:'0' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea name="description" class="form-control" rows="4" required>{{ scholarship.description|default:'' }}</textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Eligibility <span class="text-danger">*</span></label>
+                    <textarea name="eligibility" class="form-control" rows="3" required>{{ scholarship.eligibility|default:'' }}</textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Note (optional)</label>
+                    <textarea name="note" class="form-control" rows="2">{{ scholarship.note|default:'' }}</textarea>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>{% if is_create %}Create Scholarship{% else %}Save Changes{% endif %}
+                        </button>
+                        <a href="{% url 'admin_portal:scholarship_list' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

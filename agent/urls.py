@@ -27,6 +27,11 @@ urlpatterns = [
     path('jw02/<int:app_id>/approve/', views.approve_jw02, name='approve_jw02'),
     path('jw02/<int:app_id>/request-revision/', views.request_jw02_revision, name='request_jw02_revision'),
 
+    # Scholarships (agents can add / edit the global scholarship pool)
+    path('scholarships/', views.scholarship_list, name='scholarship_list'),
+    path('scholarships/create/', views.scholarship_create, name='scholarship_create'),
+    path('scholarships/<int:scholarship_id>/edit/', views.scholarship_edit, name='scholarship_edit'),
+
     # Wallet
     path('wallet/', views.wallet_page, name='wallet'),
     path('wallet/withdraw/', views.request_withdrawal, name='request_withdrawal'),

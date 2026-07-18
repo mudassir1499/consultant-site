@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Portal{% endblock %} — DFS Education</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/dfs-shared.css' %}" rel="stylesheet">
+    <style>
+        :root {
+            --admin-sidebar: #0F2A4A;
+            --admin-sidebar-hover: #1B3A5C;
+            --admin-gold: #D4A843;
+            --admin-bg: #F4F7FA;
+        }
+        body { background: var(--admin-bg); font-family: 'Inter', sans-serif; }
+        .admin-sidebar {
+            width: 260px; min-height: 100vh; background: var(--admin-sidebar);
+            position: fixed; left: 0; top: 0; z-index: 1000; overflow-y: auto;
+        }
+        .admin-sidebar .brand {
+            padding: 1.5rem; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-sidebar .brand h5 { margin: 0; font-weight: 700; }
+        .admin-sidebar .brand small { color: var(--admin-gold); font-size: 0.75rem; }
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.7); padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 0.75rem;
+            transition: all 0.2s; border-left: 3px solid transparent;
+        }
+        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active {
+            color: #fff; background: var(--admin-sidebar-hover); border-left-color: var(--admin-gold);
+        }
+        .admin-sidebar .nav-link i { font-size: 1.1rem; width: 24px; text-align: center; }
+        .admin-main { margin-left: 260px; padding: 1.5rem; }
+        .admin-header {
+            background: #fff; border-radius: 0.75rem; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center;
+        }
+        .stat-card {
+            background: #fff; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--admin-gold);
+        }
+        .stat-card .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--admin-sidebar); }
+        .stat-card .stat-label { font-size: 0.875rem; color: #6c757d; }
+        .table-card {
+            background: #fff; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .table-card .card-header {
+            background: transparent; border-bottom: 1px solid #e9ecef; padding: 1rem 1.25rem;
+            font-weight: 600; color: var(--admin-sidebar);
+        }
+        .badge-status { font-size: 0.75rem; padding: 0.35em 0.65em; }
+        .status-draft { background: #e2e3e5; color: #41464b; }
+        .status-submitted { background: #cfe2ff; color: #084298; }
+        .status-under_review { background: #fff3cd; color: #664d03; }
+        .status-documents_verified { background: #d1e7dd; color: #0f5132; }
+        .status-payment_verified { background: #d1e7dd; color: #0f5132; }
+        .status-approved { background: #0d6efd; color: #fff; }
+        .status-in_progress { background: #ffc107; color: #000; }
+        .status-admission_letter_uploaded { background: #6f42c1; color: #fff; }
+        .status-admission_letter_approved { background: #198754; color: #fff; }
+        .status-jw02_uploaded { background: #6f42c1; color: #fff; }
+        .status-jw02_approved { background: #198754; color: #fff; }
+        .status-complete { background: #198754; color: #fff; }
+        .status-rejected { background: #dc3545; color: #fff; }
+        .status-letter_pending { background: #fd7e14; color: #fff; }
+        .status-jw02_pending { background: #fd7e14; color: #fff; }
+        .btn-admin { background: var(--admin-sidebar); color: #fff; border: none; }
+        .btn-admin:hover { background: var(--admin-sidebar-hover); color: #fff; }
+        .document-preview { max-width: 120px; max-height: 80px; border-radius: 0.375rem; border: 1px solid #dee2e6; }
+        .timeline { position: relative; padding-left: 1.5rem; }
+        .timeline::before {
+            content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: #dee2e6;
+        }
+        .timeline-item { position: relative; margin-bottom: 1rem; }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -1.25rem; top: 0.25rem; width: 10px; height: 10px;
+            border-radius: 50%; background: var(--admin-gold); border: 2px solid #fff;
+        }
+        @media (max-width: 991px) {
+            .admin-sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .admin-sidebar.show { transform: translateX(0); }
+            .admin-main { margin-left: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="admin-sidebar" id="adminSidebar">
+        <div class="brand">
+            <h5><i class="bi bi-shield-lock me-2"></i>Admin Portal</h5>
+            <small>DFS Education</small>
+        </div>
+        <div class="nav flex-column">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'admin_portal:dashboard' %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'application_list' %}active{% endif %}" href="{% url 'admin_portal:application_list' %}">
+                <i class="bi bi-file-earmark-text"></i> Applications
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'scholarship_list' %}active{% endif %}" href="{% url 'admin_portal:scholarship_list' %}">
+                <i class="bi bi-mortarboard"></i> Scholarships
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'payment_list' %}active{% endif %}" href="{% url 'admin_portal:payment_list' %}">
+                <i class="bi bi-credit-card"></i> Payments
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'student_list' %}active{% endif %}" href="{% url 'admin_portal:student_list' %}">
+                <i class="bi bi-people"></i> Students
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'office_list' %}active{% endif %}" href="{% url 'admin_portal:office_list' %}">
+                <i class="bi bi-building"></i> Offices
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'agent_list' %}active{% endif %}" href="{% url 'admin_portal:agent_list' %}">
+                <i class="bi bi-person-badge"></i> Agents
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'hq_list' %}active{% endif %}" href="{% url 'admin_portal:hq_list' %}">
+                <i class="bi bi-globe"></i> Headquarters
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'withdrawal_list' %}active{% endif %}" href="{% url 'admin_portal:withdrawal_list' %}">
+                <i class="bi bi-wallet2"></i> Withdrawals
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'bank_list' or request.resolver_match.url_name == 'bank_create' or request.resolver_match.url_name == 'bank_edit' %}active{% endif %}" href="{% url 'admin_portal:bank_list' %}">
+                <i class="bi bi-bank"></i> Bank Accounts
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'site_settings' %}active{% endif %}" href="{% url 'admin_portal:site_settings' %}">
+                <i class="bi bi-sliders"></i> Site Settings
+            </a>
+            <div class="mt-3 pt-3 border-top border-secondary">
+                <a class="nav-link" href="/admin/" target="_blank">
+                    <i class="bi bi-gear"></i> Django Admin
+                </a>
+                <a class="nav-link" href="{% url 'pages:home' %}">
+                    <i class="bi bi-box-arrow-left"></i> Back to Site
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="admin-header">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h5 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small"><i class="bi bi-person-circle me-1"></i>{{ request.user.username }}</span>
+                <form action="{% url 'users:logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-right"></i></button>
+                </form>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-dismiss alerts
+        document.querySelectorAll('.alert-dismissible').forEach(alert => {
+            setTimeout(() => {
+                const closeBtn = alert.querySelector('.btn-close');
+                if (closeBtn) closeBtn.click();
+            }, 5000);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

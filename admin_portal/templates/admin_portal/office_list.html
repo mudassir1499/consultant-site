@@ -1,0 +1,42 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}Offices{% endblock %}
+{% block page_title %}All Offices{% endblock %}
+
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-building me-2"></i>Offices</span>
+        <span>
+            <span class="badge bg-primary me-2">{{ offices.count }} total</span>
+            <a href="{% url 'admin_portal:office_create' %}" class="btn btn-sm btn-admin"><i class="bi bi-plus-lg me-1"></i>Add Office</a>
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr><th>ID</th><th>Name</th><th>Code</th><th>City</th><th>Country</th><th>Phone</th><th>Email</th><th>Default</th><th>Active</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for office in offices %}
+                    <tr>
+                        <td>{{ office.id }}</td>
+                        <td>{{ office.name }}</td>
+                        <td><code>{{ office.code }}</code></td>
+                        <td>{{ office.city|default:"—" }}</td>
+                        <td>{{ office.country|default:"—" }}</td>
+                        <td>{{ office.phone|default:"—" }}</td>
+                        <td>{{ office.email|default:"—" }}</td>
+                        <td>{% if office.is_default %}<span class="badge bg-primary">Default</span>{% else %}—{% endif %}</td>
+                        <td>{% if office.is_active %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+                        <td class="text-end"><a href="{% url 'admin_portal:office_edit' office.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="10" class="text-center text-muted py-4">No offices found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

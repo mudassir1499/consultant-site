@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'headquarters',
     'devtools',
     'blog',
+    'admin_portal',
 ]
 
 SITE_ID = 1

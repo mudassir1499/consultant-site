@@ -1,0 +1,99 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}{{ scholarship.name }}{% endblock %}
+{% block page_title %}{{ scholarship.name }}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="table-card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-info-circle me-2"></i>Details</span>
+                <a href="{% url 'admin_portal:scholarship_edit' scholarship.id %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr><th>ID</th><td>{{ scholarship.id }}</td></tr>
+                    <tr><th>Slug</th><td><code>{{ scholarship.slug }}</code></td></tr>
+                    <tr><th>Degree</th><td><span class="badge bg-secondary">{{ scholarship.get_degree_display }}</span></td></tr>
+                    <tr><th>Type</th><td><span class="badge bg-info">{{ scholarship.get_scholarship_type_display }}</span></td></tr>
+                    <tr><th>City</th><td>{{ scholarship.city }}</td></tr>
+                    <tr><th>Major</th><td>{{ scholarship.major }}</td></tr>
+                    <tr><th>Language</th><td>{{ scholarship.language }}</td></tr>
+                    <tr><th>Semester</th><td>{{ scholarship.get_semester_display }}</td></tr>
+                    <tr><th>Deadline</th><td>{{ scholarship.deadline|date:"M d, Y" }}</td></tr>
+                    <tr><th>Price</th><td class="fw-bold">${{ scholarship.price }}</td></tr>
+                    <tr><th>Agent Commission</th><td>${{ scholarship.agent_commission }}</td></tr>
+                    <tr><th>HQ Commission</th><td>${{ scholarship.hq_commission }}</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-graph-up me-2"></i>Stats</div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="stat-card" style="border-left-color: #0d6efd;">
+                            <div class="stat-value" style="color: #0d6efd;">{{ scholarship.app_count }}</div>
+                            <div class="stat-label">Total Applications</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card" style="border-left-color: #198754;">
+                            <div class="stat-value" style="color: #198754;">{{ scholarship.completed_count }}</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-text-left me-2"></i>Description</div>
+            <div class="card-body">
+                <p>{{ scholarship.description|linebreaks }}</p>
+            </div>
+        </div>
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-list-check me-2"></i>Eligibility</div>
+            <div class="card-body">
+                <p>{{ scholarship.eligibility|linebreaks }}</p>
+            </div>
+        </div>
+        {% if scholarship.note %}
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-sticky me-2"></i>Note</div>
+            <div class="card-body">
+                <p>{{ scholarship.note|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-file-earmark-text me-2"></i>Recent Applications</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>App ID</th><th>Student</th><th>Office</th><th>Status</th><th>Date</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td><a href="{% url 'admin_portal:application_detail' app.app_id %}">#{{ app.app_id }}</a></td>
+                            <td>{{ app.user.get_full_name|default:app.user.username }}</td>
+                            <td>{{ app.office.name|default:"—" }}</td>
+                            <td><span class="badge badge-status status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+                            <td>{{ app.applied_date|date:"M d, Y" }}</td>
+                            <td><a href="{% url 'admin_portal:application_detail' app.app_id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted py-4">No applications yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -40,6 +40,7 @@ urlpatterns = [
     path('hq/', include('headquarters.urls')),
     path('devtools/', include('devtools.urls')),
     path('blog/', include('blog.urls')),
+    path('admin-portal/', include('admin_portal.urls')),
 ]
 
 # Serve media & static files

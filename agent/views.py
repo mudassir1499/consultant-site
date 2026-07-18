@@ -2,7 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db import models
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
@@ -16,7 +16,7 @@ import logging
 from users.decorators import role_required
 from users.models import User
 from users.notifications import send_notification
-from scholarships.models import Application, AdmissionLetter, JW02Form
+from scholarships.models import Application, AdmissionLetter, JW02Form, scholarships
 from scholarships.utils import change_application_status
 from finance.models import application_payment, Wallet
 from finance.services import (
@@ -633,6 +633,128 @@ def export_applications_csv(request):
             app.deadline.strftime('%Y-%m-%d') if app.deadline else '',
         ])
     return response
+
+
+# ——— Scholarship Management ————————————————————————————————
+# Agents can add and edit scholarships in the shared global pool.
+# Commission fields (agent_commission / hq_commission) are intentionally
+# NOT editable here — they remain admin-controlled.
+
+def _scholarship_form_choices():
+    return {
+        'degree_choices': scholarships.DEGREE_CHOICES,
+        'type_choices': scholarships.SCHOLARSHIP_TYPE_CHOICES,
+        'semester_choices': scholarships.SEMESTER_CHOICES,
+    }
+
+
+@role_required('agent', login_url_override='agent:login')
+def scholarship_list(request):
+    """List all scholarships (global pool) with application counts."""
+    qs = scholarships.objects.annotate(
+        app_count=Count('application'),
+        completed_count=Count('application', filter=Q(application__status='complete')),
+    ).order_by('-deadline')
+
+    query = request.GET.get('q', '').strip()
+    degree_filter = request.GET.get('degree', '').strip()
+    type_filter = request.GET.get('type', '').strip()
+    if query:
+        qs = qs.filter(
+            Q(name__icontains=query) | Q(city__icontains=query) | Q(major__icontains=query)
+        )
+    if degree_filter:
+        qs = qs.filter(degree=degree_filter)
+    if type_filter:
+        qs = qs.filter(scholarship_type=type_filter)
+
+    paginator = Paginator(qs, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    context = {
+        'user': request.user,
+        'scholarships': page_obj,
+        'search_query': query,
+        'degree_filter': degree_filter,
+        'type_filter': type_filter,
+        'degree_choices': scholarships.DEGREE_CHOICES,
+        'type_choices': scholarships.SCHOLARSHIP_TYPE_CHOICES,
+    }
+    return render(request, 'agent/scholarship_list.html', context)
+
+
+def _apply_scholarship_fields(scholarship, request):
+    """Populate a scholarship instance from POST data (excludes commissions)."""
+    scholarship.name = request.POST.get('name', '').strip()
+    scholarship.description = request.POST.get('description', '').strip()
+    scholarship.city = request.POST.get('city', '').strip()
+    scholarship.major = request.POST.get('major', '').strip()
+    scholarship.degree = request.POST.get('degree', '')
+    scholarship.language = request.POST.get('language', '').strip()
+    scholarship.scholarship_type = request.POST.get('scholarship_type', '')
+    scholarship.deadline = request.POST.get('deadline', '')
+    scholarship.semester = request.POST.get('semester', '')
+    scholarship.eligibility = request.POST.get('eligibility', '').strip()
+    scholarship.note = request.POST.get('note', '').strip() or None
+
+    from decimal import Decimal, InvalidOperation
+    try:
+        scholarship.price = Decimal(request.POST.get('price', '0') or '0')
+    except (InvalidOperation, TypeError):
+        scholarship.price = Decimal('0')
+    return scholarship
+
+
+def _scholarship_required_ok(request):
+    required = ['name', 'description', 'city', 'major', 'degree',
+                'language', 'scholarship_type', 'deadline', 'semester']
+    return all(request.POST.get(f, '').strip() for f in required)
+
+
+@role_required('agent', login_url_override='agent:login')
+def scholarship_create(request):
+    """Create a new scholarship. Commissions default to 0 (admin sets later)."""
+    if request.method == 'POST':
+        if not _scholarship_required_ok(request):
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'agent/scholarship_form.html',
+                          {'user': request.user, 'is_create': True, **_scholarship_form_choices()})
+        try:
+            scholarship = _apply_scholarship_fields(scholarships(), request)
+            scholarship.save()  # commissions keep model default of 0
+            logger.info(f'Agent {request.user.username} created scholarship "{scholarship.name}"')
+            messages.success(request, f'Scholarship "{scholarship.name}" created successfully.')
+            return redirect('agent:scholarship_list')
+        except Exception as e:
+            messages.error(request, f'Error creating scholarship: {e}')
+
+    return render(request, 'agent/scholarship_form.html',
+                  {'user': request.user, 'is_create': True, **_scholarship_form_choices()})
+
+
+@role_required('agent', login_url_override='agent:login')
+def scholarship_edit(request, scholarship_id):
+    """Edit an existing scholarship. Commission fields are left untouched."""
+    scholarship = get_object_or_404(scholarships, id=scholarship_id)
+
+    if request.method == 'POST':
+        if not _scholarship_required_ok(request):
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'agent/scholarship_form.html',
+                          {'user': request.user, 'scholarship': scholarship,
+                           'is_create': False, **_scholarship_form_choices()})
+        try:
+            _apply_scholarship_fields(scholarship, request)
+            scholarship.save()
+            logger.info(f'Agent {request.user.username} edited scholarship #{scholarship.id}')
+            messages.success(request, f'Scholarship "{scholarship.name}" updated successfully.')
+            return redirect('agent:scholarship_list')
+        except Exception as e:
+            messages.error(request, f'Error updating scholarship: {e}')
+
+    return render(request, 'agent/scholarship_form.html',
+                  {'user': request.user, 'scholarship': scholarship,
+                   'is_create': False, **_scholarship_form_choices()})
 
 
 # ——— Agent Notifications ————————————————————————————————————

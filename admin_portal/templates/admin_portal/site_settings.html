@@ -1,0 +1,114 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}Site Settings{% endblock %}
+{% block page_title %}Site Settings{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'admin_portal:site_settings' %}" enctype="multipart/form-data" data-no-xhr>
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="table-card mb-3">
+                <div class="card-header"><i class="bi bi-palette me-2"></i>Branding</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Site Name</label>
+                        <input type="text" name="site_name" class="form-control" value="{{ settings.site_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tagline</label>
+                        <input type="text" name="tagline" class="form-control" value="{{ settings.tagline }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Logo {% if settings.logo %}<a href="{{ settings.logo.url }}" target="_blank" class="small">(current)</a>{% endif %}</label>
+                        <input type="file" name="logo" class="form-control" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Favicon {% if settings.favicon %}<a href="{{ settings.favicon.url }}" target="_blank" class="small">(current)</a>{% endif %}</label>
+                        <input type="file" name="favicon" class="form-control" accept="image/*">
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Footer Text</label>
+                        <input type="text" name="footer_text" class="form-control" value="{{ settings.footer_text }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="card-header"><i class="bi bi-search me-2"></i>SEO</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Meta Description</label>
+                        <textarea name="meta_description" class="form-control" rows="2">{{ settings.meta_description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Meta Keywords</label>
+                        <input type="text" name="meta_keywords" class="form-control" value="{{ settings.meta_keywords }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">OG Image {% if settings.og_image %}<a href="{{ settings.og_image.url }}" target="_blank" class="small">(current)</a>{% endif %}</label>
+                        <input type="file" name="og_image" class="form-control" accept="image/*">
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Google Analytics ID</label>
+                        <input type="text" name="google_analytics_id" class="form-control" value="{{ settings.google_analytics_id }}" placeholder="G-XXXXXXXXXX">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="table-card mb-3">
+                <div class="card-header"><i class="bi bi-telephone me-2"></i>Contact</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Contact Email</label>
+                        <input type="email" name="contact_email" class="form-control" value="{{ settings.contact_email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact Phone</label>
+                        <input type="text" name="contact_phone" class="form-control" value="{{ settings.contact_phone }}">
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="3">{{ settings.address }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="card-header"><i class="bi bi-share me-2"></i>Social Media</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Facebook URL</label>
+                        <input type="url" name="facebook_url" class="form-control" value="{{ settings.facebook_url }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Instagram URL</label>
+                        <input type="url" name="instagram_url" class="form-control" value="{{ settings.instagram_url }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Twitter URL</label>
+                        <input type="url" name="twitter_url" class="form-control" value="{{ settings.twitter_url }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">LinkedIn URL</label>
+                        <input type="url" name="linkedin_url" class="form-control" value="{{ settings.linkedin_url }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">YouTube URL</label>
+                        <input type="url" name="youtube_url" class="form-control" value="{{ settings.youtube_url }}">
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">WhatsApp Number</label>
+                        <input type="text" name="whatsapp_number" class="form-control" value="{{ settings.whatsapp_number }}" placeholder="+1234567890">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

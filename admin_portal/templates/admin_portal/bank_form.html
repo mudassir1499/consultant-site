@@ -1,0 +1,47 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}{% if is_create %}Add Bank Account{% else %}Edit Bank Account{% endif %}{% endblock %}
+{% block page_title %}{% if is_create %}Add Bank Account{% else %}Edit Bank Account{% endif %}{% endblock %}
+
+{% block content %}
+<div class="table-card">
+    <div class="card-header"><i class="bi bi-bank me-2"></i>Account Details</div>
+    <div class="card-body">
+        <form method="post" action="{% if is_create %}{% url 'admin_portal:bank_create' %}{% else %}{% url 'admin_portal:bank_edit' account.account_id %}{% endif %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Bank Name <span class="text-danger">*</span></label>
+                    <input type="text" name="bank_name" class="form-control" value="{{ account.bank_name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Account Number <span class="text-danger">*</span></label>
+                    <input type="text" name="account_number" class="form-control" value="{{ account.account_number }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Account Holder Name</label>
+                    <input type="text" name="account_holder_name" class="form-control" value="{{ account.account_holder_name }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">SWIFT Code</label>
+                    <input type="text" name="swift_code" class="form-control" value="{{ account.swift_code }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">IBAN (optional)</label>
+                    <input type="text" name="iban" class="form-control" value="{{ account.iban|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="active" {% if account.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if account.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>{% if is_create %}Add Account{% else %}Save Changes{% endif %}</button>
+                    <a href="{% url 'admin_portal:bank_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

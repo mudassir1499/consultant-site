@@ -43,7 +43,7 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------ #
     def handle(self, *args, **options):
         if options["flush"]:
-            self.stdout.write("Flushing existing data …")
+            self.stdout.write("Flushing existing data ...")
             ApplicationStatusHistory.objects.all().delete()
             JW02Form.objects.all().delete()
             AdmissionLetter.objects.all().delete()
@@ -66,14 +66,14 @@ class Command(BaseCommand):
         self._create_wallet_transactions()
         self._create_notifications()
 
-        self.stdout.write(self.style.SUCCESS("\n✅  Sample data seeded successfully!"))
+        self.stdout.write(self.style.SUCCESS("\n[SUCCESS] Sample data seeded successfully!"))
         self._print_summary()
 
     # ------------------------------------------------------------------ #
     #  1. Users
     # ------------------------------------------------------------------ #
     def _create_users(self):
-        self.stdout.write("Creating users …")
+        self.stdout.write("Creating users ...")
 
         # Admin / superuser (skip if exists)
         admin, created = User.objects.get_or_create(
@@ -168,7 +168,7 @@ class Command(BaseCommand):
     #  2. Bank accounts
     # ------------------------------------------------------------------ #
     def _create_bank_accounts(self):
-        self.stdout.write("Creating bank accounts …")
+        self.stdout.write("Creating bank accounts ...")
         accounts = [
             ("Bank of China", "6222021234567890", "EduConsult International", "CN12BKCH12345678901234", "BKCHCNBJ"),
             ("ICBC", "6212261234567891", "EduConsult Ltd", "CN34ICBK23456789012345", "ICBKCNBJ"),
@@ -190,7 +190,7 @@ class Command(BaseCommand):
     #  3. Scholarships
     # ------------------------------------------------------------------ #
     def _create_scholarships(self):
-        self.stdout.write("Creating scholarships …")
+        self.stdout.write("Creating scholarships ...")
         data = [
             {
                 "name": "Chinese Government Scholarship - Full Ride",
@@ -301,7 +301,7 @@ class Command(BaseCommand):
     #  4. Wallets
     # ------------------------------------------------------------------ #
     def _create_wallets(self):
-        self.stdout.write("Creating wallets …")
+        self.stdout.write("Creating wallets ...")
         for u in [self.agent1, self.agent2, self.hq1, self.hq2]:
             Wallet.objects.get_or_create(user=u, defaults={
                 "current_balance": Decimal("0.00"),
@@ -315,7 +315,7 @@ class Command(BaseCommand):
     #  5. Applications (various statuses to showcase the whole workflow)
     # ------------------------------------------------------------------ #
     def _create_applications(self):
-        self.stdout.write("Creating applications …")
+        self.stdout.write("Creating applications ...")
 
         s = self.scholarships_list  # shorter alias
 
@@ -524,7 +524,7 @@ class Command(BaseCommand):
     #  6. Payments
     # ------------------------------------------------------------------ #
     def _create_payments(self):
-        self.stdout.write("Creating payments …")
+        self.stdout.write("Creating payments ...")
 
         # Completed payment for completed app
         application_payment.objects.get_or_create(
@@ -618,7 +618,7 @@ class Command(BaseCommand):
     #  7. Wallet transactions  (commissions for completed app)
     # ------------------------------------------------------------------ #
     def _create_wallet_transactions(self):
-        self.stdout.write("Creating wallet transactions …")
+        self.stdout.write("Creating wallet transactions ...")
 
         # Agent1 earned commission on completed app1
         agent_wallet = Wallet.objects.get(user=self.agent1)
@@ -693,7 +693,7 @@ class Command(BaseCommand):
     #  8. Notifications
     # ------------------------------------------------------------------ #
     def _create_notifications(self):
-        self.stdout.write("Creating notifications …")
+        self.stdout.write("Creating notifications ...")
 
         notifs = [
             # Student notifications
