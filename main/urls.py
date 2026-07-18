@@ -29,6 +29,7 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),  # set_language view
     path('admin/', admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('', include('pages.urls')),

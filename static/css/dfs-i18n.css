@@ -1,0 +1,98 @@
+/* ══════════════════════════════════════════════════════════════════
+   DFS Education — i18n / RTL support
+   Loaded on every page. Handles:
+   1. Arabic (RTL) mirroring of the fixed portal sidebars
+   2. Language-appropriate font stacks (Arabic / Simplified Chinese)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─── Font stacks per language ───────────────────────────────────── */
+html[lang="ar"] body,
+html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3,
+html[lang="ar"] h4, html[lang="ar"] h5, html[lang="ar"] h6 {
+    font-family: 'Cairo', 'Noto Sans Arabic', 'Inter', 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: 0;
+}
+html[lang="zh-hans"] body,
+html[lang="zh-hans"] h1, html[lang="zh-hans"] h2, html[lang="zh-hans"] h3,
+html[lang="zh-hans"] h4, html[lang="zh-hans"] h5, html[lang="zh-hans"] h6 {
+    font-family: 'Noto Sans SC', 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+    letter-spacing: 0;
+}
+
+/* ─── RTL: mirror fixed portal sidebars ──────────────────────────── */
+/* Portals use .sidebar/.main-content (office, agent, HQ) and
+   .admin-sidebar/.admin-main (admin portal), all pinned left in LTR.  */
+[dir="rtl"] .sidebar,
+[dir="rtl"] .admin-sidebar {
+    left: auto;
+    right: 0;
+}
+[dir="rtl"] .main-content {
+    margin-left: 0;
+    margin-right: var(--sidebar-width, 260px);
+}
+[dir="rtl"] .admin-main {
+    margin-left: 0;
+    margin-right: 260px;
+}
+
+/* Mobile: sidebars slide from the right in RTL */
+@media (max-width: 991px) {
+    [dir="rtl"] .sidebar,
+    [dir="rtl"] .admin-sidebar {
+        transform: translateX(100%);
+    }
+    [dir="rtl"] .sidebar.show,
+    [dir="rtl"] .admin-sidebar.show {
+        transform: translateX(0);
+    }
+    [dir="rtl"] .main-content,
+    [dir="rtl"] .admin-main {
+        margin-right: 0;
+    }
+}
+
+/* Sidebar active-link accent flips sides */
+[dir="rtl"] .admin-sidebar .nav-link {
+    border-left: none;
+    border-right: 3px solid transparent;
+}
+[dir="rtl"] .admin-sidebar .nav-link:hover,
+[dir="rtl"] .admin-sidebar .nav-link.active {
+    border-right-color: var(--admin-gold, #D4A843);
+}
+[dir="rtl"] .sidebar .nav-link i {
+    margin-right: 0;
+    margin-left: .5rem;
+}
+
+/* Timeline (admin portal status history) mirrors */
+[dir="rtl"] .timeline {
+    padding-left: 0;
+    padding-right: 1.5rem;
+}
+[dir="rtl"] .timeline::before {
+    left: auto;
+    right: 6px;
+}
+[dir="rtl"] .timeline-item::before {
+    left: auto;
+    right: -1.25rem;
+}
+
+/* Numbers, codes, and emails always read LTR inside RTL text */
+[dir="rtl"] code,
+[dir="rtl"] .ltr-inline,
+[dir="rtl"] input[type="email"],
+[dir="rtl"] input[type="tel"],
+[dir="rtl"] input[type="url"] {
+    direction: ltr;
+    unicode-bidi: embed;
+    text-align: right;
+}
+
+/* Language switcher */
+.lang-switcher .dropdown-item.active {
+    background: var(--dfs-blue, #2B7DE9);
+    color: #fff;
+}

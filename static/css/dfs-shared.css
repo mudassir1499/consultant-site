@@ -172,3 +172,70 @@
 input[type="date"].form-control {
     min-width: 130px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PROFESSIONAL POLISH LAYER
+   Consistent cards, tables, forms, buttons & scrollbars across portals
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Typography rhythm */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Cards */
+.card, .table-card, .stat-card {
+    border: 1px solid rgba(15, 42, 74, 0.06);
+    transition: box-shadow .25s ease, transform .25s ease;
+}
+.card:hover, .table-card:hover { box-shadow: 0 6px 18px rgba(15, 42, 74, 0.08); }
+
+/* Tables */
+.table { --bs-table-hover-bg: rgba(43, 125, 233, 0.045); }
+.table > thead th {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #64748B;
+    border-bottom-width: 1px;
+    white-space: nowrap;
+}
+.table > tbody td { vertical-align: middle; }
+
+/* Buttons */
+.btn { transition: all .2s ease; }
+.btn:active { transform: scale(.97); }
+.btn:focus-visible { outline: 2px solid rgba(43, 125, 233, .45); outline-offset: 2px; }
+
+/* Forms */
+.form-control, .form-select {
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #2B7DE9;
+    box-shadow: 0 0 0 .2rem rgba(43, 125, 233, .12);
+}
+.form-label { font-weight: 600; font-size: .85rem; color: #334155; }
+
+/* Pagination */
+.pagination .page-link { border-radius: 8px; margin: 0 2px; border: none; color: #334155; }
+.pagination .page-item.active .page-link { background: #0F2A4A; }
+
+/* Modals */
+.modal-content { border-radius: 14px; }
+
+/* Dropdowns */
+.dropdown-menu { border-radius: 10px; padding: .4rem; }
+.dropdown-item { border-radius: 7px; padding: .45rem .75rem; font-size: .9rem; }
+
+/* Alerts */
+.alert { border: none; border-radius: 10px; }
+
+/* Slim, unobtrusive scrollbars */
+* { scrollbar-width: thin; scrollbar-color: #C4CCD8 transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: #C4CCD8; border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Empty-state rows */
+td.text-center.text-muted { font-size: .9rem; }

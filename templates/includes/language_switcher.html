@@ -1,0 +1,27 @@
+{% load i18n %}
+{% get_current_language as CURRENT_LANG %}
+<div class="dropdown lang-switcher">
+    <a class="dropdown-toggle text-decoration-none d-flex align-items-center gap-1 {{ toggle_class|default:'' }}"
+       href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="{% trans 'Language' %}">
+        <i class="bi bi-globe2"></i>
+        <span class="d-none d-md-inline small fw-semibold">
+            {% if CURRENT_LANG == 'ar' %}العربية{% elif CURRENT_LANG == 'zh-hans' %}中文{% else %}EN{% endif %}
+        </span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width:10rem;">
+        {% get_available_languages as LANGUAGES %}
+        {% for lang_code, lang_name in LANGUAGES %}
+        <li>
+            <form action="{% url 'set_language' %}" method="post" class="m-0">
+                {% csrf_token %}
+                <input type="hidden" name="language" value="{{ lang_code }}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="dropdown-item d-flex align-items-center justify-content-between {% if lang_code == CURRENT_LANG %}active{% endif %}">
+                    <span>{{ lang_name }}</span>
+                    {% if lang_code == CURRENT_LANG %}<i class="bi bi-check-lg"></i>{% endif %}
+                </button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>

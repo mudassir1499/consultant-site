@@ -1,0 +1,141 @@
+# Arabic translations for DFS Education.
+msgid ""
+msgstr ""
+"Project-Id-Version: DFS Education\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+msgid "Home"
+msgstr "الرئيسية"
+
+msgid "Scholarships"
+msgstr "المنح الدراسية"
+
+msgid "Blog"
+msgstr "المدونة"
+
+msgid "About"
+msgstr "من نحن"
+
+msgid "Contact"
+msgstr "اتصل بنا"
+
+msgid "Dashboard"
+msgstr "لوحة التحكم"
+
+msgid "Profile"
+msgstr "الملف الشخصي"
+
+msgid "Notifications"
+msgstr "الإشعارات"
+
+msgid "Logout"
+msgstr "تسجيل الخروج"
+
+msgid "Login"
+msgstr "تسجيل الدخول"
+
+msgid "Get Started"
+msgstr "ابدأ الآن"
+
+msgid "Are you sure you want to logout?"
+msgstr "هل أنت متأكد من تسجيل الخروج؟"
+
+msgid "Quick Links"
+msgstr "روابط سريعة"
+
+msgid "About Us"
+msgstr "من نحن"
+
+msgid "Resources"
+msgstr "الموارد"
+
+msgid "Blog & Articles"
+msgstr "المدونة والمقالات"
+
+msgid "Apply Now"
+msgstr "قدّم الآن"
+
+msgid "Contact Us"
+msgstr "اتصل بنا"
+
+msgid "Language"
+msgstr "اللغة"
+
+msgid "Agent Portal"
+msgstr "بوابة الوكيل"
+
+msgid "Agent Dashboard"
+msgstr "لوحة تحكم الوكيل"
+
+msgid "Main"
+msgstr "عام"
+
+msgid "Management"
+msgstr "الإدارة"
+
+msgid "Applications"
+msgstr "الطلبات"
+
+msgid "Wallet"
+msgstr "المحفظة"
+
+msgid "Account"
+msgstr "الحساب"
+
+msgid "Admin Portal"
+msgstr "بوابة المشرف"
+
+msgid "Payments"
+msgstr "المدفوعات"
+
+msgid "Students"
+msgstr "الطلاب"
+
+msgid "Offices"
+msgstr "المكاتب"
+
+msgid "Agents"
+msgstr "الوكلاء"
+
+msgid "Headquarters"
+msgstr "المقر الرئيسي"
+
+msgid "Withdrawals"
+msgstr "طلبات السحب"
+
+msgid "Bank Accounts"
+msgstr "الحسابات البنكية"
+
+msgid "Site Settings"
+msgstr "إعدادات الموقع"
+
+msgid "Django Admin"
+msgstr "لوحة Django"
+
+msgid "Back to Site"
+msgstr "العودة إلى الموقع"
+
+msgid "Office Portal"
+msgstr "بوابة المكتب"
+
+msgid "Create Application"
+msgstr "إنشاء طلب"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "HQ Panel"
+msgstr "لوحة المقر الرئيسي"
+
+msgid "Headquarters Dashboard"
+msgstr "لوحة تحكم المقر الرئيسي"
+
+msgid "Revisions"
+msgstr "المراجعات"
+
+msgid "Payment"
+msgstr "الدفع"

@@ -6,6 +6,7 @@ Pillow==12.1.1
 python-dotenv==1.2.1
 sqlparse==0.5.5
 tzdata==2025.3
+polib==1.2.0           # Compile locale .po -> .mo (manage.py compile_translations)
 
 # Production
 whitenoise==6.8.2      # Serve compressed static files from the app

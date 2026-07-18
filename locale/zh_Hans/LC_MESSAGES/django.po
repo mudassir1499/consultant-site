@@ -1,0 +1,141 @@
+# Simplified Chinese translations for DFS Education.
+msgid ""
+msgstr ""
+"Project-Id-Version: DFS Education\n"
+"Language: zh-hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Home"
+msgstr "首页"
+
+msgid "Scholarships"
+msgstr "奖学金"
+
+msgid "Blog"
+msgstr "博客"
+
+msgid "About"
+msgstr "关于我们"
+
+msgid "Contact"
+msgstr "联系我们"
+
+msgid "Dashboard"
+msgstr "控制面板"
+
+msgid "Profile"
+msgstr "个人资料"
+
+msgid "Notifications"
+msgstr "通知"
+
+msgid "Logout"
+msgstr "退出登录"
+
+msgid "Login"
+msgstr "登录"
+
+msgid "Get Started"
+msgstr "立即开始"
+
+msgid "Are you sure you want to logout?"
+msgstr "确定要退出登录吗？"
+
+msgid "Quick Links"
+msgstr "快速链接"
+
+msgid "About Us"
+msgstr "关于我们"
+
+msgid "Resources"
+msgstr "资源"
+
+msgid "Blog & Articles"
+msgstr "博客与文章"
+
+msgid "Apply Now"
+msgstr "立即申请"
+
+msgid "Contact Us"
+msgstr "联系我们"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Agent Portal"
+msgstr "代理门户"
+
+msgid "Agent Dashboard"
+msgstr "代理控制面板"
+
+msgid "Main"
+msgstr "主要"
+
+msgid "Management"
+msgstr "管理"
+
+msgid "Applications"
+msgstr "申请"
+
+msgid "Wallet"
+msgstr "钱包"
+
+msgid "Account"
+msgstr "账户"
+
+msgid "Admin Portal"
+msgstr "管理员门户"
+
+msgid "Payments"
+msgstr "付款"
+
+msgid "Students"
+msgstr "学生"
+
+msgid "Offices"
+msgstr "办事处"
+
+msgid "Agents"
+msgstr "代理"
+
+msgid "Headquarters"
+msgstr "总部"
+
+msgid "Withdrawals"
+msgstr "提现"
+
+msgid "Bank Accounts"
+msgstr "银行账户"
+
+msgid "Site Settings"
+msgstr "网站设置"
+
+msgid "Django Admin"
+msgstr "Django 管理"
+
+msgid "Back to Site"
+msgstr "返回网站"
+
+msgid "Office Portal"
+msgstr "办事处门户"
+
+msgid "Create Application"
+msgstr "创建申请"
+
+msgid "Users"
+msgstr "用户"
+
+msgid "HQ Panel"
+msgstr "总部面板"
+
+msgid "Headquarters Dashboard"
+msgstr "总部控制面板"
+
+msgid "Revisions"
+msgstr "修订"
+
+msgid "Payment"
+msgstr "付款"
