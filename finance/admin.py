@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import bank_account, application_payment, Wallet, WalletTransaction, WithdrawalRequest
 
 
@@ -81,7 +82,7 @@ class ApplicationPaymentAdmin(admin.ModelAdmin):
     )
 
     def transaction_id_display(self, obj):
-        return obj.transaction_id or format_html('<em style="color:#999;">N/A</em>')
+        return obj.transaction_id or mark_safe('<em style="color:#999;">N/A</em>')
     transaction_id_display.short_description = 'Transaction ID'
 
     def application_link(self, obj):
@@ -93,7 +94,7 @@ class ApplicationPaymentAdmin(admin.ModelAdmin):
     application_link.short_description = 'Application'
 
     def amount_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.amount)
+        return format_html('<strong>${}</strong>', f'{obj.amount:,.2f}')
     amount_display.short_description = 'Amount'
     amount_display.admin_order_field = 'amount'
 
@@ -199,25 +200,25 @@ class WalletAdmin(admin.ModelAdmin):
     role_badge.short_description = 'Role'
 
     def balance_display(self, obj):
-        return format_html('<strong style="color:#198754;">${:,.2f}</strong>', obj.current_balance)
+        return format_html('<strong style="color:#198754;">${}</strong>', f'{obj.current_balance:,.2f}')
     balance_display.short_description = 'Balance'
 
     def upcoming_display(self, obj):
-        return format_html('${:,.2f}', obj.upcoming_payments)
+        return format_html('${}', f'{obj.upcoming_payments:,.2f}')
     upcoming_display.short_description = 'Upcoming'
 
     def pending_display(self, obj):
         if obj.pending_withdrawals > 0:
-            return format_html('<span style="color:#fd7e14;">${:,.2f}</span>', obj.pending_withdrawals)
+            return format_html('<span style="color:#fd7e14;">${}</span>', f'{obj.pending_withdrawals:,.2f}')
         return '$0.00'
     pending_display.short_description = 'Pending W/D'
 
     def total_earned_display(self, obj):
-        return format_html('${:,.2f}', obj.total_earned)
+        return format_html('${}', f'{obj.total_earned:,.2f}')
     total_earned_display.short_description = 'Total Earned'
 
     def total_withdrawn_display(self, obj):
-        return format_html('${:,.2f}', obj.total_withdrawn)
+        return format_html('${}', f'{obj.total_withdrawn:,.2f}')
     total_withdrawn_display.short_description = 'Total Withdrawn'
 
     def has_add_permission(self, request):
@@ -260,7 +261,7 @@ class WalletTransactionAdmin(admin.ModelAdmin):
     type_badge.short_description = 'Type'
 
     def amount_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.amount)
+        return format_html('<strong>${}</strong>', f'{obj.amount:,.2f}')
     amount_display.short_description = 'Amount'
 
     def description_preview(self, obj):
@@ -324,7 +325,7 @@ class WithdrawalRequestAdmin(admin.ModelAdmin):
     wallet_user.short_description = 'User'
 
     def amount_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.amount)
+        return format_html('<strong>${}</strong>', f'{obj.amount:,.2f}')
     amount_display.short_description = 'Amount'
     amount_display.admin_order_field = 'amount'
 

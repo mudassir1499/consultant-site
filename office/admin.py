@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import Office, OfficeRegion
 
 
@@ -108,7 +109,7 @@ class OfficeAdmin(admin.ModelAdmin):
     def region_summary(self, obj):
         regions = obj.regions.all()
         if not regions:
-            return format_html('<em style="color:#999;">No region mappings — add them below.</em>')
+            return mark_safe('<em style="color:#999;">No region mappings — add them below.</em>')
         items = ', '.join(
             f'{r.country_name}' + (f' ({r.city})' if r.city else '') for r in regions[:10]
         )
@@ -123,14 +124,14 @@ class OfficeAdmin(admin.ModelAdmin):
 
     def is_default_badge(self, obj):
         if obj.is_default:
-            return format_html('<span style="background:#0d6efd;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Default</span>')
+            return mark_safe('<span style="background:#0d6efd;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Default</span>')
         return ''
     is_default_badge.short_description = 'Default'
 
     def is_active_badge(self, obj):
         if obj.is_active:
-            return format_html('<span style="background:#198754;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Active</span>')
-        return format_html('<span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Inactive</span>')
+            return mark_safe('<span style="background:#198754;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Active</span>')
+        return mark_safe('<span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Inactive</span>')
     is_active_badge.short_description = 'Status'
 
     class Media:
@@ -164,6 +165,6 @@ class OfficeRegionAdmin(admin.ModelAdmin):
 
     def office_active(self, obj):
         if obj.office.is_active:
-            return format_html('<span style="color:#198754;">✓ Active</span>')
-        return format_html('<span style="color:#dc3545;">✗ Inactive</span>')
+            return mark_safe('<span style="color:#198754;">✓ Active</span>')
+        return mark_safe('<span style="color:#dc3545;">✗ Inactive</span>')
     office_active.short_description = 'Office Status'

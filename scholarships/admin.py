@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import scholarships, Application, AdmissionLetter, JW02Form, ApplicationStatusHistory
 
 
@@ -85,7 +86,7 @@ class ScholarshipsAdmin(admin.ModelAdmin):
     type_badge.admin_order_field = 'scholarship_type'
 
     def price_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.price)
+        return format_html('<strong>${}</strong>', f'{obj.price:,.2f}')
     price_display.short_description = 'Price'
     price_display.admin_order_field = 'price'
 
@@ -124,20 +125,20 @@ class ScholarshipCommissionAdmin(admin.ModelAdmin):
     list_per_page = 50
 
     def price_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.price)
+        return format_html('<strong>${}</strong>', f'{obj.price:,.2f}')
     price_display.short_description = 'Price'
 
     def agent_commission_display(self, obj):
-        return format_html('${:,.2f}', obj.agent_commission)
+        return format_html('${}', f'{obj.agent_commission:,.2f}')
     agent_commission_display.short_description = 'Agent'
 
     def hq_commission_display(self, obj):
-        return format_html('${:,.2f}', obj.hq_commission)
+        return format_html('${}', f'{obj.hq_commission:,.2f}')
     hq_commission_display.short_description = 'HQ'
 
     def total_commission(self, obj):
         total = obj.agent_commission + obj.hq_commission
-        return format_html('<strong>${:,.2f}</strong>', total)
+        return format_html('<strong>${}</strong>', f'{total:,.2f}')
     total_commission.short_description = 'Total Commissions'
 
     def has_add_permission(self, request):
@@ -243,7 +244,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     def office_display(self, obj):
         if obj.office:
             return format_html('<a href="/admin/office/office/{}/change/">{}</a>', obj.office.pk, obj.office.name)
-        return format_html('<span style="color:#dc3545;">⚠ None</span>')
+        return mark_safe('<span style="color:#dc3545;">⚠ None</span>')
     office_display.short_description = 'Office'
 
     STATUS_COLORS = {
@@ -295,7 +296,7 @@ class ApplicationAdmin(admin.ModelAdmin):
                 items.append(format_html('<span style="color:#198754;">✓</span> {}', label))
             else:
                 items.append(format_html('<span style="color:#dc3545;">✗</span> {}', label))
-        return format_html('<br>'.join(items))
+        return mark_safe('<br>'.join(items))
     document_checklist.short_description = 'Document Status'
 
     @admin.action(description='Mark selected as Rejected')
@@ -388,7 +389,7 @@ class ApplicationStatusHistoryAdmin(admin.ModelAdmin):
     )
 
     def arrow(self, obj):
-        return format_html('<span style="color:#6c757d;">→</span>')
+        return mark_safe('<span style="color:#6c757d;">→</span>')
     arrow.short_description = ''
 
     def note_preview(self, obj):

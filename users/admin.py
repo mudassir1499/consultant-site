@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django import forms
 from .models import User, Notification
 
@@ -115,7 +116,7 @@ class CustomUserAdmin(UserAdmin):
 
     def full_name_display(self, obj):
         name = obj.get_full_name()
-        return name if name else format_html('<em style="color:#999;">—</em>')
+        return name if name else mark_safe('<em style="color:#999;">—</em>')
     full_name_display.short_description = 'Name'
     full_name_display.admin_order_field = 'first_name'
 
@@ -150,7 +151,7 @@ class CustomUserAdmin(UserAdmin):
         if obj.office:
             return format_html('<a href="/admin/office/office/{}/change/">{}</a>', obj.office.pk, obj.office.name)
         if obj.role in ('office', 'agent'):
-            return format_html('<span style="color:#dc3545;font-weight:bold;">⚠ Not assigned</span>')
+            return mark_safe('<span style="color:#dc3545;font-weight:bold;">⚠ Not assigned</span>')
         return '—'
     office_display.short_description = 'Office'
     office_display.admin_order_field = 'office'
@@ -221,8 +222,8 @@ class NotificationAdmin(admin.ModelAdmin):
 
     def read_badge(self, obj):
         if obj.is_read:
-            return format_html('<span style="color:#198754;">✓ Read</span>')
-        return format_html('<span style="color:#0d6efd;font-weight:bold;">● Unread</span>')
+            return mark_safe('<span style="color:#198754;">✓ Read</span>')
+        return mark_safe('<span style="color:#0d6efd;font-weight:bold;">● Unread</span>')
     read_badge.short_description = 'Status'
 
     @admin.action(description='Mark selected as read')
