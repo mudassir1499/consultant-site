@@ -500,6 +500,71 @@ def admin_reupload_jw02(request, app_id, jw02_id):
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# Assignments (admin can (re)assign the agent / HQ on any application)
+# ═══════════════════════════════════════════════════════════════════════
+@user_passes_test(is_superuser, login_url='/admin/login/')
+@require_POST
+def admin_assign_agent(request, app_id):
+    application = get_object_or_404(Application, app_id=app_id)
+    agent_id = request.POST.get('agent_id') or None
+    previous = application.assigned_agent
+    if agent_id:
+        agent = User.objects.filter(id=agent_id, role='agent').first()
+        if not agent:
+            messages.error(request, 'Invalid agent selected.')
+            return redirect('admin_portal:application_detail', app_id=app_id)
+        application.assigned_agent = agent
+    else:
+        application.assigned_agent = None
+    application.save(update_fields=['assigned_agent'])
+
+    who = application.assigned_agent.username if application.assigned_agent else 'unassigned'
+    ApplicationStatusHistory.objects.create(
+        application=application, old_status=application.status, new_status=application.status,
+        changed_by=request.user, note=f'Agent set to {who} by admin',
+    )
+    if application.assigned_agent and application.assigned_agent != previous:
+        send_notification(
+            application.assigned_agent, 'Application Assigned',
+            f'Application #{app_id} has been assigned to you by admin.',
+            f'/agent/applications/{app_id}/'
+        )
+    messages.success(request, f'Agent assignment updated ({who}).')
+    return redirect('admin_portal:application_detail', app_id=app_id)
+
+
+@user_passes_test(is_superuser, login_url='/admin/login/')
+@require_POST
+def admin_reassign_hq(request, app_id):
+    application = get_object_or_404(Application, app_id=app_id)
+    hq_id = request.POST.get('hq_id') or None
+    previous = application.assigned_hq
+    if hq_id:
+        hq = User.objects.filter(id=hq_id, role='headquarters').first()
+        if not hq:
+            messages.error(request, 'Invalid HQ user selected.')
+            return redirect('admin_portal:application_detail', app_id=app_id)
+        application.assigned_hq = hq
+    else:
+        application.assigned_hq = None
+    application.save(update_fields=['assigned_hq'])
+
+    who = application.assigned_hq.username if application.assigned_hq else 'unassigned'
+    ApplicationStatusHistory.objects.create(
+        application=application, old_status=application.status, new_status=application.status,
+        changed_by=request.user, note=f'HQ set to {who} by admin',
+    )
+    if application.assigned_hq and application.assigned_hq != previous:
+        send_notification(
+            application.assigned_hq, 'Application Assigned',
+            f'Application #{app_id} has been assigned to you by admin.',
+            f'/hq/applications/{app_id}/'
+        )
+    messages.success(request, f'HQ assignment updated ({who}).')
+    return redirect('admin_portal:application_detail', app_id=app_id)
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # Payments
 # ═══════════════════════════════════════════════════════════════════════
 @user_passes_test(is_superuser, login_url='/admin/login/')

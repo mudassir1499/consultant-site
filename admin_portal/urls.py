@@ -19,6 +19,8 @@ urlpatterns = [
     path('applications/<int:app_id>/upload-jw02/', views.admin_upload_jw02, name='upload_jw02'),
     path('applications/<int:app_id>/reupload-letter/<int:letter_id>/', views.admin_reupload_letter, name='reupload_letter'),
     path('applications/<int:app_id>/reupload-jw02/<int:jw02_id>/', views.admin_reupload_jw02, name='reupload_jw02'),
+    path('applications/<int:app_id>/assign-agent/', views.admin_assign_agent, name='assign_agent'),
+    path('applications/<int:app_id>/reassign-hq/', views.admin_reassign_hq, name='reassign_hq'),
     
     # Payments
     path('payments/', views.admin_payment_list, name='payment_list'),

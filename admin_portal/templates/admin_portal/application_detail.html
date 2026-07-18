@@ -67,6 +67,39 @@
                 </div>
             </div>
         </div>
+
+        <!-- Assignments -->
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-people me-2"></i>Assignments</div>
+            <div class="card-body">
+                <form method="post" action="{% url 'admin_portal:assign_agent' application.app_id %}" class="mb-3">
+                    {% csrf_token %}
+                    <label class="form-label small mb-1">Main Agent</label>
+                    <div class="input-group input-group-sm">
+                        <select name="agent_id" class="form-select">
+                            <option value="">— Unassigned —</option>
+                            {% for a in available_agents %}
+                            <option value="{{ a.id }}" {% if application.assigned_agent_id == a.id %}selected{% endif %}>{{ a.get_full_name|default:a.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-admin">Save</button>
+                    </div>
+                </form>
+                <form method="post" action="{% url 'admin_portal:reassign_hq' application.app_id %}">
+                    {% csrf_token %}
+                    <label class="form-label small mb-1">Headquarters</label>
+                    <div class="input-group input-group-sm">
+                        <select name="hq_id" class="form-select">
+                            <option value="">— Unassigned —</option>
+                            {% for h in available_hq %}
+                            <option value="{{ h.id }}" {% if application.assigned_hq_id == h.id %}selected{% endif %}>{{ h.get_full_name|default:h.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-admin">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Documents & Status -->

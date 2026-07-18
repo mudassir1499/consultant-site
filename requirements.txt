@@ -7,5 +7,9 @@ python-dotenv==1.2.1
 sqlparse==0.5.5
 tzdata==2025.3
 
+# Production
+whitenoise==6.8.2      # Serve compressed static files from the app
+gunicorn==23.0.0       # WSGI server (non-cPanel deployments)
+
 # Uncomment for MySQL (production):
 # mysqlclient==2.2.7
